@@ -6,6 +6,11 @@ export interface Env {
   VAULT: DurableObjectNamespace<UserVault>;
   JOBS: Queue<JobMessage>;
   ASSETS?: Fetcher;
+  /** Per-IP limits for sign-in endpoints (optional so tests / local dev can omit them). */
+  AUTH_LIMITER?: RateLimit;
+  OTP_LIMITER?: RateLimit;
+  /** "1" disables the limiters (integration tests share one client IP). */
+  DISABLE_RATE_LIMIT?: string;
 
   APP_ORIGIN: string;
   APP_NAME: string;

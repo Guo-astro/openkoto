@@ -1,4 +1,4 @@
-import { Hono } from "hono";
+import { Hono, type Context, type Next } from "hono";
 import { HTTPException } from "hono/http-exception";
 import type { AppBindings, Env, JobMessage } from "./env";
 import { getAuth } from "./auth/better-auth";
@@ -18,6 +18,16 @@ import { ApiError, errorBody } from "./lib/http";
 
 export { UserVault } from "./sync/vault";
 
+async function authRateLimit(c: Context<AppBindings>, next: Next) {
+  const ip = c.req.header("CF-Connecting-IP") ?? "unknown";
+  const limiter = c.req.path.includes("send-verification-otp") ? c.env.OTP_LIMITER : c.env.AUTH_LIMITER;
+  if (limiter && c.req.method !== "GET" && c.env.DISABLE_RATE_LIMIT !== "1") {
+    const { success } = await limiter.limit({ key: `${c.req.path.includes("send-verification-otp") ? "otp" : "auth"}:${ip}` });
+    if (!success) return c.json(errorBody("RATE_LIMITED", "too many requests, please wait a minute"), 429, { "Retry-After": "60" });
+  }
+  await next();
+}
+
 const app = new Hono<AppBindings>();
 
 app.onError((err, c) => {
@@ -36,6 +46,11 @@ app.notFound((c) => {
 });
 
 app.get("/api/health", (c) => c.json({ ok: true, service: "openkoto-api" }));
+
+// Brute-force protection for sign-in: per client IP, stricter for sending email codes.
+app.use("/api/auth/*", authRateLimit);
+app.use("/api/v1/auth/*", authRateLimit);
+app.use("/auth/*", authRateLimit);
 app.on(["GET", "POST"], "/api/auth/*", (c) => getAuth(c.env).handler(c.req.raw));
 app.route("/", wellKnown);
 app.route("/", nativeAuthorize);

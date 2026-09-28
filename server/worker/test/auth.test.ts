@@ -126,3 +126,28 @@ describe("devices", () => {
     expect(refresh.status).toBe(401);
   });
 });
+
+describe("rate limiting", () => {
+  it("limits OTP sends per IP when enabled", async () => {
+    const { app } = await import("../src/index");
+    const { env } = await import("cloudflare:test");
+    let calls = 0;
+    const limiter = { limit: async () => ({ success: ++calls <= 2 }) } as unknown as RateLimit;
+    const testEnv = { ...env, DISABLE_RATE_LIMIT: "0", OTP_LIMITER: limiter, AUTH_LIMITER: limiter };
+    const send = () =>
+      app.fetch(
+        new Request(url("/api/auth/email-otp/send-verification-otp"), {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Origin: "http://localhost:8787", "CF-Connecting-IP": "203.0.113.9" },
+          body: JSON.stringify({ email: "limit@example.com", type: "sign-in" }),
+        }),
+        testEnv,
+        { waitUntil() {}, passThroughOnException() {}, props: {} } as unknown as ExecutionContext,
+      );
+    expect((await send()).status).toBe(200);
+    expect((await send()).status).toBe(200);
+    const third = await send();
+    expect(third.status).toBe(429);
+    expect(third.headers.get("Retry-After")).toBe("60");
+  });
+});

@@ -16,6 +16,7 @@ export default defineConfig(async () => {
             // Pin values that a developer's .dev.vars would otherwise override.
             APP_ORIGIN: "http://localhost:8787",
             EMAIL_PROVIDER: "console",
+            DISABLE_RATE_LIMIT: "1",
             JWT_PRIVATE_KEY: privateKey.export({ type: "pkcs8", format: "pem" }).toString(),
             BETTER_AUTH_SECRET: "test-secret-test-secret-test-secret-0123456789",
             CREEM_WEBHOOK_SECRET: "whsec_test",
