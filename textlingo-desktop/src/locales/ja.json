@@ -628,16 +628,16 @@
     }
   },
   "youtubeImport": {
-    "title": "YouTube動画をインポート",
+    "title": "YouTube / bilibili の動画をインポート",
     "urlLabel": "ビデオURL",
-    "urlPlaceholder": "https://www.youtube.com/watch?v=...",
+    "urlPlaceholder": "https://www.youtube.com/watch?v=... または https://www.bilibili.com/video/BV...",
     "import": "インポート",
     "importing": "ダウンロード中...",
     "processing": "処理中...",
     "cancel": "キャンセル",
     "errors": {
       "urlRequired": "ビデオURLを入力してください",
-      "urlInvalid": "無効なYouTube URL",
+      "urlInvalid": "無効な動画 URL（YouTube と bilibili に対応）",
       "importFailed": "インポートに失敗しました",
       "loginRequiredTip": "このビデオを視聴するにはログインが必要です。ブラウザでログインしてから再試行してください。"
     },

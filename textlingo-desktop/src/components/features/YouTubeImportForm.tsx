@@ -12,6 +12,16 @@ interface YouTubeImportFormProps {
     onCancel: () => void;
 }
 
+/** yt-dlp handles both; Bilibili needs FFmpeg to merge its separate audio/video streams. */
+export function isSupportedVideoUrl(url: string): boolean {
+    try {
+        const host = new URL(url.trim()).hostname.toLowerCase();
+        return ["youtube.com", "youtu.be", "bilibili.com", "b23.tv"].some((d) => host === d || host.endsWith(`.${d}`));
+    } catch {
+        return false;
+    }
+}
+
 export function YouTubeImportForm({ onSave, onCancel }: YouTubeImportFormProps) {
     const { t } = useTranslation();
     const [url, setUrl] = useState("");
@@ -24,7 +34,7 @@ export function YouTubeImportForm({ onSave, onCancel }: YouTubeImportFormProps) 
             return;
         }
 
-        if (!url.includes("youtube.com") && !url.includes("youtu.be")) {
+        if (!isSupportedVideoUrl(url)) {
             setError(t("youtubeImport.errors.urlInvalid"));
             return;
         }
