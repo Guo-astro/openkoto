@@ -14,10 +14,8 @@ use crate::storage::{
     ensure_app_dirs,
     ensure_favorites_dirs,
     list_articles,
-    list_bookmarks,
     list_bookmarks_for_book,
     list_favorite_grammars,
-    list_favorite_vocabularies,
     list_word_packs,
     load_agent_task,
     load_article,
@@ -131,7 +129,7 @@ fn split_into_sentences(text: &str) -> Vec<String> {
             if i + 1 < chars.len() {
                 let next = chars[i + 1];
                 if next == '"'
-                    || next == '"'
+                    || next == '\u{201D}'
                     || next == '\''
                     || next == '\u{2019}'
                     || next == ')'
@@ -193,7 +191,7 @@ fn is_abbreviation(chars: &[char], pos: usize) -> bool {
     }
 
     // 单字母后跟句点通常是缩写（如 A. B. C.）
-    if word.len() == 1 && word.chars().next().unwrap().is_uppercase() {
+    if word.chars().count() == 1 && word.chars().next().unwrap().is_uppercase() {
         return true;
     }
 
@@ -828,17 +826,7 @@ fn ensure_default_word_pack(app_handle: &AppHandle) -> Result<WordPack, String> 
 }
 
 fn load_all_word_packs(app_handle: &AppHandle) -> Result<Vec<WordPack>, String> {
-    let ids = list_word_packs(app_handle)?;
-    let mut packs = Vec::new();
-
-    for id in ids {
-        if let Ok(json) = load_word_pack(app_handle, &id) {
-            if let Ok(pack) = serde_json::from_str::<WordPack>(&json) {
-                packs.push(pack);
-            }
-        }
-    }
-
+    let mut packs = crate::storage::load_all_word_packs(app_handle)?;
     packs.sort_by(|a, b| a.created_at.cmp(&b.created_at));
     Ok(packs)
 }
@@ -846,18 +834,7 @@ fn load_all_word_packs(app_handle: &AppHandle) -> Result<Vec<WordPack>, String> 
 fn load_all_favorite_vocabularies_internal(
     app_handle: &AppHandle,
 ) -> Result<Vec<FavoriteVocabulary>, String> {
-    let ids = list_favorite_vocabularies(app_handle)?;
-    let mut favorites = Vec::new();
-
-    for id in ids {
-        if let Ok(json) = load_favorite_vocabulary(app_handle, &id) {
-            if let Ok(favorite) = serde_json::from_str::<FavoriteVocabulary>(&json) {
-                favorites.push(favorite);
-            }
-        }
-    }
-
-    Ok(favorites)
+    crate::storage::load_all_favorite_vocabularies(app_handle)
 }
 
 fn persist_favorite_vocabulary(
@@ -986,20 +963,10 @@ pub fn build_due_vocabulary_queue(
 
 fn migrate_favorite_vocabularies(app_handle: &AppHandle) -> Result<(), String> {
     let default_pack = ensure_default_word_pack(app_handle)?;
-    let ids = list_favorite_vocabularies(app_handle)?;
+    let favorites = load_all_favorite_vocabularies_internal(app_handle)?;
     let today = today_local_date().format("%Y-%m-%d").to_string();
 
-    for id in ids {
-        let json = match load_favorite_vocabulary(app_handle, &id) {
-            Ok(content) => content,
-            Err(_) => continue,
-        };
-
-        let mut favorite = match serde_json::from_str::<FavoriteVocabulary>(&json) {
-            Ok(item) => item,
-            Err(_) => continue,
-        };
-
+    for mut favorite in favorites {
         let mut changed = false;
 
         if favorite.pack_ids.is_empty() {
@@ -2507,16 +2474,18 @@ pub async fn review_vocabulary_cmd(
     favorite.stability = next.stability;
     favorite.difficulty = next.difficulty;
     favorite.scheduler_version = Some(crate::fsrs::SCHEDULER_VERSION.to_string());
-    favorite.due_date = (review_date + chrono::Duration::days(next.interval_days as i64))
-        .format("%Y-%m-%d")
-        .to_string();
-    favorite.last_reviewed_at = Some(chrono::Utc::now().to_rfc3339());
+    // 同日巩固步骤(规范 §2.8):只有 Good/Easy 才把到期日推到未来,
+    // 与同步重放(sync::replay::due_date_for)保持一致。
+    favorite.due_date =
+        crate::sync::replay::due_date_for(grade_value, next.interval_days, review_date);
+    let reviewed_at = chrono::Utc::now().to_rfc3339();
+    favorite.last_reviewed_at = Some(reviewed_at.clone());
     favorite.review_count += 1;
 
     let event = crate::types::ReviewEvent {
         id: Uuid::new_v4().to_string(),
         card_id: favorite.id.clone(),
-        reviewed_at: chrono::Utc::now().to_rfc3339(),
+        reviewed_at,
         date_local: date_local.clone(),
         grade: grade_value,
         elapsed_days,
@@ -3987,16 +3956,7 @@ pub async fn add_bookmark_cmd(
 /// 列出所有书签
 #[tauri::command]
 pub async fn list_bookmarks_cmd(app_handle: AppHandle) -> Result<Vec<Bookmark>, String> {
-    let ids = list_bookmarks(&app_handle)?;
-    let mut bookmarks = Vec::new();
-
-    for id in ids {
-        if let Ok(json) = load_bookmark(&app_handle, &id) {
-            if let Ok(bookmark) = serde_json::from_str::<Bookmark>(&json) {
-                bookmarks.push(bookmark);
-            }
-        }
-    }
+    let mut bookmarks = crate::storage::load_all_bookmarks(&app_handle)?;
 
     // 按创建时间降序排列
     bookmarks.sort_by(|a, b| b.created_at.cmp(&a.created_at));
@@ -4410,5 +4370,31 @@ mod video_remux_tests {
         for ext in ["mp4", "MP4", "mov", "webm", "m4v", "mp3", "m4a"] {
             assert!(!needs_remux_container(ext), "{} should not need remux", ext);
         }
+    }
+}
+
+#[cfg(test)]
+mod sentence_split_tests {
+    use super::{is_abbreviation, split_into_sentences};
+
+    #[test]
+    fn closing_curly_quote_stays_with_its_sentence() {
+        // U+201D RIGHT DOUBLE QUOTATION MARK used to start the next sentence.
+        let s = split_into_sentences("He said \u{201C}Stop.\u{201D} Then he left.");
+        assert_eq!(s, vec!["He said \u{201C}Stop.\u{201D}", "Then he left."]);
+        let ascii = split_into_sentences("He said \"Stop.\" Then he left.");
+        assert_eq!(ascii, vec!["He said \"Stop.\"", "Then he left."]);
+    }
+
+    #[test]
+    fn single_multibyte_letter_is_an_initial() {
+        // `word.len()` counted bytes, so a non-ASCII capital initial ("É.") was missed.
+        let chars: Vec<char> = "Dr. É. Zola wrote.".chars().collect();
+        let pos = chars.iter().position(|c| *c == 'É').unwrap() + 1;
+        assert!(is_abbreviation(&chars, pos));
+        assert_eq!(
+            split_into_sentences("Dr. É. Zola wrote. Then Mr. A. Smith read."),
+            vec!["Dr. É. Zola wrote.", "Then Mr. A. Smith read."]
+        );
     }
 }

@@ -208,7 +208,8 @@
       "advanced": "高级",
       "transcription": "字幕转写",
       "logs": "运行日志",
-      "review": "复习设置"
+      "review": "复习设置",
+      "account": "账号与同步"
     },
     "transcription": {
       "title": "字幕转写",
@@ -451,7 +452,29 @@
     "srsDailyReviewLimit": "每日复习上限",
     "srsDailyReviewLimitHelp": "每天最多复习多少张到期卡片。",
     "srsDesiredRetention": "期望记忆保持率",
-    "srsDesiredRetentionHelp": "FSRS 算法的目标保持率:越高复习越频繁、记得越牢;越低间隔越长、负担越轻。默认 90%。"
+    "srsDesiredRetentionHelp": "FSRS 算法的目标保持率:越高复习越频繁、记得越牢;越低间隔越长、负担越轻。默认 90%。",
+    "account": {
+      "title": "OpenKoto 账号与同步",
+      "desc": "登录后，生词、词包、复习记录、文章和书签会在桌面端、iOS 和网页之间同步。",
+      "signedInAs": "当前账号",
+      "plan": "套餐",
+      "offline": "离线",
+      "signOut": "退出登录",
+      "manage": "管理账号与订阅",
+      "signIn": "登录",
+      "signedOut": "尚未登录，数据只保存在这台电脑上。",
+      "waitingForBrowser": "请在浏览器中完成登录…",
+      "cancel": "取消",
+      "syncTitle": "同步",
+      "syncing": "正在同步…",
+      "lastSync": "上次同步：{{time}}",
+      "neverSynced": "尚未同步",
+      "pending": "待上传的修改：{{count}}",
+      "syncNow": "立即同步",
+      "quotaExceeded": "有 {{count}} 条内容超出当前套餐额度，未能上传。",
+      "autoSyncHint": "启动时、修改后几秒以及每 5 分钟会自动同步。API 密钥永远不会同步。",
+      "lastError": "最近的错误"
+    }
   },
   "favorites": {
     "title": "我的收藏",

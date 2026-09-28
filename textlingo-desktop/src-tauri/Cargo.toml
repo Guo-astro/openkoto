@@ -23,7 +23,7 @@ reqwest = { version = "0.12", features = ["json", "stream", "multipart"] }
 futures = "0.3"
 uuid = { version = "1.0", features = ["v4"] }
 chrono = { version = "0.4", features = ["serde"] }
-keyring = { version = "3", features = ["sync-secret-service"] }
+keyring = { version = "3", features = ["apple-native", "windows-native", "sync-secret-service"] }
 url = "2.5"
 regex = "1.10"
 urlencoding = "2"
@@ -39,6 +39,13 @@ scraper = "0.20"
 readability = "0.3"
 html-escape = "0.2"
 quick-xml = "0.38"
+rusqlite = { version = "0.32", features = ["bundled"] }
+tauri-plugin-deep-link = "2"
+sha2 = "0.10"
+flate2 = "1"
+
+[target.'cfg(any(target_os = "macos", windows, target_os = "linux"))'.dependencies]
+tauri-plugin-single-instance = { version = "2", features = ["deep-link"] }
 
 [features]
 # This feature is used for production builds or when a dev server is not specified, DO NOT REMOVE!!

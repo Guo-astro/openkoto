@@ -198,7 +198,8 @@
       "advanced": "詳細設定",
       "transcription": "字幕の文字起こし",
       "logs": "実行ログ",
-      "review": "復習設定"
+      "review": "復習設定",
+      "account": "アカウントと同期"
     },
     "transcription": {
       "title": "字幕の文字起こし",
@@ -441,7 +442,29 @@
     "srsDailyReviewLimit": "1日の復習上限",
     "srsDailyReviewLimitHelp": "1日に復習する期限到来カードの上限。",
     "srsDesiredRetention": "目標記憶保持率",
-    "srsDesiredRetentionHelp": "FSRS スケジューラの目標保持率。高いほど復習頻度が上がり記憶が定着し、低いほど間隔が長く負担が軽くなります。既定値は 90% です。"
+    "srsDesiredRetentionHelp": "FSRS スケジューラの目標保持率。高いほど復習頻度が上がり記憶が定着し、低いほど間隔が長く負担が軽くなります。既定値は 90% です。",
+    "account": {
+      "title": "OpenKoto アカウントと同期",
+      "desc": "サインインすると、単語・単語帳・復習履歴・記事・ブックマークがデスクトップ、iOS、Web の間で同期されます。",
+      "signedInAs": "サインイン中のアカウント",
+      "plan": "プラン",
+      "offline": "オフライン",
+      "signOut": "サインアウト",
+      "manage": "アカウントとサブスクリプションを管理",
+      "signIn": "サインイン",
+      "signedOut": "サインインしていません。データはこのコンピューターにのみ保存されます。",
+      "waitingForBrowser": "ブラウザでサインインを完了してください…",
+      "cancel": "キャンセル",
+      "syncTitle": "同期",
+      "syncing": "同期中…",
+      "lastSync": "最終同期：{{time}}",
+      "neverSynced": "まだ同期されていません",
+      "pending": "未送信の変更：{{count}}",
+      "syncNow": "今すぐ同期",
+      "quotaExceeded": "プランの上限に達したため、{{count}} 件をアップロードできませんでした。",
+      "autoSyncHint": "起動時、変更の数秒後、5 分ごとに自動で同期します。API キーは同期されません。",
+      "lastError": "直近のエラー"
+    }
   },
   "favorites": {
     "title": "お気に入り",

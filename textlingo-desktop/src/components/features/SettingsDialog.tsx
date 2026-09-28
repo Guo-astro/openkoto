@@ -6,10 +6,11 @@ import { Dialog } from "../ui/dialog";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Select } from "../ui/select";
-import { Settings, Plus, Trash2, Edit2, Check, RefreshCw, Loader2, HelpCircle, Boxes, MessageSquare, Palette, Languages, Settings2, ScrollText, AudioLines, GraduationCap } from "lucide-react";
+import { Settings, Plus, Trash2, Edit2, Check, RefreshCw, Loader2, HelpCircle, Boxes, MessageSquare, Palette, Languages, Settings2, ScrollText, AudioLines, GraduationCap, Cloud } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useTheme } from "../theme-provider";
 import { LogsPanel } from "./LogsPanel";
+import { AccountSyncPanel } from "./AccountSyncPanel";
 import type { AppConfig, ModelConfig, PromptFeature } from "../../lib/tauri";
 import {
   getKimiModelsUrl,
@@ -120,9 +121,10 @@ const BUILTIN_PROMPT_FEATURE_DEFAULTS: Record<string, PromptFeature> = {
 
 const PROMPT_FEATURE_ICON_OPTIONS = ["sparkles", "translate", "explain", "grammar", "book-open"];
 
-export type SettingsSectionKey = "models" | "chat" | "appearance" | "language" | "review" | "advanced" | "transcription" | "logs";
+export type SettingsSectionKey = "account" | "models" | "chat" | "appearance" | "language" | "review" | "advanced" | "transcription" | "logs";
 
 const SETTINGS_SECTIONS: { key: SettingsSectionKey; icon: LucideIcon; labelKey: string }[] = [
+  { key: "account", icon: Cloud, labelKey: "settings.nav.account" },
   { key: "models", icon: Boxes, labelKey: "settings.nav.models" },
   { key: "chat", icon: MessageSquare, labelKey: "settings.nav.chat" },
   { key: "transcription", icon: AudioLines, labelKey: "settings.nav.transcription" },
@@ -1954,6 +1956,9 @@ export function SettingsDialog({ isOpen, onClose, onSave, initialSection }: Sett
             </div>
           </div>
           )}
+
+          {/* Account & Sync Section */}
+          {activeSection === "account" && <AccountSyncPanel />}
 
           {/* Runtime Logs Section */}
           {activeSection === "logs" && (

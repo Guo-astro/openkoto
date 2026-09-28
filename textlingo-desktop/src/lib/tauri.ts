@@ -50,6 +50,8 @@ export interface AppConfig {
   // Subtitle transcription (ASR) provider configs — separate from model_configs
   asr_configs?: ModelConfig[];
   active_asr_model_id?: string;
+  // OpenKoto cloud API origin override (default https://openkoto.app)
+  cloud_api_base?: string;
 }
 
 import { AgentTask, AgentWorkerStatusSnapshot, Artifact, Article, MindMapResult } from "../types";

@@ -208,7 +208,8 @@
       "advanced": "Advanced",
       "transcription": "Subtitle Transcription",
       "logs": "Runtime Logs",
-      "review": "Review"
+      "review": "Review",
+      "account": "Account & Sync"
     },
     "transcription": {
       "title": "Subtitle Transcription",
@@ -451,7 +452,29 @@
     "srsDailyReviewLimit": "Daily review limit",
     "srsDailyReviewLimitHelp": "Maximum number of due cards to review per day.",
     "srsDesiredRetention": "Desired retention",
-    "srsDesiredRetentionHelp": "Target retention for the FSRS scheduler: higher means more frequent reviews and stronger memory; lower means longer intervals and less workload. Default 90%."
+    "srsDesiredRetentionHelp": "Target retention for the FSRS scheduler: higher means more frequent reviews and stronger memory; lower means longer intervals and less workload. Default 90%.",
+    "account": {
+      "title": "OpenKoto Account & Sync",
+      "desc": "Sign in to sync your vocabulary, word packs, review history, articles and bookmarks across desktop, iOS and web.",
+      "signedInAs": "Signed in as",
+      "plan": "Plan",
+      "offline": "offline",
+      "signOut": "Sign out",
+      "manage": "Manage account & subscription",
+      "signIn": "Sign in",
+      "signedOut": "You are not signed in. Your data stays on this computer.",
+      "waitingForBrowser": "Finish signing in in your browser…",
+      "cancel": "Cancel",
+      "syncTitle": "Sync",
+      "syncing": "Syncing…",
+      "lastSync": "Last synced: {{time}}",
+      "neverSynced": "Not synced yet",
+      "pending": "Pending changes: {{count}}",
+      "syncNow": "Sync now",
+      "quotaExceeded": "{{count}} items were not uploaded because your plan limit was reached.",
+      "autoSyncHint": "Sync runs automatically on start, a few seconds after changes and every 5 minutes. API keys are never synced.",
+      "lastError": "Last error"
+    }
   },
   "favorites": {
     "title": "My Favorites",
