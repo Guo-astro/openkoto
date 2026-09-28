@@ -5,16 +5,19 @@
   "compatibility_date": "2026-08-15",
   "compatibility_flags": ["nodejs_compat"],
   "observability": { "enabled": true },
+  // Top level = production (https://openkoto.app). Local dev overrides APP_ORIGIN and
+  // EMAIL_PROVIDER in .dev.vars; `wrangler dev` uses local D1/R2/queues.
+  "routes": [{ "pattern": "openkoto.app", "custom_domain": true }],
   "vars": {
-    "APP_ORIGIN": "http://localhost:8787",
+    "APP_ORIGIN": "https://openkoto.app",
     "APP_NAME": "OpenKoto",
-    "EMAIL_PROVIDER": "console",
+    "EMAIL_PROVIDER": "resend",
     "EMAIL_FROM": "OpenKoto <noreply@openkoto.app>",
     "APPLE_APP_BUNDLE_ID": "com.openkoto.ios",
     "GOOGLE_CLIENT_ID": "506826712750-uubvvapb2v0l976jutqsree5gaavq3jd.apps.googleusercontent.com"
   },
   "d1_databases": [
-    { "binding": "DB", "database_name": "openkoto", "database_id": "00000000-0000-0000-0000-000000000000", "migrations_dir": "migrations" }
+    { "binding": "DB", "database_name": "openkoto", "database_id": "d312080d-5121-492a-badb-ca6f02dad81e", "migrations_dir": "migrations" }
   ],
   "r2_buckets": [{ "binding": "BUCKET", "bucket_name": "openkoto-files" }],
   "durable_objects": {

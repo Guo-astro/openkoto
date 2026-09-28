@@ -49,7 +49,8 @@ Built with **Tauri + React + Rust**, it runs locally on your machine for **fast 
 |---------|-------------|------|
 | **iOS** | **New!** 📱 Native app for iPhone & iPad — reading, on-device furigana/pinyin, video subtitles, SRS review, privacy-first | Search **“OpenKoto”** on the App Store <!-- TODO: replace with direct App Store link --> |
 | **Desktop** | **Recommended** 🖥️ Native performance, local data, Mac/Windows/Linux | [Download Latest Release](https://github.com/hikariming/OpenKoto/releases) |
-| Web | Convenient online access, no installation required | [https://openkoto.app](https://openkoto.app) |
+| Web | **Being rebuilt**: vocabulary review, novels and lyrics, synced with iOS and desktop (launching at openkoto.app) | — |
+| CLI / Agents | `koto` CLI, MCP server and agent skill so AI agents can work with your library (Plus) | [skills/openkoto](skills/openkoto) |
 | Source Code | 🆓 Fully open source, Apache 2.0 License | [GitHub Repository](https://github.com/hikariming/OpenKoto) |
 
 

@@ -817,6 +817,19 @@ skills/openkoto/
 
 ## 13. 里程碑（P0–P5）
 
+### 实施状态（2026-09-28，分支 `feat/p0-foundation`）
+
+| 阶段 | 状态 | 说明 |
+|---|---|---|
+| P0 地基 | ✅ | 同步 / 认证规范与契约用例；`@openkoto/core`、`@openkoto/client`；Worker（Better Auth + D1、令牌服务、UserVault DO、配额）；staging 已部署 |
+| P1 背单词 + 网页 + iOS | ✅ | 网页登录 / 生词本 / FSRS 复习（含撤销）/ 账户中心；iOS `OKAccount` + `HTTPSyncEngine`（v12/v13）+ iCloud 迁移 |
+| P2 桌面 | ✅ | SQLite + JSON 迁移、Rust 同步引擎、深链登录、钥匙串；书籍 / 歌词同步与实时通知在后续提交中补齐 |
+| P3 小说 + 歌词 | ✅ | R2 原文件、按章懒切分、BookProgress、歌词 LRC / 跟唱 / 导出；iOS 歌词显示 |
+| P4 支付 + CLI | ✅ 代码完成 | Creem（测试商品已建）、App Store 校验与通知、激活码；`koto` CLI、MCP、Skill。**待办**：正式商品、密钥、域名（见 `docs/ops/deploy.md` §3） |
+| P5 托管 AI + Agent | ✅ 代码完成 | `/api/v1/ai/*` 积分计费与缓存、整本翻译队列、远程 MCP + OAuth、云端学习助手、WebSocket 实时同步、数据导出。**待办**：`AI_API_KEY` |
+
+最终定价：Plus App Store ¥8/月、¥68/年；网页（Creem，仅美元）Plus $9.49/年、Pro $3.89/月、$35.99/年，积分包 $4.19。
+
 估算为单人净开发量，不含审核等待与设计返工，建议另加 25% 缓冲，合计约 24–28 周。每个阶段结束都可以单独发版。
 
 ### P0 地基（约 3 周）
