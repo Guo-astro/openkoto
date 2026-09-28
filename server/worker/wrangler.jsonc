@@ -39,6 +39,8 @@
     // Staging on workers.dev: Creem test mode, console email, BYOK/hosted AI via secrets.
     "staging": {
       "name": "openkoto-api-staging",
+      "routes": [],
+      "workers_dev": true,
       "vars": {
         "APP_ORIGIN": "https://openkoto-api-staging.beiming1201.workers.dev",
         "APP_NAME": "OpenKoto (staging)",
