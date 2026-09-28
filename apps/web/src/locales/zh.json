@@ -1,10 +1,36 @@
 {
-  "common": { "loading": "加载中…", "save": "保存", "cancel": "取消", "delete": "删除", "networkError": "网络错误，请稍后重试" },
-  "nav": { "home": "首页", "review": "复习", "vocab": "生词本", "library": "书架", "lyrics": "歌词", "account": "账户" },
-  "plan": { "free": "免费版", "plus": "Plus 会员", "pro": "Pro 会员" },
-  "channel": { "creem": "网页购买", "appstore": "App Store", "code": "激活码" },
-  "footer": { "privacy": "隐私政策", "terms": "服务条款" },
-  "legal": { "updated": "更新于 {{date}}" },
+  "common": {
+    "loading": "加载中…",
+    "save": "保存",
+    "cancel": "取消",
+    "delete": "删除",
+    "networkError": "网络错误，请稍后重试"
+  },
+  "nav": {
+    "home": "首页",
+    "review": "复习",
+    "vocab": "生词本",
+    "library": "书架",
+    "lyrics": "歌词",
+    "account": "账户"
+  },
+  "plan": {
+    "free": "免费版",
+    "plus": "Plus 会员",
+    "pro": "Pro 会员"
+  },
+  "channel": {
+    "creem": "网页购买",
+    "appstore": "App Store",
+    "code": "激活码"
+  },
+  "footer": {
+    "privacy": "隐私政策",
+    "terms": "服务条款"
+  },
+  "legal": {
+    "updated": "更新于 {{date}}"
+  },
   "sync": {
     "syncing": "同步中",
     "ok": "已同步",
@@ -97,7 +123,12 @@
     "empty": "还没有生词。阅读时点句子即可收藏，或点「添加」手动录入。",
     "noMatch": "没有匹配的单词",
     "quota": "免费版最多同步 {{limit}} 个生词，超出部分只保存在本机。升级会员即可同步全部。",
-    "band": { "new": "新卡片", "strong": "记得很牢", "fading": "正在淡忘", "weak": "可能忘了" }
+    "band": {
+      "new": "新卡片",
+      "strong": "记得很牢",
+      "fading": "正在淡忘",
+      "weak": "可能忘了"
+    }
   },
   "library": {
     "title": "书架",
@@ -182,12 +213,19 @@
     "deleteWarning": "删除后 7 天内可以撤销；之后账号、同步数据和上传的书籍都会被永久删除。本机数据不受影响。",
     "deleteConfirm": "确认删除",
     "deletionScheduled": "账号将于 {{date}} 永久删除。",
-    "cancelDeletion": "撤销删除"
+    "cancelDeletion": "撤销删除",
+    "data": "我的数据",
+    "export": "导出全部数据（NDJSON）",
+    "exportHint": "下载你同步到云端的全部生词、复习记录、书籍章节与歌词。"
   },
   "pricing": {
     "title": "选择适合你的方案",
     "subtitle": "本地功能与自带 Key 永久免费。会员帮你多端同步、解锁命令行和 AI 积分。",
-    "tagline": { "free": "本地学习 + 少量云同步", "plus": "多端无限同步 + 命令行", "pro": "Plus 全部功能 + 每月 AI 积分" },
+    "tagline": {
+      "free": "本地学习 + 少量云同步",
+      "plus": "多端无限同步 + 命令行",
+      "pro": "Plus 全部功能 + 每月 AI 积分"
+    },
     "f": {
       "local": "全部本地功能，自带 API Key 使用 AI",
       "syncFree": "云同步 200 个生词、5 本书、30 首歌词",

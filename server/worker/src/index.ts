@@ -10,6 +10,7 @@ import { adminApi, billingApi, webhooksApi } from "./billing/routes";
 import { aiApi } from "./ai/routes";
 import { jobsApi, runTranslateBookStep } from "./ai/jobs";
 import { booksApi } from "./books/routes";
+import { appStoreApi, appStoreWebhook } from "./billing/appstore";
 import { ApiError, errorBody } from "./lib/http";
 
 export { UserVault } from "./sync/vault";
@@ -39,7 +40,9 @@ app.route("/api/v1/auth", authApi);
 app.route("/api/v1/devices", devicesApi);
 app.route("/api/v1/sync", syncApi);
 app.route("/api/v1/library", libraryApi);
+app.route("/api/v1/billing/appstore", appStoreApi);
 app.route("/api/v1/billing", billingApi);
+app.route("/api/webhooks", appStoreWebhook);
 app.route("/api/v1/ai", aiApi);
 app.route("/api/v1/jobs", jobsApi);
 app.route("/api/v1/books", booksApi);

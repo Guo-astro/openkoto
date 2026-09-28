@@ -1,10 +1,36 @@
 {
-  "common": { "loading": "Loading…", "save": "Save", "cancel": "Cancel", "delete": "Delete", "networkError": "Network error, please try again" },
-  "nav": { "home": "Home", "review": "Review", "vocab": "Words", "library": "Library", "lyrics": "Lyrics", "account": "Account" },
-  "plan": { "free": "Free", "plus": "Plus", "pro": "Pro" },
-  "channel": { "creem": "Web", "appstore": "App Store", "code": "Activation code" },
-  "footer": { "privacy": "Privacy Policy", "terms": "Terms of Service" },
-  "legal": { "updated": "Updated {{date}}" },
+  "common": {
+    "loading": "Loading…",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "networkError": "Network error, please try again"
+  },
+  "nav": {
+    "home": "Home",
+    "review": "Review",
+    "vocab": "Words",
+    "library": "Library",
+    "lyrics": "Lyrics",
+    "account": "Account"
+  },
+  "plan": {
+    "free": "Free",
+    "plus": "Plus",
+    "pro": "Pro"
+  },
+  "channel": {
+    "creem": "Web",
+    "appstore": "App Store",
+    "code": "Activation code"
+  },
+  "footer": {
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Service"
+  },
+  "legal": {
+    "updated": "Updated {{date}}"
+  },
   "sync": {
     "syncing": "Syncing",
     "ok": "Synced",
@@ -97,7 +123,12 @@
     "empty": "No words yet. Tap a sentence while reading to save words, or add one here.",
     "noMatch": "No matching words",
     "quota": "Free syncs up to {{limit}} words; the rest stay on this device. Upgrade to sync everything.",
-    "band": { "new": "New", "strong": "Well remembered", "fading": "Fading", "weak": "Probably forgotten" }
+    "band": {
+      "new": "New",
+      "strong": "Well remembered",
+      "fading": "Fading",
+      "weak": "Probably forgotten"
+    }
   },
   "library": {
     "title": "Library",
@@ -182,12 +213,19 @@
     "deleteWarning": "You can cancel within 7 days; after that your account, synced data and uploaded books are permanently erased. Data on your devices is kept.",
     "deleteConfirm": "Delete",
     "deletionScheduled": "Your account will be permanently deleted on {{date}}.",
-    "cancelDeletion": "Cancel deletion"
+    "cancelDeletion": "Cancel deletion",
+    "data": "Your data",
+    "export": "Export all data (NDJSON)",
+    "exportHint": "Download everything you've synced: words, reviews, book chapters and lyrics."
   },
   "pricing": {
     "title": "Choose your plan",
     "subtitle": "Local features and bring-your-own-key AI are free forever. Membership adds sync, the CLI and AI credits.",
-    "tagline": { "free": "Local learning + a little cloud sync", "plus": "Unlimited sync + CLI", "pro": "Everything in Plus + monthly AI credits" },
+    "tagline": {
+      "free": "Local learning + a little cloud sync",
+      "plus": "Unlimited sync + CLI",
+      "pro": "Everything in Plus + monthly AI credits"
+    },
     "f": {
       "local": "All local features, AI with your own key",
       "syncFree": "Sync 200 words, 5 books, 30 songs",

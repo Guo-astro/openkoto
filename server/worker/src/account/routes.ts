@@ -75,6 +75,33 @@ export const accountApi = new Hono<AppBindings>()
     return c.json({ ok: true });
   })
 
+  .get("/account/export", requireAuth("account"), async (c) => {
+    // NDJSON of every live record (the user's full synced library), streamed page by page.
+    const p = principalOf(c);
+    const vault = vaultFor(c.env, p.userId);
+    const summary = await accountSummary(c.env, p.userId);
+    const encoder = new TextEncoder();
+    const stream = new ReadableStream<Uint8Array>({
+      async start(controller) {
+        controller.enqueue(encoder.encode(`${JSON.stringify({ kind: "account", ...summary })}\n`));
+        let cursor: string | null = null;
+        for (;;) {
+          const page = await vault.pull({ cursor, limit: 1000 });
+          for (const r of page.records) if (!r.deleted) controller.enqueue(encoder.encode(`${JSON.stringify({ kind: "record", ...r })}\n`));
+          cursor = page.cursor;
+          if (!page.hasMore) break;
+        }
+        controller.close();
+      },
+    });
+    return new Response(stream, {
+      headers: {
+        "Content-Type": "application/x-ndjson; charset=utf-8",
+        "Content-Disposition": `attachment; filename="openkoto-export-${new Date().toISOString().slice(0, 10)}.ndjson"`,
+      },
+    });
+  })
+
   .post("/account/delete", requireSession(), async (c) => {
     const p = principalOf(c);
     const now = Date.now();

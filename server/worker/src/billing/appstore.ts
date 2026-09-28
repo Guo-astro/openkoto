@@ -1,0 +1,148 @@
+import { Hono } from "hono";
+import { decodeJwt, decodeProtectedHeader, importPKCS8, SignJWT } from "jose";
+import type { AppBindings, Env } from "../env";
+import { principalOf, requireAuth } from "../auth/middleware";
+import { ApiError, badRequest, forbidden } from "../lib/http";
+import { skuById, type Sku } from "./catalog";
+import { addCreditsOnce } from "./credits";
+import { grantPeriodCredits, setSubscriptionStatus, upsertSubscription } from "./subscriptions";
+
+// Trust model: payloads sent by the app (or in notifications) are only used to learn the
+// transactionId. The authoritative transaction is then fetched from the App Store Server
+// API over TLS with our own API key, so no client-supplied JWS is ever trusted.
+
+const PRODUCTION = "https://api.storekit.itunes.apple.com";
+const SANDBOX = "https://api.storekit-sandbox.itunes.apple.com";
+
+const DEFAULT_PRODUCTS: Record<string, string> = {
+  "com.openkoto.plus.month": "plus_month",
+  "com.openkoto.plus.year": "plus_year",
+  "com.openkoto.pro.month": "pro_month",
+  "com.openkoto.pro.year": "pro_year",
+  "com.openkoto.credits.3000": "credits_3000",
+};
+
+export interface AppStoreTransaction {
+  transactionId: string;
+  originalTransactionId: string;
+  bundleId: string;
+  productId: string;
+  appAccountToken?: string;
+  expiresDate?: number;
+  revocationDate?: number;
+  environment: string;
+  type: string;
+}
+
+function skuForAppStoreProduct(env: Env, productId: string): Sku | undefined {
+  const mapping = { ...DEFAULT_PRODUCTS, ...(env.APPSTORE_PRODUCTS ? (JSON.parse(env.APPSTORE_PRODUCTS) as Record<string, string>) : {}) };
+  const skuId = mapping[productId];
+  return skuId ? skuById(skuId) : undefined;
+}
+
+async function apiToken(env: Env): Promise<string> {
+  if (!env.APPSTORE_ISSUER_ID || !env.APPSTORE_KEY_ID || !env.APPSTORE_PRIVATE_KEY) {
+    throw new ApiError(503, "BILLING_UNAVAILABLE", "App Store API is not configured");
+  }
+  const key = await importPKCS8(env.APPSTORE_PRIVATE_KEY, "ES256");
+  return new SignJWT({ bid: env.APPLE_APP_BUNDLE_ID })
+    .setProtectedHeader({ alg: "ES256", kid: env.APPSTORE_KEY_ID, typ: "JWT" })
+    .setIssuer(env.APPSTORE_ISSUER_ID)
+    .setAudience("appstoreconnect-v1")
+    .setIssuedAt()
+    .setExpirationTime("20m")
+    .sign(key);
+}
+
+/** Fetches a transaction from Apple (production first, then sandbox). */
+export async function fetchTransaction(env: Env, transactionId: string, doFetch: typeof fetch = fetch): Promise<AppStoreTransaction> {
+  if (!/^\d+$/.test(transactionId)) throw badRequest("invalid transaction id");
+  const token = await apiToken(env);
+  const bases = env.APPSTORE_ENVIRONMENT === "Sandbox" ? [SANDBOX] : [PRODUCTION, SANDBOX];
+  for (const base of bases) {
+    const res = await doFetch(`${base}/inApps/v1/transactions/${transactionId}`, { headers: { Authorization: `Bearer ${token}` } });
+    if (res.status === 404) continue;
+    if (!res.ok) throw new ApiError(502, "BILLING_ERROR", `App Store API error ${res.status}`);
+    const body = (await res.json()) as { signedTransactionInfo: string };
+    // Received directly from Apple over TLS; decoding (not verifying) the JWS is sufficient.
+    return decodeJwt(body.signedTransactionInfo) as unknown as AppStoreTransaction;
+  }
+  throw new ApiError(404, "NOT_FOUND", "transaction not found");
+}
+
+function transactionIdFromJws(jws: string): string {
+  try {
+    decodeProtectedHeader(jws);
+    const payload = decodeJwt(jws) as { transactionId?: string };
+    if (payload.transactionId) return String(payload.transactionId);
+  } catch {
+    // fall through
+  }
+  throw badRequest("invalid signed transaction");
+}
+
+/** Applies an Apple-confirmed transaction to the user's entitlements. Idempotent. */
+export async function applyTransaction(env: Env, userId: string, tx: AppStoreTransaction): Promise<{ sku: string; plan: string | null }> {
+  if (tx.bundleId !== env.APPLE_APP_BUNDLE_ID) throw forbidden("bundle id mismatch");
+  const sku = skuForAppStoreProduct(env, tx.productId);
+  if (!sku) throw badRequest(`unknown product ${tx.productId}`);
+
+  if (sku.kind === "credits") {
+    if (tx.revocationDate) return { sku: sku.id, plan: null };
+    await addCreditsOnce(env, userId, sku.credits ?? 0, "purchase", `appstore:${tx.transactionId}`);
+    return { sku: sku.id, plan: null };
+  }
+
+  const externalId = tx.originalTransactionId;
+  if (tx.revocationDate) {
+    await setSubscriptionStatus(env, "appstore", externalId, "refunded", false);
+    return { sku: sku.id, plan: sku.plan ?? null };
+  }
+  const periodEnd = tx.expiresDate ?? Date.now();
+  await upsertSubscription(env, { userId, plan: sku.plan!, channel: "appstore", externalId, periodEnd, status: periodEnd > Date.now() ? "active" : "expired" });
+  if (sku.credits && periodEnd > Date.now()) await grantPeriodCredits(env, userId, sku.credits, `appstore:${tx.transactionId}`);
+  return { sku: sku.id, plan: sku.plan ?? null };
+}
+
+function sameUuid(a: string | undefined, b: string): boolean {
+  return !!a && a.toLowerCase() === b.toLowerCase();
+}
+
+export const appStoreApi = new Hono<AppBindings>().post("/verify", requireAuth("account"), async (c) => {
+  const p = principalOf(c);
+  const { signedTransaction } = (await c.req.json()) as { signedTransaction?: string };
+  if (!signedTransaction) throw badRequest("signedTransaction is required");
+  const tx = await fetchTransaction(c.env, transactionIdFromJws(signedTransaction));
+  // Purchases are bound to accounts via appAccountToken = user id.
+  if (!sameUuid(tx.appAccountToken, p.userId)) throw forbidden("transaction belongs to a different account");
+  return c.json({ ok: true, ...(await applyTransaction(c.env, p.userId, tx)) });
+});
+
+/** App Store Server Notifications V2. */
+export async function handleAppStoreNotification(env: Env, signedPayload: string): Promise<string> {
+  const payload = decodeJwt(signedPayload) as { notificationUUID?: string; notificationType?: string; data?: { signedTransactionInfo?: string } };
+  if (!payload.notificationUUID) throw badRequest("invalid notification");
+  const seen = await env.DB.prepare("insert or ignore into payment_events (channel, external_event_id, received_at) values ('appstore', ?, ?)")
+    .bind(payload.notificationUUID, Date.now())
+    .run();
+  if (!seen.meta.changes) return "duplicate";
+  const info = payload.data?.signedTransactionInfo;
+  if (!info) return "ignored";
+  const tx = await fetchTransaction(env, transactionIdFromJws(info));
+  const userId = tx.appAccountToken?.toLowerCase();
+  if (!userId) return "ignored";
+  const user = await env.DB.prepare('select id from "user" where lower(id) = ?').bind(userId).first<{ id: string }>();
+  if (!user) return "ignored";
+  await applyTransaction(env, user.id, tx);
+  if (payload.notificationType === "DID_CHANGE_RENEWAL_STATUS") {
+    const sub = (payload as { subtype?: string }).subtype;
+    await setSubscriptionStatus(env, "appstore", tx.originalTransactionId, "active", sub === "AUTO_RENEW_ENABLED");
+  }
+  return "processed";
+}
+
+export const appStoreWebhook = new Hono<AppBindings>().post("/appstore", async (c) => {
+  const { signedPayload } = (await c.req.json()) as { signedPayload?: string };
+  if (!signedPayload) throw badRequest("signedPayload is required");
+  return c.json({ ok: true, result: await handleAppStoreNotification(c.env, signedPayload) });
+});

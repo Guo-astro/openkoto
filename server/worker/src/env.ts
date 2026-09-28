@@ -31,6 +31,10 @@ export interface Env {
   /** JSON map of Creem product id → { plan, durationDays?, credits? } */
   CREEM_PRODUCTS?: string;
   APPSTORE_ENVIRONMENT?: string;
+  /** App Store Connect API key (In-App Purchase key) used to query the App Store Server API. */
+  APPSTORE_ISSUER_ID?: string;
+  APPSTORE_KEY_ID?: string;
+  APPSTORE_PRIVATE_KEY?: string;
   /** JSON map of App Store product id → { plan, credits? } */
   APPSTORE_PRODUCTS?: string;
   /** Comma separated emails allowed to use /api/admin */

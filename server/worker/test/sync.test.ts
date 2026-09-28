@@ -178,3 +178,19 @@ describe("sync", () => {
     expect(res.status).toBe(401);
   });
 });
+
+describe("export", () => {
+  it("streams the account and live records as NDJSON", async () => {
+    const t = await nativeLogin("export@example.com");
+    await push(t.accessToken, [
+      { opId: "e1", type: "WordPack", id: "p1", baseRev: 0, hlc: hlc(), deleted: false, payload: { name: "keep" } },
+      { opId: "e2", type: "WordPack", id: "p2", baseRev: 0, hlc: hlc(), deleted: false, payload: { name: "gone" } },
+    ]);
+    await push(t.accessToken, [{ opId: "e3", type: "WordPack", id: "p2", baseRev: 2, hlc: hlc(Date.now() + 5), deleted: true }]);
+    const res = await api(t.accessToken, "/api/v1/account/export");
+    expect(res.headers.get("Content-Type")).toContain("ndjson");
+    const lines = (await res.text()).trim().split("\n").map((l) => JSON.parse(l) as { kind: string; id?: string });
+    expect(lines[0]!.kind).toBe("account");
+    expect(lines.filter((l) => l.kind === "record").map((l) => l.id)).toEqual(["p1"]);
+  });
+});

@@ -171,6 +171,13 @@ export function AccountPage() {
         )}
       </Section>
 
+      <Section title={t("account.data")}>
+        <p className="text-sm text-muted-foreground">{t("account.exportHint")}</p>
+        <a href="/api/v1/account/export" className="inline-flex text-sm text-primary hover:underline" download>
+          {t("account.export")}
+        </a>
+      </Section>
+
       <Section title={t("account.dangerZone")} id="delete">
         {account.pendingDeletion ? (
           <div className="space-y-2">

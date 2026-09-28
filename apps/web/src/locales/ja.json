@@ -1,10 +1,36 @@
 {
-  "common": { "loading": "読み込み中…", "save": "保存", "cancel": "キャンセル", "delete": "削除", "networkError": "ネットワークエラーです。しばらくしてから再試行してください" },
-  "nav": { "home": "ホーム", "review": "復習", "vocab": "単語帳", "library": "本棚", "lyrics": "歌詞", "account": "アカウント" },
-  "plan": { "free": "無料プラン", "plus": "Plus", "pro": "Pro" },
-  "channel": { "creem": "Web", "appstore": "App Store", "code": "アクティベーションコード" },
-  "footer": { "privacy": "プライバシーポリシー", "terms": "利用規約" },
-  "legal": { "updated": "{{date}} 更新" },
+  "common": {
+    "loading": "読み込み中…",
+    "save": "保存",
+    "cancel": "キャンセル",
+    "delete": "削除",
+    "networkError": "ネットワークエラーです。しばらくしてから再試行してください"
+  },
+  "nav": {
+    "home": "ホーム",
+    "review": "復習",
+    "vocab": "単語帳",
+    "library": "本棚",
+    "lyrics": "歌詞",
+    "account": "アカウント"
+  },
+  "plan": {
+    "free": "無料プラン",
+    "plus": "Plus",
+    "pro": "Pro"
+  },
+  "channel": {
+    "creem": "Web",
+    "appstore": "App Store",
+    "code": "アクティベーションコード"
+  },
+  "footer": {
+    "privacy": "プライバシーポリシー",
+    "terms": "利用規約"
+  },
+  "legal": {
+    "updated": "{{date}} 更新"
+  },
   "sync": {
     "syncing": "同期中",
     "ok": "同期済み",
@@ -97,7 +123,12 @@
     "empty": "まだ単語がありません。読書中に文をタップして保存するか、ここから追加してください。",
     "noMatch": "一致する単語がありません",
     "quota": "無料プランで同期できるのは {{limit}} 語までです。それ以外はこの端末にのみ保存されます。",
-    "band": { "new": "新規", "strong": "よく覚えている", "fading": "忘れかけ", "weak": "忘れているかも" }
+    "band": {
+      "new": "新規",
+      "strong": "よく覚えている",
+      "fading": "忘れかけ",
+      "weak": "忘れているかも"
+    }
   },
   "library": {
     "title": "本棚",
@@ -182,12 +213,19 @@
     "deleteWarning": "7 日以内なら取り消せます。その後、アカウント・同期データ・アップロードした本は完全に削除されます。端末上のデータは残ります。",
     "deleteConfirm": "削除する",
     "deletionScheduled": "アカウントは {{date}} に完全に削除されます。",
-    "cancelDeletion": "削除を取り消す"
+    "cancelDeletion": "削除を取り消す",
+    "data": "データ",
+    "export": "すべてのデータを書き出す（NDJSON）",
+    "exportHint": "同期した単語・復習記録・本の章・歌詞をすべてダウンロードします。"
   },
   "pricing": {
     "title": "プランを選ぶ",
     "subtitle": "ローカル機能と自分のキーでの AI 利用はずっと無料。メンバーシップで同期・CLI・AI クレジットが使えます。",
-    "tagline": { "free": "ローカル学習 + 少しのクラウド同期", "plus": "無制限同期 + CLI", "pro": "Plus のすべて + 毎月の AI クレジット" },
+    "tagline": {
+      "free": "ローカル学習 + 少しのクラウド同期",
+      "plus": "無制限同期 + CLI",
+      "pro": "Plus のすべて + 毎月の AI クレジット"
+    },
     "f": {
       "local": "すべてのローカル機能、自分のキーで AI",
       "syncFree": "単語 200 語・本 5 冊・歌詞 30 曲を同期",
