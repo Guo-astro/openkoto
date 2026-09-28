@@ -44,13 +44,13 @@ export const booksApi = new Hono<AppBindings>()
       throw new ApiError(402, "QUOTA_EXCEEDED", "storage quota exceeded");
     }
 
-    // One file per book: drop older versions first.
+    // One file per book: write the new version first, then drop older ones, so a failed
+    // upload never loses the existing file. R2 verifies the body against sha256.
+    const key = `${prefix}${sha}.${ext}`;
+    await c.env.BUCKET.put(key, c.req.raw.body, { httpMetadata: { contentType: CONTENT_TYPES[ext] }, sha256: sha });
     const old = await c.env.BUCKET.list({ prefix });
-    if (old.objects.length) await c.env.BUCKET.delete(old.objects.map((o) => o.key));
-    await c.env.BUCKET.put(`${prefix}${sha}.${ext}`, c.req.raw.body, {
-      httpMetadata: { contentType: CONTENT_TYPES[ext] },
-      sha256: sha,
-    });
+    const stale = old.objects.map((o) => o.key).filter((k) => k !== key);
+    if (stale.length) await c.env.BUCKET.delete(stale);
     return c.json({ ok: true, key: `${sha}.${ext}`, size });
   })
 

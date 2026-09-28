@@ -5,7 +5,7 @@ import { hmacSha256Hex, newId, randomFrom32, sha256Hex, timingSafeEqual } from "
 import { ApiError, badRequest, forbidden, notFound } from "../lib/http";
 import { productForSku, SKUS, skuById, skuForProduct, type Sku } from "./catalog";
 import { addCredits, addCreditsOnce } from "./credits";
-import { extendByDays, grantPeriodCredits, setSubscriptionStatus, upsertSubscription } from "./subscriptions";
+import { extendByDays, grantPeriodCredits, setAutoRenew, setSubscriptionStatus, upsertSubscription } from "./subscriptions";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -81,10 +81,14 @@ function idOf(value: unknown): string | undefined {
   return pick<string>(value, "id");
 }
 
-function periodEndOf(subscription: unknown, sku: Sku): number {
+function periodEndFromData(subscription: unknown): number | null {
   const raw = pick<string>(subscription, "current_period_end_date");
   const parsed = raw ? Date.parse(raw) : NaN;
-  return Number.isFinite(parsed) ? parsed : Date.now() + (sku.durationDays ?? 31) * DAY_MS;
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function periodEndOf(subscription: unknown, sku: Sku): number {
+  return periodEndFromData(subscription) ?? Date.now() + (sku.durationDays ?? 31) * DAY_MS;
 }
 
 async function userIdForEvent(env: Env, obj: Record<string, unknown>): Promise<string | null> {
@@ -97,10 +101,18 @@ async function userIdForEvent(env: Env, obj: Record<string, unknown>): Promise<s
 }
 
 export async function handleCreemEvent(env: Env, event: CreemEvent): Promise<"processed" | "duplicate" | "ignored"> {
-  const seen = await env.DB.prepare("insert or ignore into payment_events (channel, external_event_id, received_at) values ('creem', ?, ?)")
+  // Marked as processed only after success, so a failed attempt is retried by Creem.
+  // Every grant below is idempotent on its own, so a concurrent duplicate is harmless.
+  const seen = await env.DB.prepare("select 1 from payment_events where channel = 'creem' and external_event_id = ?").bind(event.id).first();
+  if (seen) return "duplicate";
+  const result = await processCreemEvent(env, event);
+  await env.DB.prepare("insert or ignore into payment_events (channel, external_event_id, received_at) values ('creem', ?, ?)")
     .bind(event.id, Date.now())
     .run();
-  if (!seen.meta.changes) return "duplicate";
+  return result;
+}
+
+async function processCreemEvent(env: Env, event: CreemEvent): Promise<"processed" | "ignored"> {
 
   const obj = event.object;
   const productId = idOf(obj.product) ?? idOf(pick(obj, "subscription.product"));
@@ -117,11 +129,11 @@ export async function handleCreemEvent(env: Env, event: CreemEvent): Promise<"pr
         await addCreditsOnce(env, userId, sku.credits ?? 0, "purchase", `creem:${idOf(obj.order) ?? event.id}`);
         return "processed";
       }
+      // Activate right away; period credits are granted by subscription.paid only, so the
+      // two events can't both grant for the same period.
       const subscription = obj.subscription;
       const subId = idOf(subscription) ?? `order:${idOf(obj.order) ?? event.id}`;
-      const periodEnd = periodEndOf(subscription, sku);
-      await upsertSubscription(env, { userId, plan: sku.plan!, channel: "creem", externalId: subId, periodEnd });
-      if (sku.credits) await grantPeriodCredits(env, userId, sku.credits, `creem:${subId}:${periodEnd}`);
+      await upsertSubscription(env, { userId, plan: sku.plan!, channel: "creem", externalId: subId, periodEnd: periodEndOf(subscription, sku) });
       return "processed";
     }
     case "subscription.active":
@@ -129,14 +141,17 @@ export async function handleCreemEvent(env: Env, event: CreemEvent): Promise<"pr
     case "subscription.update": {
       if (sku.kind !== "subscription") return "ignored";
       const subId = idOf(obj) ?? event.id;
-      const periodEnd = periodEndOf(obj, sku);
-      await upsertSubscription(env, { userId, plan: sku.plan!, channel: "creem", externalId: subId, periodEnd });
-      if (sku.credits && event.eventType === "subscription.paid") await grantPeriodCredits(env, userId, sku.credits, `creem:${subId}:${periodEnd}`);
+      const dataPeriodEnd = periodEndFromData(obj);
+      await upsertSubscription(env, { userId, plan: sku.plan!, channel: "creem", externalId: subId, periodEnd: dataPeriodEnd ?? periodEndOf(obj, sku) });
+      if (sku.credits && event.eventType === "subscription.paid") {
+        // One grant per billing period; fall back to the event id so retries stay idempotent.
+        await grantPeriodCredits(env, userId, sku.credits, `creem:${subId}:${dataPeriodEnd ?? event.id}`);
+      }
       return "processed";
     }
     case "subscription.canceled":
-      // Access continues until the paid period ends; only renewal stops.
-      await setSubscriptionStatus(env, "creem", idOf(obj) ?? "", "active", false);
+      // Access continues until the paid period ends; only renewal stops (refunds stay refunded).
+      await setAutoRenew(env, "creem", idOf(obj) ?? "", false);
       return "processed";
     case "subscription.expired":
       await setSubscriptionStatus(env, "creem", idOf(obj) ?? "", "expired", false);

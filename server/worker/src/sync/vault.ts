@@ -86,6 +86,12 @@ function fileBytes(type: string, payload: JsonObject | null): number {
   return Number.isFinite(size) && size > 0 ? size : 0;
 }
 
+const encoder = new TextEncoder();
+
+function utf8Length(text: string): number {
+  return encoder.encode(text).length;
+}
+
 function rowToRecord(row: RecordRow): VaultRecord {
   const record: VaultRecord = {
     type: row.type as RecordType,
@@ -248,6 +254,7 @@ export class UserVault extends DurableObject<Env> {
 
     const deleted = op.deleted === true;
     let payloadText: string | null = null;
+    let payloadBytes = 0;
     let payload: JsonObject | null = null;
     if (!deleted) {
       if (op.blobKey) {
@@ -257,7 +264,8 @@ export class UserVault extends DurableObject<Env> {
           return this.rejected(op, "INVALID_PAYLOAD", "payload must be an object");
         }
         payloadText = JSON.stringify(op.payload);
-        if (payloadText.length > INLINE_PAYLOAD_LIMIT) return this.rejected(op, "PAYLOAD_TOO_LARGE");
+        payloadBytes = utf8Length(payloadText);
+        if (payloadBytes > INLINE_PAYLOAD_LIMIT) return this.rejected(op, "PAYLOAD_TOO_LARGE");
         payload = op.payload;
       }
     }
@@ -297,7 +305,7 @@ export class UserVault extends DurableObject<Env> {
       deleted ? 1 : 0,
       payloadText,
       deleted ? null : (op.blobKey ?? null),
-      payloadText?.length ?? 0,
+      payloadBytes,
       cls,
       bytes,
       deleted ? now : null,
@@ -330,6 +338,7 @@ export class UserVault extends DurableObject<Env> {
       if (this.usage().fileBytes - previousBytes + bytes > limits.fileBytesTotal) return "storage quota exceeded";
     }
     if (!creating) return null;
+    if (limits.vocabulary === null && limits.books === null && limits.lyrics === null && limits.articles === null) return null;
     const usage = this.usage();
     if (type === "Vocabulary" && limits.vocabulary !== null && usage.vocabulary >= limits.vocabulary) return "vocabulary limit reached";
     if (type === "Book" && limits.books !== null && usage.books >= limits.books) return "book limit reached";

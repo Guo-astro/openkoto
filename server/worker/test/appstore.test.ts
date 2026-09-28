@@ -39,7 +39,7 @@ describe("App Store purchases", () => {
         productId: "com.openkoto.pro.month",
         appAccountToken: t.user.id.toUpperCase(),
         expiresDate: expires,
-        environment: "Sandbox",
+        environment: "Production",
         type: "Auto-Renewable Subscription",
       },
     });
@@ -88,6 +88,40 @@ describe("App Store purchases", () => {
     expect(await json(await send())).toMatchObject({ result: "processed" });
     expect(await json(await send())).toMatchObject({ result: "duplicate" });
     expect((await json<{ plan: string }>(await api(t.accessToken, "/api/v1/me"))).plan).toBe("plus");
+  });
+});
+
+describe("sandbox purchases on production", () => {
+  it("grant only a short plan and never credits", async () => {
+    const t = await nativeLogin("ios-sandbox@example.com");
+    mockApple({
+      "2000000009": {
+        transactionId: "2000000009",
+        originalTransactionId: "2000000009",
+        bundleId: "com.openkoto.ios",
+        productId: "com.openkoto.pro.year",
+        appAccountToken: t.user.id,
+        expiresDate: Date.now() + 365 * 86400000,
+        environment: "Sandbox",
+        type: "Auto-Renewable Subscription",
+      },
+      "2000000010": {
+        transactionId: "2000000010",
+        originalTransactionId: "2000000010",
+        bundleId: "com.openkoto.ios",
+        productId: "com.openkoto.credits.3000",
+        appAccountToken: t.user.id,
+        environment: "Sandbox",
+        type: "Consumable",
+      },
+    });
+    for (const id of ["2000000009", "2000000010"]) {
+      await api(t.accessToken, "/api/v1/billing/appstore/verify", { method: "POST", body: JSON.stringify({ signedTransaction: await jws({ transactionId: id }) }) });
+    }
+    const me = await json<{ plan: string; credits: number; subscriptions: { periodEnd: string }[] }>(await api(t.accessToken, "/api/v1/me"));
+    expect(me.plan).toBe("pro");
+    expect(me.credits).toBe(0);
+    expect(Date.parse(me.subscriptions[0]!.periodEnd) - Date.now()).toBeLessThanOrEqual(24 * 3600 * 1000 + 1000);
   });
 });
 

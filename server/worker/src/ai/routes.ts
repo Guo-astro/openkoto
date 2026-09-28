@@ -91,7 +91,7 @@ export const aiApi = new Hono<AppBindings>()
     const { result, credits } = await metered(
       c.env,
       { userId: p.userId, feature: "translate_lyrics", keyId: p.keyId, estimateInput: (est + 400) * 2, estimateOutput: est * 4 + lines.length * 12 },
-      (chat) => translateLyricsLines(chat, { lines, targetLanguage: target, title: body.title, artist: body.artist }),
+      (chat) => translateLyricsLines(chat, { lines, targetLanguage: target, title: body.title?.slice(0, 200), artist: body.artist?.slice(0, 200) }),
     );
     if (result.aligned) await store(key, result);
     return c.json({ ...result, credits, cached: false });
@@ -123,14 +123,14 @@ export const aiApi = new Hono<AppBindings>()
     if (!Array.isArray(body.items) || !body.items.length || body.items.length > MAX_CHAPTER_ITEMS) throw badRequest(`items must hold 1–${MAX_CHAPTER_ITEMS} entries`);
     const items = body.items.map((i) => {
       const item = i as { id?: unknown; text?: unknown };
-      return { id: String(item.id ?? ""), text: String(item.text ?? "").slice(0, 2000) };
+      return { id: String(item.id ?? "").slice(0, 64), text: String(item.text ?? "").slice(0, 2000) };
     });
     const target = lang(body.targetLanguage);
     const est = estimateTokens(items.map((i) => i.text).join("\n"));
     const { result, credits } = await metered(
       c.env,
       { userId: p.userId, feature: "translate_chapter", keyId: p.keyId, estimateInput: est + Math.ceil(items.length / 30) * 400 + items.length * 8, estimateOutput: est * 3 + items.length * 15 },
-      (chat) => translateChapterItems(chat, items, { targetLanguage: target, bookTitle: body.bookTitle, chapterTitle: body.chapterTitle }),
+      (chat) => translateChapterItems(chat, items, { targetLanguage: target, bookTitle: body.bookTitle?.slice(0, 200), chapterTitle: body.chapterTitle?.slice(0, 200) }),
     );
     return c.json({ translations: Object.fromEntries(result), credits });
   });

@@ -3,10 +3,11 @@ import { newId } from "../lib/crypto";
 
 // The ledger is append-only; the latest row's balance_after is the balance.
 // Every write is a single INSERT … SELECT so the read-modify-write is atomic
-// (D1 executes statements serially on the primary).
+// (D1 executes statements serially on the primary). "Latest" must mean commit order
+// (rowid), not created_at: timestamps are taken in the Worker before the round-trip,
+// so two concurrent requests can commit in the opposite order.
 
-const LATEST_BALANCE =
-  "coalesce((select balance_after from credit_ledger where user_id = ?1 order by created_at desc, rowid desc limit 1), 0)";
+const LATEST_BALANCE = "coalesce((select balance_after from credit_ledger where user_id = ?1 order by rowid desc limit 1), 0)";
 
 export async function creditBalance(env: Env, userId: string): Promise<number> {
   const row = await env.DB.prepare(`select ${LATEST_BALANCE} as balance`).bind(userId).first<{ balance: number }>();

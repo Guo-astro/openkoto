@@ -60,17 +60,19 @@ export async function metered<T>(env: Env, opts: MeteredOptions, run: (chat: Cha
   }
   const meter = new UsageMeter();
   const model = env.AI_MODEL ?? "deepseek-chat";
+  let settled = false;
   try {
     const result = await run(meter.wrap(hostedChat(env)));
     const actual = creditsFor(meter.inputTokens, meter.outputTokens);
     await settleCredits(env, opts.userId, reserved, actual, requestId);
-    await recordUsage(env, { requestId, userId: opts.userId, feature: opts.feature, keyId: opts.keyId, model, meter, credits: actual, status: "ok" });
+    settled = true;
+    await recordUsage(env, { requestId, userId: opts.userId, feature: opts.feature, keyId: opts.keyId, model, meter, credits: actual, status: "ok" }).catch(() => {});
     return { result, credits: actual };
   } catch (err) {
-    // Charge only for tokens the provider actually consumed.
+    // Charge only for tokens the provider actually consumed; settle exactly once.
     const actual = meter.calls ? creditsFor(meter.inputTokens, meter.outputTokens) : 0;
-    await settleCredits(env, opts.userId, reserved, actual, requestId);
-    await recordUsage(env, { requestId, userId: opts.userId, feature: opts.feature, keyId: opts.keyId, model, meter, credits: actual, status: "error" });
+    if (!settled) await settleCredits(env, opts.userId, reserved, actual, requestId);
+    await recordUsage(env, { requestId, userId: opts.userId, feature: opts.feature, keyId: opts.keyId, model, meter, credits: actual, status: "error" }).catch(() => {});
     if (err instanceof ApiError) throw err;
     console.error("ai task failed", opts.feature, err);
     throw new ApiError(502, "AI_ERROR", "the AI provider failed, please retry");

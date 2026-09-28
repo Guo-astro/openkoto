@@ -21,16 +21,24 @@ export async function upsertSubscription(env: Env, g: GrantInput): Promise<void>
   await env.DB.prepare(
     `insert into subscriptions (id, user_id, plan, channel, external_id, status, period_end, auto_renew, created_at, updated_at)
      values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-     on conflict (channel, external_id) do update set plan = excluded.plan, status = excluded.status,
+     on conflict (channel, external_id) do update set plan = excluded.plan,
+       status = case when subscriptions.status = 'refunded' then 'refunded' else excluded.status end,
        period_end = max(subscriptions.period_end, excluded.period_end), auto_renew = excluded.auto_renew, updated_at = excluded.updated_at`,
   )
     .bind(newId(), g.userId, g.plan, g.channel, g.externalId, g.status ?? "active", g.periodEnd, g.autoRenew === false ? 0 : 1, now, now)
     .run();
 }
 
+/** Renewal toggles only change auto_renew; they never alter status (refunds stay refunded). */
+export async function setAutoRenew(env: Env, channel: string, externalId: string, autoRenew: boolean): Promise<void> {
+  await env.DB.prepare("update subscriptions set auto_renew = ?, updated_at = ? where channel = ? and external_id = ?")
+    .bind(autoRenew ? 1 : 0, Date.now(), channel, externalId)
+    .run();
+}
+
 export async function setSubscriptionStatus(env: Env, channel: string, externalId: string, status: string, autoRenew?: boolean): Promise<void> {
   await env.DB.prepare(
-    "update subscriptions set status = ?, auto_renew = coalesce(?, auto_renew), updated_at = ? where channel = ? and external_id = ?",
+    "update subscriptions set status = case when status = 'refunded' then 'refunded' else ? end, auto_renew = coalesce(?, auto_renew), updated_at = ? where channel = ? and external_id = ?",
   )
     .bind(status, autoRenew === undefined ? null : autoRenew ? 1 : 0, Date.now(), channel, externalId)
     .run();

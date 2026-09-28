@@ -5,7 +5,7 @@ import { principalOf, requireAuth } from "../auth/middleware";
 import { ApiError, badRequest, forbidden } from "../lib/http";
 import { skuById, type Sku } from "./catalog";
 import { addCreditsOnce } from "./credits";
-import { grantPeriodCredits, setSubscriptionStatus, upsertSubscription } from "./subscriptions";
+import { grantPeriodCredits, setAutoRenew, setSubscriptionStatus, upsertSubscription } from "./subscriptions";
 
 // Trust model: payloads sent by the app (or in notifications) are only used to learn the
 // transactionId. The authoritative transaction is then fetched from the App Store Server
@@ -81,14 +81,21 @@ function transactionIdFromJws(jws: string): string {
   throw badRequest("invalid signed transaction");
 }
 
-/** Applies an Apple-confirmed transaction to the user's entitlements. Idempotent. */
+const SANDBOX_GRACE_MS = 24 * 60 * 60 * 1000;
+
+/**
+ * Applies an Apple-confirmed transaction to the user's entitlements. Idempotent.
+ * Sandbox purchases (TestFlight, App Review) are honoured on production so reviewers see a
+ * working purchase, but only as a short plan and never as credits (which cost real money).
+ */
 export async function applyTransaction(env: Env, userId: string, tx: AppStoreTransaction): Promise<{ sku: string; plan: string | null }> {
   if (tx.bundleId !== env.APPLE_APP_BUNDLE_ID) throw forbidden("bundle id mismatch");
   const sku = skuForAppStoreProduct(env, tx.productId);
   if (!sku) throw badRequest(`unknown product ${tx.productId}`);
+  const sandboxOnProduction = tx.environment !== "Production" && env.APPSTORE_ENVIRONMENT !== "Sandbox";
 
   if (sku.kind === "credits") {
-    if (tx.revocationDate) return { sku: sku.id, plan: null };
+    if (tx.revocationDate || sandboxOnProduction) return { sku: sku.id, plan: null };
     await addCreditsOnce(env, userId, sku.credits ?? 0, "purchase", `appstore:${tx.transactionId}`);
     return { sku: sku.id, plan: null };
   }
@@ -98,9 +105,10 @@ export async function applyTransaction(env: Env, userId: string, tx: AppStoreTra
     await setSubscriptionStatus(env, "appstore", externalId, "refunded", false);
     return { sku: sku.id, plan: sku.plan ?? null };
   }
-  const periodEnd = tx.expiresDate ?? Date.now();
+  let periodEnd = tx.expiresDate ?? Date.now();
+  if (sandboxOnProduction) periodEnd = Math.min(periodEnd, Date.now() + SANDBOX_GRACE_MS);
   await upsertSubscription(env, { userId, plan: sku.plan!, channel: "appstore", externalId, periodEnd, status: periodEnd > Date.now() ? "active" : "expired" });
-  if (sku.credits && periodEnd > Date.now()) await grantPeriodCredits(env, userId, sku.credits, `appstore:${tx.transactionId}`);
+  if (sku.credits && periodEnd > Date.now() && !sandboxOnProduction) await grantPeriodCredits(env, userId, sku.credits, `appstore:${tx.transactionId}`);
   return { sku: sku.id, plan: sku.plan ?? null };
 }
 
@@ -139,10 +147,10 @@ export const appStoreApi = new Hono<AppBindings>().post("/verify", requireAuth("
 export async function handleAppStoreNotification(env: Env, signedPayload: string): Promise<string> {
   const payload = decodeJwt(signedPayload) as { notificationUUID?: string; notificationType?: string; data?: { signedTransactionInfo?: string } };
   if (!payload.notificationUUID) throw badRequest("invalid notification");
-  const seen = await env.DB.prepare("insert or ignore into payment_events (channel, external_event_id, received_at) values ('appstore', ?, ?)")
-    .bind(payload.notificationUUID, Date.now())
-    .run();
-  if (!seen.meta.changes) return "duplicate";
+  // The notification body is unverified; only its transactionId is used, and the transaction
+  // itself is re-fetched from Apple. Mark it processed only after success so retries work.
+  const seen = await env.DB.prepare("select 1 from payment_events where channel = 'appstore' and external_event_id = ?").bind(payload.notificationUUID).first();
+  if (seen) return "duplicate";
   const info = payload.data?.signedTransactionInfo;
   if (!info) return "ignored";
   const tx = await fetchTransaction(env, transactionIdFromJws(info));
@@ -153,8 +161,11 @@ export async function handleAppStoreNotification(env: Env, signedPayload: string
   await applyTransaction(env, user.id, tx);
   if (payload.notificationType === "DID_CHANGE_RENEWAL_STATUS") {
     const sub = (payload as { subtype?: string }).subtype;
-    await setSubscriptionStatus(env, "appstore", tx.originalTransactionId, "active", sub === "AUTO_RENEW_ENABLED");
+    await setAutoRenew(env, "appstore", tx.originalTransactionId, sub === "AUTO_RENEW_ENABLED");
   }
+  await env.DB.prepare("insert or ignore into payment_events (channel, external_event_id, received_at) values ('appstore', ?, ?)")
+    .bind(payload.notificationUUID, Date.now())
+    .run();
   return "processed";
 }
 

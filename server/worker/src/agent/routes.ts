@@ -18,6 +18,7 @@ import { creditsFor } from "../ai/service";
 import type { Dispatch } from "../mcp/routes";
 
 const MAX_STEPS = 8;
+const AGENT_SCOPES = ["vocab:read", "vocab:write", "library:read", "library:write", "ai:use"];
 const MAX_HISTORY = 20;
 // Generous reservation for one agent turn (settled to actual usage afterwards).
 const RESERVE_INPUT_TOKENS = 60_000;
@@ -80,11 +81,15 @@ export function agentRoutes(dispatch: Dispatch) {
       .map((m) => ({ role: m.role as "user" | "assistant", content: m.content.slice(0, 8000) }));
     if (!history.length || history.at(-1)!.role !== "user") throw badRequest("the last message must be from the user");
 
-    // An internal short-lived token scoped to library + AI; it never leaves the Worker.
+    // An internal short-lived token; never broader than the caller's own scopes.
+    const scopes = AGENT_SCOPES.filter((s) => p.scopes.includes(s));
+    if (!scopes.some((s) => s.startsWith("vocab:") || s.startsWith("library:"))) {
+      throw forbidden("this key can't access the library; it needs vocab:* or library:* scopes", "FORBIDDEN");
+    }
     const token = await signAccessToken(c.env, {
       sub: p.userId,
       did: "agent",
-      scp: ["vocab:read", "vocab:write", "library:read", "library:write", "ai:use"],
+      scp: scopes,
       plan,
       email: p.email,
     });
@@ -106,6 +111,7 @@ export function agentRoutes(dispatch: Dispatch) {
 
     let inputTokens = 0;
     let outputTokens = 0;
+    let settled = false;
     const steps: AgentStep[] = [];
     try {
       const { tools } = await mcp.listTools();
@@ -113,6 +119,14 @@ export function agentRoutes(dispatch: Dispatch) {
       const messages: ChatMessage[] = [{ role: "system", content: SYSTEM_PROMPT }, ...history];
 
       for (let step = 0; step < MAX_STEPS; step++) {
+        // Stop before a call whose likely cost would exceed what was reserved.
+        const context = messages.reduce((n, m) => n + (m.content?.length ?? 0), 0);
+        if (creditsFor(inputTokens + context, outputTokens + 1500) > reserved) {
+          const credits = creditsFor(inputTokens, outputTokens);
+          await settleCredits(c.env, p.userId, reserved, credits, requestId);
+          settled = true;
+          return c.json({ reply: "（这次任务太长，已停止以免超出积分预算。请把任务拆小一点再试。）", steps, credits, truncated: true });
+        }
         const out = await callModel(c.env, messages, fnTools);
         inputTokens += out.inputTokens;
         outputTokens += out.outputTokens;
@@ -121,6 +135,7 @@ export function agentRoutes(dispatch: Dispatch) {
         if (!calls.length) {
           const credits = creditsFor(inputTokens, outputTokens);
           await settleCredits(c.env, p.userId, reserved, credits, requestId);
+          settled = true;
           return c.json({ reply: out.message.content ?? "", steps, credits });
         }
         for (const call of calls) {
@@ -141,9 +156,10 @@ export function agentRoutes(dispatch: Dispatch) {
       }
       const credits = creditsFor(inputTokens, outputTokens);
       await settleCredits(c.env, p.userId, reserved, credits, requestId);
+      settled = true;
       return c.json({ reply: "（步骤过多，已停止。请把任务拆小一点再试。）", steps, credits, truncated: true });
     } catch (err) {
-      await settleCredits(c.env, p.userId, reserved, inputTokens + outputTokens ? creditsFor(inputTokens, outputTokens) : 0, requestId);
+      if (!settled) await settleCredits(c.env, p.userId, reserved, inputTokens + outputTokens ? creditsFor(inputTokens, outputTokens) : 0, requestId);
       throw err;
     } finally {
       c.executionCtx.waitUntil(Promise.allSettled([mcp.close(), server.close()]));
