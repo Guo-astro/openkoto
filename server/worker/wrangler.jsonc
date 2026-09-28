@@ -33,7 +33,7 @@
     "staging": {
       "name": "openkoto-api-staging",
       "vars": {
-        "APP_ORIGIN": "https://openkoto-api-staging.workers.dev",
+        "APP_ORIGIN": "https://openkoto-api-staging.beiming1201.workers.dev",
         "APP_NAME": "OpenKoto (staging)",
         "EMAIL_PROVIDER": "console",
         "EMAIL_FROM": "OpenKoto <noreply@openkoto.app>",

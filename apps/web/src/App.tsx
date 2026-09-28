@@ -5,6 +5,7 @@ import { AppLayout, RequireAuth } from "./components/Layout";
 import { LibraryProvider } from "./lib/library";
 import { SessionProvider } from "./lib/session";
 import { AccountPage } from "./pages/AccountPage";
+import { AssistantPage } from "./pages/AssistantPage";
 import { DevicePage } from "./pages/DevicePage";
 import { HomePage } from "./pages/HomePage";
 import { LegalPage } from "./pages/LegalPage";
@@ -45,6 +46,7 @@ export function App() {
                   <Route path="/read/:bookId" element={<ReaderPage />} />
                   <Route path="/lyrics" element={<LyricsListPage />} />
                   <Route path="/lyrics/:id" element={<LyricsDetailPage />} />
+                  <Route path="/assistant" element={<AssistantPage />} />
                   <Route path="/account" element={<AccountPage />} />
                   <Route path="/device" element={<DevicePage />} />
                   <Route path="/oauth/consent" element={<OAuthConsentPage />} />

@@ -12,7 +12,8 @@
     "vocab": "Words",
     "library": "Library",
     "lyrics": "Lyrics",
-    "account": "Account"
+    "account": "Account",
+    "assistant": "Assistant"
   },
   "plan": {
     "free": "Free",
@@ -261,5 +262,19 @@
     "approve": "Allow",
     "deny": "Deny",
     "invalid": "This authorization request is invalid or has expired."
+  },
+  "assistant": {
+    "title": "Study assistant",
+    "subtitle": "Manage your words and library in plain language. Each turn uses credits ({{credits}} left).",
+    "example1": "Which words should I review today? Sort by how likely I am to forget them.",
+    "example2": "Make a word pack from the N2+ words in the song I added most recently.",
+    "example3": "How did my reviews go this week?",
+    "placeholder": "What should the assistant do?",
+    "send": "Send",
+    "thinking": "Working…",
+    "steps": "{{count}} actions",
+    "cost": "Used {{credits}} credits",
+    "noCredits": "Not enough credits. Buy credits or upgrade to Pro on the pricing page.",
+    "needsPlus": "The study assistant is a Plus / Pro feature and uses AI credits."
   }
 }

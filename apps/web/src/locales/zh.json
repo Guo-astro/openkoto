@@ -12,7 +12,8 @@
     "vocab": "生词本",
     "library": "书架",
     "lyrics": "歌词",
-    "account": "账户"
+    "account": "账户",
+    "assistant": "助手"
   },
   "plan": {
     "free": "免费版",
@@ -261,5 +262,19 @@
     "approve": "允许",
     "deny": "拒绝",
     "invalid": "授权请求无效或已过期。"
+  },
+  "assistant": {
+    "title": "学习助手",
+    "subtitle": "用一句话操作你的词库和书架。每次对话按实际用量扣积分（当前 {{credits}} 积分）。",
+    "example1": "帮我看看今天该复习哪些词，按遗忘风险排序",
+    "example2": "把我最近导入的那首歌里 N2 以上的生词做成一个词包",
+    "example3": "我这周的复习情况怎么样？",
+    "placeholder": "想让助手做什么？",
+    "send": "发送",
+    "thinking": "正在处理…",
+    "steps": "执行了 {{count}} 个操作",
+    "cost": "本次消耗 {{credits}} 积分",
+    "noCredits": "积分不足，请在定价页购买积分或升级 Pro。",
+    "needsPlus": "学习助手是 Plus / Pro 会员功能，并按用量消耗 AI 积分。"
   }
 }

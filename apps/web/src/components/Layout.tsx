@@ -1,4 +1,4 @@
-import { BookOpen, Brain, Home, Languages, Library, Music, User } from "lucide-react";
+import { Bot, BookOpen, Brain, Home, Languages, Library, Music, User } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { NavLink, Outlet, useLocation, Navigate } from "react-router";
 import { setLanguage } from "../i18n";
@@ -12,6 +12,7 @@ const NAV = [
   { to: "/vocab", key: "nav.vocab", icon: BookOpen },
   { to: "/library", key: "nav.library", icon: Library },
   { to: "/lyrics", key: "nav.lyrics", icon: Music },
+  { to: "/assistant", key: "nav.assistant", icon: Bot },
   { to: "/account", key: "nav.account", icon: User },
 ];
 
@@ -88,7 +89,7 @@ export function AppLayout() {
         <Outlet />
       </main>
       <nav className="md:hidden fixed bottom-0 inset-x-0 z-20 border-t border-border bg-background/95 backdrop-blur">
-        <div className="grid grid-cols-6">
+        <div className="grid grid-cols-7">
           {NAV.map((item) => (
             <NavLink
               key={item.to}
