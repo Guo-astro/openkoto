@@ -25,6 +25,10 @@ public enum CloudRecordType: String, Sendable, CaseIterable {
     case bookMark = "BookMark"
     case media = "Media"
     case mediaPart = "MediaPart"
+    /// 阅读进度（id = bookId，每本书一条）。**只走 OpenKoto 云**：
+    /// CloudKit 那边刻意不同步阅读位置（见 `pendingCloudPayloads`），
+    /// 这里多一个 case 只是让两套引擎共用同一份合并代码。
+    case bookProgress = "BookProgress"
 
     /// 合并顺序：被引用的先落地。
     ///
@@ -45,7 +49,8 @@ public enum CloudRecordType: String, Sendable, CaseIterable {
         case .vocabulary: return 7
         case .wordPackMembership: return 8
         case .bookMark: return 9
-        case .reviewEvent: return 10
+        case .bookProgress: return 10
+        case .reviewEvent: return 11
         }
     }
 }
@@ -74,10 +79,30 @@ public enum CloudRecord {
         return encoder
     }
 
+    /// 解码端比编码端宽松：**接受带毫秒的 ISO 8601**。
+    ///
+    /// 我们自己编出来的永远不带毫秒（`.iso8601`），但 OpenKoto 云上的记录可能来自
+    /// 网页 / 桌面（JS 的 `toISOString()` 必带毫秒）。严格的 `.iso8601` 解不开时
+    /// 整条记录会被当成坏数据静默跳过 —— 那是最难排查的一类同步丢失。
     public static func decoder() -> JSONDecoder {
         let decoder = JSONDecoder()
-        decoder.dateDecodingStrategy = .iso8601
+        decoder.dateDecodingStrategy = .custom { decoder in
+            let container = try decoder.singleValueContainer()
+            let text = try container.decode(String.self)
+            if let date = parseISO8601(text) { return date }
+            throw DecodingError.dataCorruptedError(
+                in: container, debugDescription: "invalid ISO 8601 date: \(text)")
+        }
         return decoder
+    }
+
+    /// 带 / 不带毫秒两种都认。
+    public static func parseISO8601(_ text: String) -> Date? {
+        let plain = ISO8601DateFormatter()
+        if let date = plain.date(from: text) { return date }
+        let fractional = ISO8601DateFormatter()
+        fractional.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        return fractional.date(from: text)
     }
 
     /// 记录 ID：`类型_主键`。

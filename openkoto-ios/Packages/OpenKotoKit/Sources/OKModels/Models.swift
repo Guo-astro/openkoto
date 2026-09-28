@@ -264,6 +264,44 @@ public struct FavoriteVocabulary: Codable, Identifiable, Sendable, Hashable {
     }
 }
 
+extension FavoriteVocabulary {
+    enum CodingKeys: String, CodingKey {
+        case id, word, meaning, usage, explanation, example, reading
+        case sourceArticleId, sourceArticleTitle, sourceSegmentId, packIds
+        case srsState, stability, difficulty, schedulerVersion, suspendedAt
+        case dueDate, lastReviewedAt, reviewCount, createdAt, updatedAt
+    }
+
+    /// 宽松解码：同步协议 §2.2 的必填字段之外都给默认值。
+    ///
+    /// 网页 / 桌面推上来的生词**没有 `packIds`**（词包成员是独立的
+    /// `WordPackMembership` 记录），严格解码会让这些卡片在 iOS 上被静默跳过。
+    public init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        id = try c.decode(UUID.self, forKey: .id)
+        word = try c.decode(String.self, forKey: .word)
+        meaning = try c.decodeIfPresent(String.self, forKey: .meaning) ?? ""
+        usage = try c.decodeIfPresent(String.self, forKey: .usage)
+        explanation = try c.decodeIfPresent(String.self, forKey: .explanation)
+        example = try c.decodeIfPresent(String.self, forKey: .example)
+        reading = try c.decodeIfPresent(String.self, forKey: .reading)
+        sourceArticleId = try? c.decodeIfPresent(UUID.self, forKey: .sourceArticleId)
+        sourceArticleTitle = try c.decodeIfPresent(String.self, forKey: .sourceArticleTitle)
+        sourceSegmentId = try? c.decodeIfPresent(UUID.self, forKey: .sourceSegmentId)
+        packIds = (try? c.decodeIfPresent([UUID].self, forKey: .packIds)) ?? []
+        srsState = (try? c.decodeIfPresent(SRSState.self, forKey: .srsState)) ?? .new
+        stability = try c.decodeIfPresent(Double.self, forKey: .stability) ?? 0
+        difficulty = try c.decodeIfPresent(Double.self, forKey: .difficulty) ?? 0
+        schedulerVersion = try c.decodeIfPresent(String.self, forKey: .schedulerVersion)
+        suspendedAt = try c.decodeIfPresent(Date.self, forKey: .suspendedAt)
+        dueDate = try c.decodeIfPresent(String.self, forKey: .dueDate) ?? ""
+        lastReviewedAt = try c.decodeIfPresent(Date.self, forKey: .lastReviewedAt)
+        reviewCount = try c.decodeIfPresent(Int.self, forKey: .reviewCount) ?? 0
+        createdAt = try c.decode(Date.self, forKey: .createdAt)
+        updatedAt = try c.decodeIfPresent(Date.self, forKey: .updatedAt) ?? createdAt
+    }
+}
+
 /// 词包(镜像桌面 types.rs::WordPack;规范 §1.2)。
 public struct WordPack: Codable, Identifiable, Sendable, Hashable {
     /// 系统默认词包("未分组")的固定 id。
@@ -332,6 +370,10 @@ public struct ReviewEvent: Codable, Identifiable, Sendable, Hashable {
     public var resultDifficulty: Double
     public var resultIntervalDays: Int
     public var resultState: SRSState
+    /// 撤销标记（同步协议 §6）：非 nil 时本条是"作废 `voidsEventId` 那一条"的标记，
+    /// `grade` 为 0。重放时标记本身与被它作废的事件都不参与计算。
+    /// 事件只增不删，撤销只能靠追加这样一条。
+    public var voidsEventId: UUID?
 
     public init(
         id: UUID = UUID(),
@@ -346,8 +388,10 @@ public struct ReviewEvent: Codable, Identifiable, Sendable, Hashable {
         resultStability: Double,
         resultDifficulty: Double,
         resultIntervalDays: Int,
-        resultState: SRSState
+        resultState: SRSState,
+        voidsEventId: UUID? = nil
     ) {
+        self.voidsEventId = voidsEventId
         self.id = id
         self.vocabularyId = vocabularyId
         self.reviewedAt = reviewedAt
@@ -361,6 +405,36 @@ public struct ReviewEvent: Codable, Identifiable, Sendable, Hashable {
         self.resultDifficulty = resultDifficulty
         self.resultIntervalDays = resultIntervalDays
         self.resultState = resultState
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case id, vocabularyId, reviewedAt, dateLocal, grade, elapsedDays, previousState
+        case schedulerVersion, desiredRetention, resultStability, resultDifficulty
+        case resultIntervalDays, resultState, voidsEventId
+    }
+
+    /// 解码是**宽松**的：只有 `id / vocabularyId / reviewedAt / grade` 必填。
+    ///
+    /// 事件会从别的客户端同步过来（网页的撤销标记、旧版桌面端的事件），
+    /// 缺字段就整条解不开的话，那条复习会被静默跳过 —— 两端重放结果从此不一致。
+    /// 缺的 `dateLocal` 记空串、`desiredRetention` 记 0：重放时视为"没记录"，
+    /// 退回本机设置（与 `packages/core` 的 `replayCard` 同规则）。
+    public init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        id = try c.decode(UUID.self, forKey: .id)
+        vocabularyId = try c.decode(UUID.self, forKey: .vocabularyId)
+        reviewedAt = try c.decode(Date.self, forKey: .reviewedAt)
+        grade = try c.decode(Int.self, forKey: .grade)
+        dateLocal = try c.decodeIfPresent(String.self, forKey: .dateLocal) ?? ""
+        elapsedDays = try c.decodeIfPresent(Int.self, forKey: .elapsedDays) ?? 0
+        previousState = (try? c.decodeIfPresent(SRSState.self, forKey: .previousState)) ?? .new
+        schedulerVersion = try c.decodeIfPresent(String.self, forKey: .schedulerVersion) ?? "fsrs6"
+        desiredRetention = try c.decodeIfPresent(Double.self, forKey: .desiredRetention) ?? 0
+        resultStability = try c.decodeIfPresent(Double.self, forKey: .resultStability) ?? 0
+        resultDifficulty = try c.decodeIfPresent(Double.self, forKey: .resultDifficulty) ?? 0
+        resultIntervalDays = try c.decodeIfPresent(Int.self, forKey: .resultIntervalDays) ?? 0
+        resultState = (try? c.decodeIfPresent(SRSState.self, forKey: .resultState)) ?? .new
+        voidsEventId = try c.decodeIfPresent(UUID.self, forKey: .voidsEventId)
     }
 }
 

@@ -402,9 +402,14 @@ struct ReviewLogRecord: Codable, FetchableRecord, PersistableRecord {
     var resultDifficulty: Double
     var resultIntervalDays: Int
     var resultState: String
+    /// 撤销标记指向的事件（migration v12）。
+    var voidsEventId: String?
+    /// 该事件在 OpenKoto 云上的 HLC（重放的第二排序键；未同步过的为 nil，按空串排）。
+    var hlc: String?
 
     enum CodingKeys: String, CodingKey {
-        case id, grade
+        case id, grade, hlc
+        case voidsEventId = "voids_event_id"
         case vocabularyId = "vocabulary_id"
         case reviewedAt = "reviewed_at"
         case dateLocal = "date_local"
@@ -432,6 +437,8 @@ struct ReviewLogRecord: Codable, FetchableRecord, PersistableRecord {
         resultDifficulty = event.resultDifficulty
         resultIntervalDays = event.resultIntervalDays
         resultState = event.resultState.rawValue
+        voidsEventId = event.voidsEventId.map(uuidString)
+        hlc = nil
     }
 
     func domainModel() throws -> ReviewEvent {
@@ -454,7 +461,8 @@ struct ReviewLogRecord: Codable, FetchableRecord, PersistableRecord {
             resultStability: resultStability,
             resultDifficulty: resultDifficulty,
             resultIntervalDays: resultIntervalDays,
-            resultState: result
+            resultState: result,
+            voidsEventId: try voidsEventId.map { try parseUUID($0, table: Self.databaseTableName) }
         )
     }
 }

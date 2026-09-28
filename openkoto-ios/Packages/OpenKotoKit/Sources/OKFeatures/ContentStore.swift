@@ -4,6 +4,7 @@ import os
 import OKModels
 import OKSegmentation
 import OKAIClient
+import OKAccount
 import OKBooks
 import OKMedia
 import OKPersistence
@@ -77,6 +78,13 @@ public final class ContentStore {
     /// 同步引擎。用 `any SyncEngine` 而非具体类型：CloudKit 只在 iOS 17+ 可用，
     /// 而这个属性要在所有版本下都能声明。
     @ObservationIgnored var cloudSyncEngine: (any SyncEngine)?
+    /// `cloudSyncEngine` 是为哪个 provider 建的。切换 provider 时据此丢弃旧引擎，
+    /// 保证 CloudKit 与 OpenKoto 云**永远不会同时在跑**。
+    @ObservationIgnored var cloudSyncEngineProvider: SyncProvider?
+    /// OpenKoto 云账号（App 壳注入）。nil = 没有账号能力（预览 / 测试）。
+    @ObservationIgnored public var accountSession: AccountSession?
+    /// 测试注入：按 provider 造引擎。nil 时用生产实现（CloudKit / HTTP）。
+    @ObservationIgnored public var syncEngineFactory: ((SyncProvider) async -> (any SyncEngine)?)?
 
     /// 真实精讲入口（App 壳注入）。签名：原文 → 结构化精讲 + 溯源元数据。
     @ObservationIgnored public var explanationProvider:

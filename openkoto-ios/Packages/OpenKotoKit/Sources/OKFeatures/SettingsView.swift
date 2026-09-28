@@ -109,6 +109,8 @@ struct SettingsView: View {
 
                 reminderSection
 
+                AccountSection()
+
                 SyncSection()
 
                 DataTransferSection()
