@@ -214,7 +214,7 @@ op 级错误码：`UNKNOWN_TYPE`、`INVALID_PAYLOAD`、`PAYLOAD_TOO_LARGE`、`QU
 - 撤销一次复习：追加一条新事件，`voidsEventId` 指向被撤销的事件，`grade` 填 0。重放时跳过被作废的事件，作废事件本身也不参与计算。
 - 客户端应用了某张卡的新事件后，必须对该卡执行**完整重放**：
   1. 取出这张卡的全部有效事件，按 `(reviewedAt, hlc, id)` 升序排序；
-  2. 从卡片的初始状态（`new`，或 SM-2 迁移种子）开始逐条执行 FSRS-6；
+  2. 从卡片的初始状态（`new`，或 SM-2 迁移种子）开始逐条执行 FSRS-6。每条事件使用**它自己记录的** `dateLocal`（用于计算间隔天数）和 `desiredRetention`，不使用当前设备的时区和设置；缺少这两个字段的旧事件，才退回用本地设置计算。这样任何设备重放的结果都完全一致；
   3. 用结果覆盖卡片的 `srsState / stability / difficulty / dueDate / lastReviewedAt / reviewCount`。
 - 重放结果只写本地；卡片的 LWW 字段仍按 §4.1 同步。**任何一端都不得依据 payload 里的 SRS 字段覆盖本地重放的结果。**
 
