@@ -194,3 +194,27 @@ describe("export", () => {
     expect(lines.filter((l) => l.kind === "record").map((l) => l.id)).toEqual(["p1"]);
   });
 });
+
+describe("realtime", () => {
+  it("notifies other devices of new revisions but not the writer", async () => {
+    const phone = await nativeLogin("ws@example.com", "ios");
+    const laptop = await nativeLogin("ws@example.com", "windows");
+    const connect = async (token: string) => {
+      const res = await api(token, "/api/v1/sync/ws", { headers: { Upgrade: "websocket" } });
+      expect(res.status).toBe(101);
+      const ws = res.webSocket!;
+      const messages: { type: string; rev: number }[] = [];
+      ws.addEventListener("message", (e) => messages.push(JSON.parse(String(e.data))));
+      ws.accept();
+      return { ws, messages };
+    };
+    const a = await connect(phone.accessToken);
+    const b = await connect(laptop.accessToken);
+    await push(phone.accessToken, [{ opId: "ws-1", type: "WordPack", id: "p", baseRev: 0, hlc: hlc(), deleted: false, payload: { name: "x" } }]);
+    await new Promise((r) => setTimeout(r, 50));
+    expect(b.messages.some((m) => m.type === "changed" && m.rev === 1)).toBe(true);
+    expect(a.messages.some((m) => m.type === "changed")).toBe(false);
+    a.ws.close();
+    b.ws.close();
+  });
+});

@@ -23,6 +23,52 @@ interface LibraryContextValue {
 
 const LibraryContext = createContext<LibraryContextValue | null>(null);
 
+/**
+ * Listens for "changed" pushes from the server and pulls right away, so edits made on
+ * another device show up within a second. Reconnects with backoff; polling still covers gaps.
+ */
+function connectRealtime(engine: SyncEngine, onChange: () => void): () => void {
+  let socket: WebSocket | null = null;
+  let stopped = false;
+  let retry = 1000;
+  let debounce: ReturnType<typeof setTimeout> | null = null;
+  let reconnect: ReturnType<typeof setTimeout> | null = null;
+  let heartbeat: ReturnType<typeof setInterval> | null = null;
+
+  const open = async () => {
+    if (stopped) return;
+    const device = await engine.deviceId();
+    const url = new URL(`/api/v1/sync/ws?device=${encodeURIComponent(device)}`, window.location.href);
+    url.protocol = url.protocol === "https:" ? "wss:" : "ws:";
+    socket = new WebSocket(url);
+    socket.onopen = () => {
+      retry = 1000;
+      heartbeat = setInterval(() => socket?.readyState === WebSocket.OPEN && socket.send("ping"), 30_000);
+    };
+    socket.onmessage = (event) => {
+      if (typeof event.data !== "string" || !event.data.startsWith("{")) return;
+      const msg = JSON.parse(event.data) as { type?: string };
+      if (msg.type !== "changed") return;
+      if (debounce) clearTimeout(debounce);
+      debounce = setTimeout(onChange, 300);
+    };
+    socket.onclose = () => {
+      if (heartbeat) clearInterval(heartbeat);
+      if (stopped) return;
+      reconnect = setTimeout(() => void open(), retry);
+      retry = Math.min(retry * 2, 60_000);
+    };
+  };
+  void open();
+  return () => {
+    stopped = true;
+    if (debounce) clearTimeout(debounce);
+    if (reconnect) clearTimeout(reconnect);
+    if (heartbeat) clearInterval(heartbeat);
+    socket?.close();
+  };
+}
+
 export function LibraryProvider({ children }: { children: ReactNode }) {
   const { account } = useSession();
   const userId = account?.user.id ?? null;
@@ -56,9 +102,11 @@ export function LibraryProvider({ children }: { children: ReactNode }) {
       if (document.visibilityState === "visible") void syncNow();
     };
     document.addEventListener("visibilitychange", onVisible);
+    const stopRealtime = connectRealtime(setup.engine, () => void syncNow());
     return () => {
       clearInterval(timer);
       document.removeEventListener("visibilitychange", onVisible);
+      stopRealtime();
       setup.store.db.close();
     };
   }, [setup, syncNow]);

@@ -48,6 +48,19 @@ function blobObjectKey(userId: string, blobKey: string): string {
 
 export const syncApi = new Hono<AppBindings>()
   .use(requireAuth("sync"))
+  .get("/ws", async (c) => {
+    // Browsers can't set headers on WebSockets: the cookie session (or bearer for native) authenticates,
+    // and the device id comes from the token or ?device= for cookie sessions.
+    if (c.req.header("Upgrade") !== "websocket") throw new ApiError(426, "UPGRADE_REQUIRED", "expected websocket");
+    const p = principalOf(c);
+    // Cross-site WebSocket hijacking guard for cookie sessions.
+    const origin = c.req.header("Origin");
+    if (p.via === "session" && origin && origin !== new URL(c.env.APP_ORIGIN).origin) throw new ApiError(403, "FORBIDDEN", "cross-origin websocket rejected");
+    const headers = new Headers(c.req.raw.headers);
+    headers.set("X-OpenKoto-Device", p.deviceId ?? c.req.query("device") ?? "web");
+    const stub = c.env.VAULT.get(c.env.VAULT.idFromName(p.userId));
+    return stub.fetch(new Request(c.req.url, { headers }));
+  })
   .use(async (c, next) => {
     checkProtocol(c.req.header("X-OpenKoto-Protocol"));
     await next();

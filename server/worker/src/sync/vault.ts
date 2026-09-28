@@ -185,12 +185,46 @@ export class UserVault extends DurableObject<Env> {
 
   async push(deviceId: string, ops: PushOp[], plan: Plan, now = Date.now()): Promise<{ results: PushResult[]; cursor: string }> {
     const results: PushResult[] = [];
+    const before = this.seq();
     this.ctx.storage.transactionSync(() => {
       for (const op of ops) results.push(this.applyOp(deviceId, op, plan, now));
     });
     this.setMeta("server_hlc", this.clock.current());
     await this.ensureAlarm();
+    if (this.seq() > before) this.notify(deviceId);
     return { results, cursor: encodeCursor(this.seq()) };
+  }
+
+  // ---- realtime change notifications (hibernatable WebSockets) ----------
+
+  async fetch(request: Request): Promise<Response> {
+    if (request.headers.get("Upgrade") !== "websocket") return new Response("expected websocket", { status: 426 });
+    const deviceId = request.headers.get("X-OpenKoto-Device") ?? "unknown";
+    const pair = new WebSocketPair();
+    this.ctx.acceptWebSocket(pair[1], [deviceId]);
+    pair[1].send(JSON.stringify({ type: "hello", rev: this.seq() }));
+    return new Response(null, { status: 101, webSocket: pair[0] });
+  }
+
+  /** Tells every other connected device that new revisions exist; they respond by pulling. */
+  private notify(sourceDeviceId: string): void {
+    const message = JSON.stringify({ type: "changed", rev: this.seq() });
+    for (const ws of this.ctx.getWebSockets()) {
+      if (this.ctx.getTags(ws).includes(sourceDeviceId)) continue;
+      try {
+        ws.send(message);
+      } catch {
+        // Socket already closing; the client re-syncs on reconnect.
+      }
+    }
+  }
+
+  async webSocketMessage(ws: WebSocket, message: string | ArrayBuffer): Promise<void> {
+    if (message === "ping") ws.send("pong");
+  }
+
+  async webSocketClose(ws: WebSocket, code: number): Promise<void> {
+    ws.close(code === 1005 ? 1000 : code, "closing");
   }
 
   private rejected(op: PushOp, code: OpErrorCode, message?: string): PushResult {
