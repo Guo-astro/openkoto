@@ -12,11 +12,17 @@ export default defineConfig(async () => {
         miniflare: {
           bindings: {
             TEST_MIGRATIONS: migrations,
+            // Pin values that a developer's .dev.vars would otherwise override.
+            APP_ORIGIN: "http://localhost:8787",
+            EMAIL_PROVIDER: "console",
             JWT_PRIVATE_KEY: privateKey.export({ type: "pkcs8", format: "pem" }).toString(),
             BETTER_AUTH_SECRET: "test-secret-test-secret-test-secret-0123456789",
             CREEM_WEBHOOK_SECRET: "whsec_test",
             CREEM_PRODUCTS: JSON.stringify({ prod_plus_year: "plus_year", prod_pro_month: "pro_month", prod_credits_3000: "credits_3000" }),
             ADMIN_EMAILS: "admin@example.com",
+            AI_API_KEY: "test-ai-key",
+            AI_API_BASE: "https://ai.test/v1",
+            AI_MODEL: "test-model",
           },
         },
       }),

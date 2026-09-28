@@ -10,7 +10,8 @@
     "APP_NAME": "OpenKoto",
     "EMAIL_PROVIDER": "console",
     "EMAIL_FROM": "OpenKoto <noreply@openkoto.app>",
-    "APPLE_APP_BUNDLE_ID": "com.openkoto.ios"
+    "APPLE_APP_BUNDLE_ID": "com.openkoto.ios",
+    "GOOGLE_CLIENT_ID": "506826712750-uubvvapb2v0l976jutqsree5gaavq3jd.apps.googleusercontent.com"
   },
   "d1_databases": [
     { "binding": "DB", "database_name": "openkoto", "database_id": "00000000-0000-0000-0000-000000000000", "migrations_dir": "migrations" }

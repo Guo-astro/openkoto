@@ -5,7 +5,11 @@ import { getAuth } from "./auth/better-auth";
 import { authApi, devicesApi, nativeAuthorize, wellKnown } from "./auth/routes";
 import { accountApi, purgeAccount } from "./account/routes";
 import { syncApi } from "./sync/routes";
+import { libraryApi } from "./library/routes";
 import { adminApi, billingApi, webhooksApi } from "./billing/routes";
+import { aiApi } from "./ai/routes";
+import { jobsApi, runTranslateBookStep } from "./ai/jobs";
+import { booksApi } from "./books/routes";
 import { ApiError, errorBody } from "./lib/http";
 
 export { UserVault } from "./sync/vault";
@@ -34,7 +38,11 @@ app.route("/", nativeAuthorize);
 app.route("/api/v1/auth", authApi);
 app.route("/api/v1/devices", devicesApi);
 app.route("/api/v1/sync", syncApi);
+app.route("/api/v1/library", libraryApi);
 app.route("/api/v1/billing", billingApi);
+app.route("/api/v1/ai", aiApi);
+app.route("/api/v1/jobs", jobsApi);
+app.route("/api/v1/books", booksApi);
 app.route("/api/webhooks", webhooksApi);
 app.route("/api/admin", adminApi);
 app.route("/api/v1", accountApi);
@@ -59,6 +67,7 @@ export default {
     for (const message of batch.messages) {
       try {
         if (message.body.kind === "delete_account") await purgeAccount(env, message.body.userId);
+        else if (message.body.kind === "translate_book") await runTranslateBookStep(env, message.body.jobId, message.body.userId);
         message.ack();
       } catch (err) {
         console.error("job failed", message.body, err);
