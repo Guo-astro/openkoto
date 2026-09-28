@@ -1,0 +1,114 @@
+import { Hono } from "hono";
+import type { AppBindings, Env } from "../env";
+import { principalOf, requireAuth, requireSession } from "../auth/middleware";
+import { API_KEY_SCOPES, createApiKey } from "../auth/tokens";
+import { activeSubscriptions, currentPlan, planAtLeast } from "../billing/entitlements";
+import { creditBalance } from "../billing/credits";
+import { vaultFor } from "../sync/routes";
+import { forbidden, notFound } from "../lib/http";
+
+const DELETION_GRACE_MS = 7 * 24 * 60 * 60 * 1000;
+
+export async function accountSummary(env: Env, userId: string) {
+  const user = await env.DB.prepare('select id, email, name, image, "createdAt" as created_at from "user" where id = ?')
+    .bind(userId)
+    .first<{ id: string; email: string; name: string; image: string | null; created_at: string }>();
+  if (!user) throw notFound("user not found");
+  const [plan, subscriptions, credits, deletion] = await Promise.all([
+    currentPlan(env, userId),
+    activeSubscriptions(env, userId),
+    creditBalance(env, userId),
+    env.DB.prepare("select execute_after from account_deletions where user_id = ?").bind(userId).first<{ execute_after: number }>(),
+  ]);
+  return {
+    user: { id: user.id, email: user.email, name: user.name, image: user.image, createdAt: user.created_at },
+    plan,
+    entitlements: {
+      sync: true,
+      cli: planAtLeast(plan, "plus"),
+      apiKeys: planAtLeast(plan, "plus"),
+      hostedAi: credits > 0 || plan === "pro",
+    },
+    subscriptions: subscriptions.map((s) => ({ ...s, periodEnd: new Date(s.periodEnd).toISOString() })),
+    credits,
+    pendingDeletion: deletion ? new Date(deletion.execute_after).toISOString() : null,
+  };
+}
+
+export const accountApi = new Hono<AppBindings>()
+  .get("/me", requireAuth(), async (c) => c.json(await accountSummary(c.env, principalOf(c).userId)))
+
+  .get("/keys", requireAuth("account"), async (c) => {
+    const { results } = await c.env.DB.prepare(
+      "select id, name, prefix, scopes, created_at, last_used_at, expires_at from api_keys where user_id = ? and revoked_at is null order by created_at desc",
+    )
+      .bind(principalOf(c).userId)
+      .all<{ id: string; name: string; prefix: string; scopes: string; created_at: number; last_used_at: number | null; expires_at: number | null }>();
+    return c.json({
+      keys: results.map((k) => ({
+        id: k.id,
+        name: k.name,
+        prefix: k.prefix,
+        scopes: JSON.parse(k.scopes) as string[],
+        createdAt: new Date(k.created_at).toISOString(),
+        lastUsedAt: k.last_used_at ? new Date(k.last_used_at).toISOString() : null,
+        expiresAt: k.expires_at ? new Date(k.expires_at).toISOString() : null,
+      })),
+      availableScopes: API_KEY_SCOPES,
+    });
+  })
+
+  .post("/keys", requireAuth("account"), async (c) => {
+    const p = principalOf(c);
+    if (!planAtLeast(await currentPlan(c.env, p.userId), "plus")) throw forbidden("API keys require a Plus membership", "PLAN_REQUIRED");
+    const body = (await c.req.json()) as { name?: string; scopes?: string[]; expiresInDays?: number };
+    const expiresAt = body.expiresInDays ? Date.now() + body.expiresInDays * 24 * 60 * 60 * 1000 : null;
+    const key = await createApiKey(c.env, p.userId, body.name ?? "API key", body.scopes ?? ["vocab:read", "library:read"], expiresAt);
+    return c.json({ ...key, expiresAt: key.expiresAt ? new Date(key.expiresAt).toISOString() : null }, 201);
+  })
+
+  .delete("/keys/:id", requireAuth("account"), async (c) => {
+    const res = await c.env.DB.prepare("update api_keys set revoked_at = ? where id = ? and user_id = ? and revoked_at is null")
+      .bind(Date.now(), c.req.param("id"), principalOf(c).userId)
+      .run();
+    if (!res.meta.changes) throw notFound("key not found");
+    return c.json({ ok: true });
+  })
+
+  .post("/account/delete", requireSession(), async (c) => {
+    const p = principalOf(c);
+    const now = Date.now();
+    await c.env.DB.prepare(
+      "insert into account_deletions (user_id, requested_at, execute_after) values (?, ?, ?) on conflict (user_id) do nothing",
+    )
+      .bind(p.userId, now, now + DELETION_GRACE_MS)
+      .run();
+    return c.json({ ok: true, executeAfter: new Date(now + DELETION_GRACE_MS).toISOString() });
+  })
+
+  .post("/account/delete/cancel", requireAuth("account"), async (c) => {
+    await c.env.DB.prepare("delete from account_deletions where user_id = ?").bind(principalOf(c).userId).run();
+    return c.json({ ok: true });
+  });
+
+/** Irreversibly removes every trace of a user. Called from the daily cron after the grace period. */
+export async function purgeAccount(env: Env, userId: string): Promise<void> {
+  await vaultFor(env, userId).purge();
+  for (const prefix of [`books/${userId}/`, `blobs/${userId}/`]) {
+    let cursor: string | undefined;
+    do {
+      const page = await env.BUCKET.list({ prefix, cursor, limit: 1000 });
+      if (page.objects.length) await env.BUCKET.delete(page.objects.map((o) => o.key));
+      cursor = page.truncated ? page.cursor : undefined;
+    } while (cursor);
+  }
+  await env.DB.batch([
+    env.DB.prepare('delete from "user" where id = ?').bind(userId),
+    env.DB.prepare("delete from account_deletions where user_id = ?").bind(userId),
+    env.DB.prepare("insert into audit_events (id, actor, action, target, created_at) values (?, 'system', 'account.purged', ?, ?)").bind(
+      crypto.randomUUID(),
+      userId,
+      Date.now(),
+    ),
+  ]);
+}

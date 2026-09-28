@@ -3,14 +3,20 @@ __pycache__/
 *$py.class 
 *.env
 !api/config.example.yml
-api/data/*
+/api/data/*
 .DS_Store
-api/textlingo/
-api/config.yml
-old/
-web/
+/api/textlingo/
+/api/config.yml
+/old/
+/web/
 textlingo-desktop/src-tauri/binaries/
-api/
+/api/
 koto_intro_web/
-pnpm-lock.yaml
 .worktrees/
+
+# monorepo
+node_modules/
+dist/
+.wrangler/
+.dev.vars
+*.tsbuildinfo

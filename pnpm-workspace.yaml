@@ -1,0 +1,9 @@
+packages:
+  - packages/*
+  - apps/*
+  - server/*
+
+allowBuilds:
+  esbuild: true
+  workerd: true
+  sharp: true
