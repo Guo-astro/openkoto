@@ -5,6 +5,7 @@ import { getAuth } from "./auth/better-auth";
 import { authApi, devicesApi, nativeAuthorize, wellKnown } from "./auth/routes";
 import { accountApi, purgeAccount } from "./account/routes";
 import { syncApi } from "./sync/routes";
+import { adminApi, billingApi, webhooksApi } from "./billing/routes";
 import { ApiError, errorBody } from "./lib/http";
 
 export { UserVault } from "./sync/vault";
@@ -33,6 +34,9 @@ app.route("/", nativeAuthorize);
 app.route("/api/v1/auth", authApi);
 app.route("/api/v1/devices", devicesApi);
 app.route("/api/v1/sync", syncApi);
+app.route("/api/v1/billing", billingApi);
+app.route("/api/webhooks", webhooksApi);
+app.route("/api/admin", adminApi);
 app.route("/api/v1", accountApi);
 
 async function runDailyMaintenance(env: Env): Promise<void> {

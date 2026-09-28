@@ -15,11 +15,7 @@ export default defineConfig(async () => {
             JWT_PRIVATE_KEY: privateKey.export({ type: "pkcs8", format: "pem" }).toString(),
             BETTER_AUTH_SECRET: "test-secret-test-secret-test-secret-0123456789",
             CREEM_WEBHOOK_SECRET: "whsec_test",
-            CREEM_PRODUCTS: JSON.stringify({
-              prod_plus_year: { plan: "plus", durationDays: 365 },
-              prod_pro_month: { plan: "pro", durationDays: 31, credits: 1500 },
-              prod_credits_3000: { credits: 3000 },
-            }),
+            CREEM_PRODUCTS: JSON.stringify({ prod_plus_year: "plus_year", prod_pro_month: "pro_month", prod_credits_3000: "credits_3000" }),
             ADMIN_EMAILS: "admin@example.com",
           },
         },

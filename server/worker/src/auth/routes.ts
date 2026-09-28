@@ -137,6 +137,13 @@ async function exchangeDeviceCode(env: Env, body: Record<string, unknown>) {
 }
 
 export const authApi = new Hono<AppBindings>()
+  .get("/providers", (c) => {
+    const providers: string[] = [];
+    if (c.env.GOOGLE_CLIENT_ID && c.env.GOOGLE_CLIENT_SECRET) providers.push("google");
+    if (c.env.APPLE_CLIENT_ID && c.env.APPLE_CLIENT_SECRET) providers.push("apple");
+    if (c.env.GITHUB_CLIENT_ID && c.env.GITHUB_CLIENT_SECRET) providers.push("github");
+    return c.json({ providers });
+  })
   .post("/token", async (c) => {
     const body = await readBody(c.req.raw);
     const grant = String(body.grant_type ?? body.grantType ?? "");

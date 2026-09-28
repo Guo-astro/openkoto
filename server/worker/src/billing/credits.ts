@@ -54,3 +54,15 @@ export async function settleCredits(env: Env, userId: string, reserved: number, 
     .bind(userId, newId(), -diff, refId, Date.now())
     .run();
 }
+
+/** Adds credits once per (user, reason, refId); safe against duplicate webhook deliveries. */
+export async function addCreditsOnce(env: Env, userId: string, delta: number, reason: CreditReason, refId: string): Promise<boolean> {
+  const res = await env.DB.prepare(
+    `insert into credit_ledger (id, user_id, delta, reason, ref_id, balance_after, expires_at, created_at)
+     select ?2, ?1, ?3, ?4, ?5, ${LATEST_BALANCE} + ?3, null, ?6
+     where not exists (select 1 from credit_ledger where user_id = ?1 and reason = ?4 and ref_id = ?5)`,
+  )
+    .bind(userId, newId(), delta, reason, refId, Date.now())
+    .run();
+  return (res.meta.changes ?? 0) > 0;
+}

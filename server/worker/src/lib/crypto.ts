@@ -32,6 +32,11 @@ export function randomBase62(length: number): string {
   return randomFrom(BASE62, length);
 }
 
+/** Readable code characters (no 0/O/1/I/L/U). */
+export function randomFrom32(length: number): string {
+  return randomFrom(USER_CODE_ALPHABET, length);
+}
+
 export function randomUserCode(): string {
   const raw = randomFrom(USER_CODE_ALPHABET, 8);
   return `${raw.slice(0, 4)}-${raw.slice(4)}`;
