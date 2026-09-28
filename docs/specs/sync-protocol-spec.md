@@ -2,7 +2,7 @@
 
 > 状态：v1（P0 定稿）
 > 适用：iOS / Mac Catalyst、桌面（Tauri）、网页、CLI，以及任何第三方客户端
-> 参考实现：`packages/sync-client`（TypeScript）、`server/worker/src/sync`（服务端）
+> 参考实现：`packages/client`（TypeScript）、`server/worker/src/sync`（服务端）
 > 契约用例：`docs/specs/fixtures/sync/*.json`（所有客户端实现都必须通过）
 > 设计背景：`docs/plans/2026-09-28-web-and-cloud-platform-design.md` §5
 

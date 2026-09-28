@@ -1,0 +1,424 @@
+{
+  "version": 1,
+  "spec": "docs/specs/sync-protocol-spec.md §6; docs/specs/vocabulary-srs-spec.md",
+  "generatedWith": "@openkoto/core replayCard (ts-fsrs 5.4.1), de-duplicated by id",
+  "defaults": {
+    "timeZone": "UTC",
+    "desiredRetention": 0.9
+  },
+  "cases": [
+    {
+      "name": "single-good",
+      "description": "One Good review of a new card.",
+      "initial": null,
+      "events": [
+        {
+          "id": "e1000000-0000-4000-8000-000000000001",
+          "hlc": "1788256800000-0000-aaaaaaaa",
+          "payload": {
+            "vocabularyId": "3f0c2a4e-1d2b-4c5d-9e8f-0a1b2c3d4e5f",
+            "reviewedAt": "2026-09-01T10:00:00Z",
+            "dateLocal": "2026-09-01",
+            "grade": 3,
+            "desiredRetention": 0.9
+          }
+        }
+      ],
+      "expected": {
+        "srsState": "review",
+        "stability": 2.3065,
+        "difficulty": 2.11810397,
+        "dueDate": "2026-09-04",
+        "lastReviewedAt": "2026-09-01T10:00:00.000Z",
+        "reviewCount": 1,
+        "schedulerVersion": "fsrs6"
+      }
+    },
+    {
+      "name": "unordered",
+      "description": "Events arrive out of order; replay sorts by (reviewedAt, hlc, id).",
+      "initial": null,
+      "events": [
+        {
+          "id": "e1000000-0000-4000-8000-000000000003",
+          "hlc": "1789027200000-0000-aaaaaaaa",
+          "payload": {
+            "vocabularyId": "3f0c2a4e-1d2b-4c5d-9e8f-0a1b2c3d4e5f",
+            "reviewedAt": "2026-09-10T08:00:00Z",
+            "dateLocal": "2026-09-10",
+            "grade": 3,
+            "desiredRetention": 0.9
+          }
+        },
+        {
+          "id": "e1000000-0000-4000-8000-000000000001",
+          "hlc": "1788256800000-0000-aaaaaaaa",
+          "payload": {
+            "vocabularyId": "3f0c2a4e-1d2b-4c5d-9e8f-0a1b2c3d4e5f",
+            "reviewedAt": "2026-09-01T10:00:00Z",
+            "dateLocal": "2026-09-01",
+            "grade": 3,
+            "desiredRetention": 0.9
+          }
+        },
+        {
+          "id": "e1000000-0000-4000-8000-000000000004",
+          "hlc": "1790755200000-0000-aaaaaaaa",
+          "payload": {
+            "vocabularyId": "3f0c2a4e-1d2b-4c5d-9e8f-0a1b2c3d4e5f",
+            "reviewedAt": "2026-09-30T08:00:00Z",
+            "dateLocal": "2026-09-30",
+            "grade": 2,
+            "desiredRetention": 0.9
+          }
+        },
+        {
+          "id": "e1000000-0000-4000-8000-000000000002",
+          "hlc": "1788426000000-0000-aaaaaaaa",
+          "payload": {
+            "vocabularyId": "3f0c2a4e-1d2b-4c5d-9e8f-0a1b2c3d4e5f",
+            "reviewedAt": "2026-09-03T09:00:00Z",
+            "dateLocal": "2026-09-03",
+            "grade": 1,
+            "desiredRetention": 0.9
+          }
+        }
+      ],
+      "expected": {
+        "srsState": "review",
+        "stability": 15.43554078,
+        "difficulty": 8.24750143,
+        "dueDate": "2026-09-30",
+        "lastReviewedAt": "2026-09-30T08:00:00.000Z",
+        "reviewCount": 4,
+        "schedulerVersion": "fsrs6"
+      }
+    },
+    {
+      "name": "duplicates",
+      "description": "The same event delivered twice (also with an uppercase id) counts once.",
+      "initial": null,
+      "events": [
+        {
+          "id": "e1000000-0000-4000-8000-000000000001",
+          "hlc": "1788256800000-0000-aaaaaaaa",
+          "payload": {
+            "vocabularyId": "3f0c2a4e-1d2b-4c5d-9e8f-0a1b2c3d4e5f",
+            "reviewedAt": "2026-09-01T10:00:00Z",
+            "dateLocal": "2026-09-01",
+            "grade": 3,
+            "desiredRetention": 0.9
+          }
+        },
+        {
+          "id": "e1000000-0000-4000-8000-000000000002",
+          "hlc": "1788516000000-0000-aaaaaaaa",
+          "payload": {
+            "vocabularyId": "3f0c2a4e-1d2b-4c5d-9e8f-0a1b2c3d4e5f",
+            "reviewedAt": "2026-09-04T10:00:00Z",
+            "dateLocal": "2026-09-04",
+            "grade": 3,
+            "desiredRetention": 0.9
+          }
+        },
+        {
+          "id": "e1000000-0000-4000-8000-000000000001",
+          "hlc": "1788256800000-0000-aaaaaaaa",
+          "payload": {
+            "vocabularyId": "3f0c2a4e-1d2b-4c5d-9e8f-0a1b2c3d4e5f",
+            "reviewedAt": "2026-09-01T10:00:00Z",
+            "dateLocal": "2026-09-01",
+            "grade": 3,
+            "desiredRetention": 0.9
+          }
+        },
+        {
+          "id": "E1000000-0000-4000-8000-000000000002",
+          "hlc": "1788516000000-0000-aaaaaaaa",
+          "payload": {
+            "vocabularyId": "3f0c2a4e-1d2b-4c5d-9e8f-0a1b2c3d4e5f",
+            "reviewedAt": "2026-09-04T10:00:00Z",
+            "dateLocal": "2026-09-04",
+            "grade": 3,
+            "desiredRetention": 0.9
+          }
+        }
+      ],
+      "expected": {
+        "srsState": "review",
+        "stability": 13.82690327,
+        "difficulty": 2.11121424,
+        "dueDate": "2026-09-18",
+        "lastReviewedAt": "2026-09-04T10:00:00.000Z",
+        "reviewCount": 2,
+        "schedulerVersion": "fsrs6"
+      }
+    },
+    {
+      "name": "voided",
+      "description": "An undo (grade 0 + voidsEventId) removes the voided event; the marker itself does not count. A marker pointing at an unknown event is harmless.",
+      "initial": null,
+      "events": [
+        {
+          "id": "e1000000-0000-4000-8000-000000000001",
+          "hlc": "1788256800000-0000-aaaaaaaa",
+          "payload": {
+            "vocabularyId": "3f0c2a4e-1d2b-4c5d-9e8f-0a1b2c3d4e5f",
+            "reviewedAt": "2026-09-01T10:00:00Z",
+            "dateLocal": "2026-09-01",
+            "grade": 3,
+            "desiredRetention": 0.9
+          }
+        },
+        {
+          "id": "e1000000-0000-4000-8000-000000000002",
+          "hlc": "1788516000000-0000-aaaaaaaa",
+          "payload": {
+            "vocabularyId": "3f0c2a4e-1d2b-4c5d-9e8f-0a1b2c3d4e5f",
+            "reviewedAt": "2026-09-04T10:00:00Z",
+            "dateLocal": "2026-09-04",
+            "grade": 1,
+            "desiredRetention": 0.9
+          }
+        },
+        {
+          "id": "e1000000-0000-4000-8000-000000000003",
+          "hlc": "1788516005000-0000-aaaaaaaa",
+          "payload": {
+            "vocabularyId": "3f0c2a4e-1d2b-4c5d-9e8f-0a1b2c3d4e5f",
+            "reviewedAt": "2026-09-04T10:00:05Z",
+            "dateLocal": "2026-09-04",
+            "grade": 0,
+            "desiredRetention": 0.9,
+            "voidsEventId": "E1000000-0000-4000-8000-000000000002"
+          }
+        },
+        {
+          "id": "e1000000-0000-4000-8000-000000000004",
+          "hlc": "1788516010000-0000-aaaaaaaa",
+          "payload": {
+            "vocabularyId": "3f0c2a4e-1d2b-4c5d-9e8f-0a1b2c3d4e5f",
+            "reviewedAt": "2026-09-04T10:00:10Z",
+            "dateLocal": "2026-09-04",
+            "grade": 4,
+            "desiredRetention": 0.9
+          }
+        },
+        {
+          "id": "e1000000-0000-4000-8000-000000000005",
+          "hlc": "1788602400000-0000-aaaaaaaa",
+          "payload": {
+            "vocabularyId": "3f0c2a4e-1d2b-4c5d-9e8f-0a1b2c3d4e5f",
+            "reviewedAt": "2026-09-05T10:00:00Z",
+            "dateLocal": "2026-09-05",
+            "grade": 0,
+            "desiredRetention": 0.9,
+            "voidsEventId": "ffffffff-0000-4000-8000-000000000000"
+          }
+        }
+      ],
+      "expected": {
+        "srsState": "review",
+        "stability": 23.88306328,
+        "difficulty": 1,
+        "dueDate": "2026-09-28",
+        "lastReviewedAt": "2026-09-04T10:00:10.000Z",
+        "reviewCount": 2,
+        "schedulerVersion": "fsrs6"
+      }
+    },
+    {
+      "name": "two-devices-same-day",
+      "description": "Phone and laptop both reviewed the card offline on the same local day; both events count.",
+      "initial": null,
+      "events": [
+        {
+          "id": "e2000000-0000-4000-8000-00000000000b",
+          "hlc": "1790593200000-0000-bbbbbbbb",
+          "payload": {
+            "vocabularyId": "3f0c2a4e-1d2b-4c5d-9e8f-0a1b2c3d4e5f",
+            "reviewedAt": "2026-09-28T11:00:00Z",
+            "dateLocal": "2026-09-28",
+            "grade": 1,
+            "desiredRetention": 0.9
+          }
+        },
+        {
+          "id": "e2000000-0000-4000-8000-00000000000a",
+          "hlc": "1790586000000-0000-aaaaaaaa",
+          "payload": {
+            "vocabularyId": "3f0c2a4e-1d2b-4c5d-9e8f-0a1b2c3d4e5f",
+            "reviewedAt": "2026-09-28T09:00:00Z",
+            "dateLocal": "2026-09-28",
+            "grade": 3,
+            "desiredRetention": 0.9
+          }
+        },
+        {
+          "id": "e2000000-0000-4000-8000-00000000000c",
+          "hlc": "1789894800000-0000-aaaaaaaa",
+          "payload": {
+            "vocabularyId": "3f0c2a4e-1d2b-4c5d-9e8f-0a1b2c3d4e5f",
+            "reviewedAt": "2026-09-20T09:00:00Z",
+            "dateLocal": "2026-09-20",
+            "grade": 3,
+            "desiredRetention": 0.9
+          }
+        }
+      ],
+      "expected": {
+        "srsState": "learning",
+        "stability": 1.8422249,
+        "difficulty": 7.39223814,
+        "dueDate": "2026-09-28",
+        "lastReviewedAt": "2026-09-28T11:00:00.000Z",
+        "reviewCount": 3,
+        "schedulerVersion": "fsrs6"
+      }
+    },
+    {
+      "name": "equal-reviewedAt-hlc-tiebreak",
+      "description": "Identical reviewedAt: the record HLC orders them (Again then Good here).",
+      "initial": null,
+      "events": [
+        {
+          "id": "e3000000-0000-4000-8000-000000000001",
+          "hlc": "1790000000000-0002-aaaaaaaa",
+          "payload": {
+            "vocabularyId": "3f0c2a4e-1d2b-4c5d-9e8f-0a1b2c3d4e5f",
+            "reviewedAt": "2026-09-28T09:00:00Z",
+            "dateLocal": "2026-09-28",
+            "grade": 3,
+            "desiredRetention": 0.9
+          }
+        },
+        {
+          "id": "e3000000-0000-4000-8000-000000000002",
+          "hlc": "1790000000000-0001-bbbbbbbb",
+          "payload": {
+            "vocabularyId": "3f0c2a4e-1d2b-4c5d-9e8f-0a1b2c3d4e5f",
+            "reviewedAt": "2026-09-28T09:00:00Z",
+            "dateLocal": "2026-09-28",
+            "grade": 1,
+            "desiredRetention": 0.9
+          }
+        }
+      ],
+      "expected": {
+        "srsState": "review",
+        "stability": 0.212,
+        "difficulty": 6.40211507,
+        "dueDate": "2026-10-01",
+        "lastReviewedAt": "2026-09-28T09:00:00.000Z",
+        "reviewCount": 2,
+        "schedulerVersion": "fsrs6"
+      }
+    },
+    {
+      "name": "recorded-date-and-retention",
+      "description": "Each event's own dateLocal and desiredRetention are used (not the replaying device's zone or setting).",
+      "initial": null,
+      "events": [
+        {
+          "id": "e4000000-0000-4000-8000-000000000001",
+          "hlc": "1788305400000-0000-aaaaaaaa",
+          "payload": {
+            "vocabularyId": "3f0c2a4e-1d2b-4c5d-9e8f-0a1b2c3d4e5f",
+            "reviewedAt": "2026-09-01T23:30:00Z",
+            "dateLocal": "2026-09-02",
+            "grade": 3,
+            "desiredRetention": 0.8
+          }
+        },
+        {
+          "id": "e4000000-0000-4000-8000-000000000002",
+          "hlc": "1788915600000-0000-aaaaaaaa",
+          "payload": {
+            "vocabularyId": "3f0c2a4e-1d2b-4c5d-9e8f-0a1b2c3d4e5f",
+            "reviewedAt": "2026-09-09T01:00:00Z",
+            "dateLocal": "2026-09-09",
+            "grade": 3,
+            "desiredRetention": 0.95
+          }
+        }
+      ],
+      "expected": {
+        "srsState": "review",
+        "stability": 21.41139201,
+        "difficulty": 2.11121424,
+        "dueDate": "2026-09-18",
+        "lastReviewedAt": "2026-09-09T01:00:00.000Z",
+        "reviewCount": 2,
+        "schedulerVersion": "fsrs6"
+      }
+    },
+    {
+      "name": "legacy-event-fallback",
+      "description": "Events without dateLocal/desiredRetention fall back to defaults (timeZone UTC, retention 0.9).",
+      "initial": null,
+      "events": [
+        {
+          "id": "e5000000-0000-4000-8000-000000000001",
+          "hlc": "1788305400000-0000-aaaaaaaa",
+          "payload": {
+            "vocabularyId": "3f0c2a4e-1d2b-4c5d-9e8f-0a1b2c3d4e5f",
+            "reviewedAt": "2026-09-01T23:30:00Z",
+            "grade": 3
+          }
+        },
+        {
+          "id": "e5000000-0000-4000-8000-000000000002",
+          "hlc": "1788602400000-0000-aaaaaaaa",
+          "payload": {
+            "vocabularyId": "3f0c2a4e-1d2b-4c5d-9e8f-0a1b2c3d4e5f",
+            "reviewedAt": "2026-09-05T10:00:00Z",
+            "grade": 2
+          }
+        }
+      ],
+      "expected": {
+        "srsState": "review",
+        "stability": 10.64837694,
+        "difficulty": 4.75285849,
+        "dueDate": "2026-09-05",
+        "lastReviewedAt": "2026-09-05T10:00:00.000Z",
+        "reviewCount": 2,
+        "schedulerVersion": "fsrs6"
+      }
+    },
+    {
+      "name": "sm2-seeded-card",
+      "description": "Replay starts from an SM-2 migration seed (interval 12, ease 2.5).",
+      "initial": {
+        "stability": 11.999999999999995,
+        "difficulty": 6.788041466536794,
+        "srsState": "review",
+        "dueDate": "2026-09-10",
+        "lastReviewedAt": "2026-08-29T00:00:00.000Z",
+        "reviewCount": 5
+      },
+      "events": [
+        {
+          "id": "e6000000-0000-4000-8000-000000000001",
+          "hlc": "1789207200000-0000-aaaaaaaa",
+          "payload": {
+            "vocabularyId": "3f0c2a4e-1d2b-4c5d-9e8f-0a1b2c3d4e5f",
+            "reviewedAt": "2026-09-12T10:00:00Z",
+            "dateLocal": "2026-09-12",
+            "grade": 3,
+            "desiredRetention": 0.9
+          }
+        }
+      ],
+      "expected": {
+        "srsState": "review",
+        "stability": 32.05668319,
+        "difficulty": 6.77648179,
+        "dueDate": "2026-10-14",
+        "lastReviewedAt": "2026-09-12T10:00:00.000Z",
+        "reviewCount": 6,
+        "schedulerVersion": "fsrs6"
+      }
+    }
+  ]
+}
