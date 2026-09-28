@@ -18,10 +18,6 @@ vi.mock("@tauri-apps/api/event", () => ({
   listen: (...args: unknown[]) => listenMock(...args),
 }));
 
-vi.mock("../../lib/api", () => ({
-  getApiClient: () => ({ isBackendConfigured: () => false }),
-}));
-
 const PASTED = ["首页 登录 注册", "这是正文第一段，讲述了故事的开端。", "版权所有 © 某站点", "这是正文第二段。"].join(
   "\n"
 );

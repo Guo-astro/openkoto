@@ -17,7 +17,6 @@ import { UpdateChecker } from "./components/features/UpdateChecker";
 import { DropImportOverlay, type DropImportStatus } from "./components/features/DropImportOverlay";
 import { importDroppedPath, isSupportedDropPath, getFileName } from "./lib/dropImport";
 import type { Article, AppConfig } from "./lib/tauri";
-import { getApiClient } from "./lib/api";
 import { useAgentOpenMaterialListener } from "./lib/hooks/useAgentOpenMaterialListener";
 
 function App() {
@@ -176,9 +175,6 @@ function App() {
         !onboardingDismissedRef.current &&
         (!configResult || (!configResult.onboarding_completed && !hasSavedModelConfigs));
 
-      if (configResult) {
-        getApiClient(configResult); // Initialize API client
-      }
       setShowOnboarding(shouldShowOnboarding);
       setArticles(articlesResult);
       return articlesResult;

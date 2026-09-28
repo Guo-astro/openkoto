@@ -104,12 +104,6 @@ pub struct AppConfig {
     /// Concurrent workers used by article batch explanation
     #[serde(default = "default_batch_translation_concurrency")]
     pub batch_translation_concurrency: i32,
-    /// Backend API URL for enhanced features
-    #[serde(default)]
-    pub backend_url: Option<String>,
-    /// Auth token for backend API
-    #[serde(default)]
-    pub auth_token: Option<String>,
     /// Daily limit for introducing new cards in SRS
     #[serde(default = "default_srs_daily_new_limit")]
     pub srs_daily_new_limit: i32,
@@ -144,8 +138,6 @@ impl Default for AppConfig {
             target_language: "zh-CN".to_string(),
             interface_language: default_interface_language(),
             batch_translation_concurrency: default_batch_translation_concurrency(),
-            backend_url: None,
-            auth_token: None,
             srs_daily_new_limit: default_srs_daily_new_limit(),
             srs_daily_review_limit: default_srs_daily_review_limit(),
             srs_desired_retention: default_srs_desired_retention(),

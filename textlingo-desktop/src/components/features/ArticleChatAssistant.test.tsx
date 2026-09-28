@@ -29,12 +29,6 @@ vi.mock("react-i18next", () => ({
   Trans: ({ defaults }: { defaults: string }) => defaults,
 }));
 
-vi.mock("../../lib/api", () => ({
-  getApiClient: () => ({
-    isBackendConfigured: () => false,
-  }),
-}));
-
 describe("ArticleChatAssistant", () => {
   afterEach(() => {
     cleanup();

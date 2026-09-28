@@ -5,7 +5,6 @@ import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Textarea } from "../ui/textarea";
 import { Loader2, Globe, Check, Eye, Sparkles, FileText, AlertTriangle } from "lucide-react";
-import { getApiClient } from "../../lib/api";
 import { Article } from "../../types";
 import { useAiClean, CLEAN_MIN_CHARS } from "../../lib/hooks";
 import { AiCleanPanel } from "./AiCleanPanel";
@@ -31,7 +30,7 @@ export function WebImportForm({ onSave, onCancel }: WebImportFormProps) {
   const [isImporting, setIsImporting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [previewLoaded, setPreviewLoaded] = useState(false);
-  const [fetchSource, setFetchSource] = useState<"local" | "backend" | null>(null);
+  const [fetchSource, setFetchSource] = useState<"local" | null>(null);
 
   const [mode, setMode] = useState<ImportMode>("classic");
   // 保留经典模式的抓取结果，切回经典模式或清洗失败时可以还原
@@ -56,22 +55,10 @@ export function WebImportForm({ onSave, onCancel }: WebImportFormProps) {
   /// 手动清洗按编辑区里**当前**的正文来（用户可能已经手改过），不限于抓取那一版。
   const canCleanNow = aiReady && !isBusy && content.trim().length >= CLEAN_MIN_CHARS;
 
-  const fetchWithLocalFirst = async (sourceUrl: string): Promise<FetchedContent> => {
-    try {
-      const local = await invoke<FetchedContent>("fetch_url_content", { url: sourceUrl });
-      setFetchSource("local");
-      return local;
-    } catch (localErr) {
-      const config = (await invoke("get_config")) as any;
-      const apiClient = getApiClient(config);
-      if (!apiClient.isBackendConfigured()) {
-        throw localErr;
-      }
-
-      const backend = await apiClient.fetchUrlContent(sourceUrl);
-      setFetchSource("backend");
-      return backend;
-    }
+  const fetchLocal = async (sourceUrl: string): Promise<FetchedContent> => {
+    const local = await invoke<FetchedContent>("fetch_url_content", { url: sourceUrl });
+    setFetchSource("local");
+    return local;
   };
 
   /** 在抓取结果上再跑一遍模型清洗，只删无关行，不改写原文 */
@@ -129,7 +116,7 @@ export function WebImportForm({ onSave, onCancel }: WebImportFormProps) {
     resetClean();
 
     try {
-      const fetched = await fetchWithLocalFirst(normalizedUrl);
+      const fetched = await fetchLocal(normalizedUrl);
       const nextTitle = fetched.title?.trim() || "";
       const nextContent = fetched.content?.trim() || "";
 
@@ -256,9 +243,7 @@ export function WebImportForm({ onSave, onCancel }: WebImportFormProps) {
           </div>
           {fetchSource && (
             <p className="text-xs text-muted-foreground mt-2">
-              {fetchSource === "local"
-                ? t("webImport.previewSourceLocal")
-                : t("webImport.previewSourceBackend")}
+              {t("webImport.previewSourceLocal")}
             </p>
           )}
         </div>
