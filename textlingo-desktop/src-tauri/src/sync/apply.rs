@@ -5,10 +5,18 @@ use super::payload;
 use super::protocol::{JsonObject, LocalRecord};
 use super::replay::{self, ReplayInitial, ReplayOptions};
 use super::store;
+use crate::db::books;
 use crate::db::repo::{self, Track, VocabularyWrite};
 use rusqlite::Connection;
 use serde_json::Value;
 use std::collections::BTreeSet;
+
+/// Articles / books whose desktop files must be rewritten after a batch.
+#[derive(Debug, Default)]
+pub struct Touched {
+    pub articles: BTreeSet<String>,
+    pub books: BTreeSet<String>,
+}
 
 fn get_str(p: &JsonObject, key: &str) -> Option<String> {
     p.get(key).and_then(Value::as_str).map(str::to_string)
@@ -21,7 +29,7 @@ pub fn project(
     conn: &Connection,
     record: &LocalRecord,
     previous: Option<&JsonObject>,
-    touched_articles: &mut BTreeSet<String>,
+    touched: &mut Touched,
 ) -> Result<(), String> {
     let id = record.id.as_str();
     let live = if record.deleted {
@@ -104,7 +112,7 @@ pub fn project(
                     repo::upsert_article_row(conn, id, &fields, &updated_at)?;
                 }
             }
-            touched_articles.insert(id.to_string());
+            touched.articles.insert(id.to_string());
         }
         "Segment" => match live {
             None => {
@@ -114,14 +122,14 @@ pub fn project(
                     .or_else(|| segment_article(conn, id));
                 repo::delete_segment(conn, id)?;
                 if let Some(a) = article_id {
-                    touched_articles.insert(a);
+                    touched.articles.insert(a);
                 }
             }
             Some(p) => {
                 if let Some((segment, revision)) = payload::segment_from_payload(id, p) {
                     let updated_at = payload::now_iso();
                     repo::upsert_segment(conn, &segment, revision, &updated_at)?;
-                    touched_articles.insert(segment.article_id.clone());
+                    touched.articles.insert(segment.article_id.clone());
                 }
             }
         },
@@ -130,14 +138,61 @@ pub fn project(
                 repo::delete_bookmark(conn, id, Track::Skip)?;
             }
             Some(p) => {
+                let mut p = p.clone();
+                if !p.contains_key("bookPath") {
+                    // Bookmarks from other clients address the book by id; the desktop reader
+                    // needs the local file path of that book.
+                    if let Some(path) = get_str(&p, "bookId")
+                        .map(|b| b.to_lowercase())
+                        .and_then(|b| books::book_path_for(conn, &b).ok().flatten())
+                    {
+                        p.insert("bookPath".into(), Value::String(path));
+                    }
+                }
+                let p = &p;
                 if let Some(bookmark) = payload::bookmark_from_payload(id, p) {
                     let updated_at = get_str(p, "updatedAt");
                     repo::save_bookmark(conn, &bookmark, updated_at.as_deref(), Track::Skip)?;
                 }
             }
         },
-        // Book / BookChapter / BookProgress / LyricsMeta / … are kept in sync_record only (the
-        // desktop has no UI for them yet) so they round-trip and are available later.
+        "Book" => {
+            match live {
+                None => books::delete_book(conn, id, Track::Skip)?,
+                Some(p) => books::apply_remote_book(conn, id, p)?,
+            }
+            touched.books.insert(id.to_string());
+        }
+        "BookChapter" => match live {
+            None => {
+                if let Some(book_id) = books::chapter_book_id(conn, id)? {
+                    touched.books.insert(book_id);
+                }
+                conn.execute("delete from book_chapter where article_id = ?1", [id])
+                    .map_err(crate::db::sql_err)?;
+            }
+            Some(p) => {
+                if let Some(book_id) = books::apply_remote_chapter(conn, id, p)? {
+                    touched.books.insert(book_id);
+                }
+            }
+        },
+        "BookProgress" => match live {
+            None => {
+                conn.execute("delete from book_progress where book_id = ?1", [id])
+                    .map_err(crate::db::sql_err)?;
+            }
+            Some(p) => {
+                books::save_progress(conn, &books::progress_from_payload(id, p), Track::Skip)?;
+            }
+        },
+        "LyricsMeta" => match live {
+            None => books::delete_lyrics_meta(conn, id)?,
+            Some(p) => {
+                books::save_lyrics_meta(conn, &books::lyrics_meta_from_payload(id, p), Track::Skip)?
+            }
+        },
+        // Media / WordGloss / Setting / … are kept in sync_record only so they round-trip.
         _ => {}
     }
     Ok(())

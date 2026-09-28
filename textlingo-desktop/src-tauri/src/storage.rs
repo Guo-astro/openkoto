@@ -197,6 +197,11 @@ pub fn materialize_article_in_dir(data_dir: &Path, article_id: &str) -> Result<(
         }
         return Ok(());
     };
+    // Book chapters live in SQLite only; the book itself is materialized by
+    // `materialize_book_in_dir`.
+    if from_db.source_type.as_deref() == Some("book") {
+        return Ok(());
+    }
     let merged = match fs::read_to_string(&path)
         .ok()
         .and_then(|s| serde_json::from_str::<Article>(&s).ok())
@@ -216,6 +221,154 @@ pub fn materialize_article_in_dir(data_dir: &Path, article_id: &str) -> Result<(
     let json = serde_json::to_string(&merged)
         .map_err(|e| format!("Failed to serialize article: {}", e))?;
     fs::write(path, json).map_err(|e| format!("Failed to save article: {}", e))
+}
+
+pub const BOOKS_DIR: &str = "books";
+
+/// Original file of a synced book: `books/<id>.<format>`.
+pub fn book_file_path(data_dir: &Path, book_id: &str, format: &str) -> PathBuf {
+    data_dir.join(BOOKS_DIR).join(format!("{book_id}.{format}"))
+}
+
+/// Readable stand-in built from the chapter records when the original file is not available.
+pub fn book_fallback_path(data_dir: &Path, book_id: &str) -> PathBuf {
+    data_dir.join(BOOKS_DIR).join(format!("{book_id}.chapters.txt"))
+}
+
+/// Create/refresh/remove the desktop reader article (`articles/<bookId>`) of a synced book.
+/// Without the original file, a TXT is assembled from the chapter articles so the book is
+/// readable right away; the scheduler downloads the original later.
+pub fn materialize_book_in_dir(data_dir: &Path, book_id: &str) -> Result<(), String> {
+    let db = crate::db::open(data_dir)?;
+    let article_path = data_dir.join(ARTICLES_DIR).join(book_id);
+    let Some(book) = db.read(|c| crate::db::books::load_book(c, book_id))? else {
+        if article_path.exists() {
+            let _ = fs::remove_file(&article_path);
+        }
+        for p in [
+            book_file_path(data_dir, book_id, "epub"),
+            book_file_path(data_dir, book_id, "txt"),
+            book_fallback_path(data_dir, book_id),
+        ] {
+            let _ = fs::remove_file(p);
+        }
+        db.write(|tx| crate::db::repo::delete_article(tx, book_id, crate::db::repo::Track::Skip))?;
+        return Ok(());
+    };
+    let chapters = db.read(|c| crate::db::books::chapters_with_text(c, book_id))?;
+    let original = book_file_path(data_dir, book_id, &book.format);
+    let (book_path, book_type) = if original.exists() {
+        (original, book.format.clone())
+    } else {
+        let fallback = book_fallback_path(data_dir, book_id);
+        if !chapters.is_empty() {
+            ensure_dir(&data_dir.join(BOOKS_DIR), "books directory")?;
+            let text = chapters
+                .iter()
+                .map(|(c, t)| match &c.title {
+                    Some(title) if !t.starts_with(title.as_str()) => format!("{title}\n\n{t}"),
+                    _ => t.clone(),
+                })
+                .collect::<Vec<_>>()
+                .join("\n\n");
+            fs::write(&fallback, text).map_err(|e| format!("Failed to write book text: {e}"))?;
+        }
+        (fallback, "txt".to_string())
+    };
+    let content = if book_type == "txt" {
+        fs::read_to_string(&book_path).unwrap_or_else(|_| format!("[书籍已导入] {}", book.title))
+    } else {
+        format!("[EPUB 书籍] {}", book.title)
+    };
+    let existing = fs::read_to_string(&article_path)
+        .ok()
+        .and_then(|s| serde_json::from_str::<Article>(&s).ok());
+    let article = Article {
+        id: book_id.to_string(),
+        title: book.title.clone(),
+        content,
+        source_type: Some("book".into()),
+        source_url: existing.as_ref().and_then(|e| e.source_url.clone()),
+        media_path: None,
+        book_path: Some(book_path.to_string_lossy().into_owned()),
+        book_type: Some(book_type),
+        created_at: book.created_at.clone(),
+        translated: existing.as_ref().map(|e| e.translated).unwrap_or(false),
+        active_mind_map_artifact_id: existing.and_then(|e| e.active_mind_map_artifact_id),
+        segments: Vec::new(),
+    };
+    let json = serde_json::to_string(&article).map_err(|e| format!("Failed to serialize article: {e}"))?;
+    save_article_in_dir(data_dir, book_id, &json)
+}
+
+/// Turn a desktop book article (EPUB/TXT file) into Book + BookChapter + chapter Article
+/// records (same shape as apps/web LibraryPage). No-op when the book is already registered.
+pub fn register_local_book_in_dir(data_dir: &Path, article_id: &str) -> Result<bool, String> {
+    let db = crate::db::open(data_dir)?;
+    if !crate::sync::payload::is_uuid(article_id)
+        || db.read(|c| crate::db::books::load_book(c, article_id))?.is_some()
+    {
+        return Ok(false);
+    }
+    let Some(article) = db.read(|c| crate::db::repo::load_article(c, article_id))? else {
+        return Ok(false);
+    };
+    let (Some(book_path), Some(book_type)) = (article.book_path.clone(), article.book_type.clone()) else {
+        return Ok(false);
+    };
+    let path = Path::new(&book_path);
+    if !path.exists() || !(book_type == "epub" || book_type == "txt") {
+        return Ok(false);
+    }
+    let parsed = if book_type == "epub" {
+        crate::book_content::parse_epub_book(path, &article.title)?
+    } else {
+        let text = crate::commands::read_txt_decoded(path)?;
+        crate::book_content::parse_txt_book(&text, &article.title)
+    };
+    let bytes = fs::read(path).map_err(|e| format!("Failed to read book: {e}"))?;
+    use sha2::Digest;
+    let sha: String = sha2::Sha256::digest(&bytes).iter().map(|b| format!("{b:02x}")).collect();
+    // The desktop title (user-editable at import) wins over the file metadata.
+    let parsed = crate::book_content::ParsedBook { title: article.title.clone(), ..parsed };
+    db.write(|tx| {
+        crate::db::books::create_book(
+            tx,
+            &article_id.to_lowercase(),
+            &parsed,
+            &sha,
+            bytes.len() as i64,
+            &article.created_at,
+            crate::db::repo::Track::Record,
+        )
+    })?;
+    crate::sync::notify_local_change();
+    Ok(true)
+}
+
+/// One-time: register books imported before book sync existed.
+pub fn backfill_books_in_dir(data_dir: &Path) -> Result<usize, String> {
+    let db = crate::db::open(data_dir)?;
+    let ids: Vec<String> = db.read(|c| {
+        let mut stmt = c
+            .prepare("select id from article where source_type = 'book' and book_type in ('epub','txt') and book_path is not null and id not in (select id from book) and id not in (select article_id from book_chapter)")
+            .map_err(crate::db::sql_err)?;
+        let ids = stmt
+            .query_map([], |r| r.get::<_, String>(0))
+            .map_err(crate::db::sql_err)?
+            .collect::<Result<Vec<_>, _>>()
+            .map_err(crate::db::sql_err)?;
+        Ok(ids)
+    })?;
+    let mut n = 0;
+    for id in ids {
+        match register_local_book_in_dir(data_dir, &id) {
+            Ok(true) => n += 1,
+            Ok(false) => {}
+            Err(e) => eprintln!("[books] could not register {id}: {e}"),
+        }
+    }
+    Ok(n)
 }
 
 fn ensure_dir(path: &Path, name: &str) -> Result<(), String> {
@@ -634,6 +787,53 @@ mod config_secret_tests {
         save_config_in_dir(&dir, &next, &store).unwrap();
         use crate::cloud::secrets::SecretStore;
         assert!(store.get("model-api-key:m1").unwrap().is_none());
+        let _ = fs::remove_dir_all(dir);
+    }
+}
+
+#[cfg(test)]
+mod book_registration_tests {
+    use super::*;
+
+    #[test]
+    fn existing_txt_books_are_backfilled_into_book_records() {
+        let dir = std::env::temp_dir().join(format!("openkoto-books-{}", uuid::Uuid::new_v4()));
+        fs::create_dir_all(dir.join(BOOKS_DIR)).unwrap();
+        let id = "0b8e2c1a-5d4f-4e3a-9b2c-1d0e9f8a7b42";
+        let file = dir.join(BOOKS_DIR).join(format!("{id}.txt"));
+        fs::write(&file, "第一章 起\n正文一\n第二章 承\n正文二\n").unwrap();
+        let article = Article {
+            id: id.into(),
+            title: "我的小说".into(),
+            content: "…".into(),
+            source_type: Some("book".into()),
+            source_url: None,
+            media_path: None,
+            book_path: Some(file.to_string_lossy().into_owned()),
+            book_type: Some("txt".into()),
+            created_at: "2026-09-28T00:00:00Z".into(),
+            translated: false,
+            active_mind_map_artifact_id: None,
+            segments: vec![],
+        };
+        save_article_in_dir(&dir, id, &serde_json::to_string(&article).unwrap()).unwrap();
+        assert_eq!(backfill_books_in_dir(&dir).unwrap(), 1);
+        assert_eq!(backfill_books_in_dir(&dir).unwrap(), 0);
+        let db = crate::db::open(&dir).unwrap();
+        db.read(|c| {
+            let book = crate::db::books::load_book(c, id)?.unwrap();
+            assert_eq!(book.title, "我的小说");
+            assert_eq!(book.format, "txt");
+            assert_eq!(book.file_size, Some(fs::metadata(&file).unwrap().len() as i64));
+            assert!(book.file_uploaded_sha.is_none());
+            assert_eq!(crate::db::books::chapters_with_text(c, id)?.len(), 2);
+            assert!(crate::sync::store::get_record(c, "Book", id)?.unwrap().dirty);
+            Ok(())
+        })
+        .unwrap();
+        // Chapter articles never become list items.
+        assert_eq!(fs::read_dir(dir.join(ARTICLES_DIR)).unwrap().count(), 1);
+        crate::db::close(&dir);
         let _ = fs::remove_dir_all(dir);
     }
 }

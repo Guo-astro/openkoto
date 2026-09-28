@@ -47,7 +47,7 @@ pub fn now_iso() -> String {
     Utc::now().to_rfc3339_opts(SecondsFormat::Millis, true)
 }
 
-fn opt_str(v: &Option<String>) -> Value {
+pub(crate) fn opt_str(v: &Option<String>) -> Value {
     match v {
         Some(s) => Value::String(s.clone()),
         None => Value::Null,
@@ -62,33 +62,33 @@ fn non_empty(s: &str) -> Value {
     }
 }
 
-fn opt_f64(v: Option<f64>) -> Value {
+pub(crate) fn opt_f64(v: Option<f64>) -> Value {
     v.and_then(serde_json::Number::from_f64)
         .map(Value::Number)
         .unwrap_or(Value::Null)
 }
 
-fn obj(v: Value) -> JsonObject {
+pub(crate) fn obj(v: Value) -> JsonObject {
     match v {
         Value::Object(m) => m,
         _ => JsonObject::new(),
     }
 }
 
-fn get_str(p: &JsonObject, key: &str) -> Option<String> {
+pub(crate) fn get_str(p: &JsonObject, key: &str) -> Option<String> {
     p.get(key).and_then(Value::as_str).map(str::to_string)
 }
 
-fn get_f64(p: &JsonObject, key: &str) -> Option<f64> {
+pub(crate) fn get_f64(p: &JsonObject, key: &str) -> Option<f64> {
     p.get(key).and_then(Value::as_f64)
 }
 
-fn get_i64(p: &JsonObject, key: &str) -> Option<i64> {
+pub(crate) fn get_i64(p: &JsonObject, key: &str) -> Option<i64> {
     p.get(key)
         .and_then(|v| v.as_i64().or_else(|| v.as_f64().map(|f| f as i64)))
 }
 
-fn get_bool(p: &JsonObject, key: &str) -> Option<bool> {
+pub(crate) fn get_bool(p: &JsonObject, key: &str) -> Option<bool> {
     p.get(key).and_then(Value::as_bool)
 }
 

@@ -473,7 +473,12 @@
       "syncNow": "立即同步",
       "quotaExceeded": "有 {{count}} 条内容超出当前套餐额度，未能上传。",
       "autoSyncHint": "启动时、修改后几秒以及每 5 分钟会自动同步。API 密钥永远不会同步。",
-      "lastError": "最近的错误"
+      "lastError": "最近的错误",
+      "switchTitle": "账号已更换",
+      "switchDesc": "你登录的是 {{email}}，但这台电脑上的数据之前同步到 {{previous}}。要把本机数据上传到新账号，还是只保留在本机？在你选择之前不会上传任何数据。",
+      "switchUpload": "上传到这个账号",
+      "switchLocalOnly": "只保留在本机",
+      "tokenFileWarning": "系统钥匙串不可用，登录凭据改为保存在只有当前用户可读的加密文件中。安装 Secret Service（如 GNOME Keyring 或 KWallet）可获得更强的保护。"
     }
   },
   "favorites": {
@@ -710,7 +715,7 @@
     "fileLabel": "字幕文件",
     "filePlaceholder": "选择字幕文件...",
     "selectFileTitle": "选择字幕文件",
-    "description": "将 .srt 字幕文件作为独立素材导入。",
+    "description": "将 .srt 字幕文件或 .lrc 歌词作为独立素材导入。",
     "titleLabel": "标题（可选）",
     "titlePlaceholder": "留空则使用文件名",
     "import": "导入",

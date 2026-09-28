@@ -5,7 +5,7 @@ import type { Article } from "./tauri";
 export const BOOK_EXTENSIONS = ["pdf", "epub", "txt"];
 export const VIDEO_EXTENSIONS = ["mp4", "mkv", "webm", "mov", "avi"];
 export const AUDIO_EXTENSIONS = ["mp3", "wav", "m4a", "aac", "flac", "ogg", "wma"];
-export const SUBTITLE_EXTENSIONS = ["srt"];
+export const SUBTITLE_EXTENSIONS = ["srt", "lrc"];
 
 const ALL_SUPPORTED = new Set([
   ...BOOK_EXTENSIONS,

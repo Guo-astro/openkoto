@@ -463,7 +463,12 @@
       "syncNow": "今すぐ同期",
       "quotaExceeded": "プランの上限に達したため、{{count}} 件をアップロードできませんでした。",
       "autoSyncHint": "起動時、変更の数秒後、5 分ごとに自動で同期します。API キーは同期されません。",
-      "lastError": "直近のエラー"
+      "lastError": "直近のエラー",
+      "switchTitle": "別のアカウント",
+      "switchDesc": "{{email}} でサインインしましたが、このコンピューターのデータは以前 {{previous}} と同期されていました。新しいアカウントにアップロードしますか？それともこのコンピューターだけに残しますか？選択するまで何もアップロードされません。",
+      "switchUpload": "このアカウントにアップロード",
+      "switchLocalOnly": "このコンピューターだけに残す",
+      "tokenFileWarning": "システムのキーチェーンが使えないため、サインイン情報は現在のユーザーだけが読める暗号化ファイルに保存されています。より強力に保護するには Secret Service（GNOME Keyring や KWallet など）をインストールしてください。"
     }
   },
   "favorites": {
@@ -700,7 +705,7 @@
     "fileLabel": "字幕ファイル",
     "filePlaceholder": "字幕ファイルを選択...",
     "selectFileTitle": "字幕ファイルを選択",
-    "description": ".srt 字幕ファイルを単独の教材として取り込みます。",
+    "description": ".srt 字幕ファイルまたは .lrc 歌詞を単独の教材として取り込みます。",
     "titleLabel": "タイトル（任意）",
     "titlePlaceholder": "空欄ならファイル名を使用",
     "import": "インポート",

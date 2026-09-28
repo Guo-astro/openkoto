@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { listen, type UnlistenFn } from "@tauri-apps/api/event";
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { useTranslation } from "react-i18next";
-import { Cloud, ExternalLink, Loader2, LogIn, LogOut, RefreshCw } from "lucide-react";
+import { AlertTriangle, Cloud, ExternalLink, Loader2, LogIn, LogOut, RefreshCw } from "lucide-react";
 import { Button } from "../ui/button";
 import {
   CLOUD_EVENTS,
@@ -11,6 +11,7 @@ import {
   cloudLoginCancel,
   cloudLoginStart,
   cloudLogout,
+  cloudResolveAccountSwitch,
   cloudSyncNow,
   cloudSyncStatus,
   type AuthChangedPayload,
@@ -32,6 +33,7 @@ export function AccountSyncPanel() {
   const [signingIn, setSigningIn] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [resolving, setResolving] = useState(false);
 
   const refresh = useCallback(async () => {
     try {
@@ -93,6 +95,19 @@ export function AccountSyncPanel() {
     }
   };
 
+  const handleAccountChoice = async (upload: boolean) => {
+    setError(null);
+    setResolving(true);
+    try {
+      setStatus(await cloudResolveAccountSwitch(upload));
+      void refresh();
+    } catch (e) {
+      setError(String(e));
+    } finally {
+      setResolving(false);
+    }
+  };
+
   const handleSyncNow = async () => {
     setError(null);
     setSyncing(true);
@@ -114,6 +129,8 @@ export function AccountSyncPanel() {
   const lastError = error ?? status?.lastError ?? null;
   const rejected = status?.lastReport?.rejected ?? [];
   const quotaRejected = rejected.filter((r) => r.code === "QUOTA_EXCEEDED").length;
+  const pendingSwitch = status?.pendingAccountSwitch ?? null;
+  const tokenInFile = signedIn && status?.tokenStorage === "file";
 
   return (
     <div className="space-y-6" data-testid="account-sync-panel">
@@ -184,6 +201,41 @@ export function AccountSyncPanel() {
           </div>
         )}
       </div>
+
+      {signedIn && pendingSwitch && (
+        <div className="rounded-lg border border-amber-500/50 bg-amber-500/10 p-4 space-y-3" data-testid="account-switch">
+          <div className="text-sm font-medium text-foreground">
+            {t("settings.account.switchTitle", "Different account")}
+          </div>
+          <p className="text-sm text-muted-foreground">
+            {t(
+              "settings.account.switchDesc",
+              "You signed in as {{email}}, but the data on this computer was synced with {{previous}}. Upload it to the new account, or keep it on this computer only? Nothing is uploaded until you choose.",
+              { email: pendingSwitch.email, previous: pendingSwitch.previousEmail || pendingSwitch.previousUserId },
+            )}
+          </p>
+          <div className="flex gap-2">
+            <Button size="sm" disabled={resolving} onClick={() => void handleAccountChoice(true)}>
+              {t("settings.account.switchUpload", "Upload to this account")}
+            </Button>
+            <Button size="sm" variant="outline" disabled={resolving} onClick={() => void handleAccountChoice(false)}>
+              {t("settings.account.switchLocalOnly", "Keep local only")}
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {tokenInFile && (
+        <div className="flex gap-2 rounded-lg border border-amber-500/50 bg-amber-500/10 p-3 text-xs text-foreground" data-testid="token-file-warning">
+          <AlertTriangle size={14} className="mt-0.5 shrink-0 text-amber-600" />
+          <span>
+            {t(
+              "settings.account.tokenFileWarning",
+              "No system keychain is available, so your sign-in is stored in an encrypted file readable only by your user account. Install a Secret Service (e.g. GNOME Keyring or KWallet) for stronger protection.",
+            )}
+          </span>
+        </div>
+      )}
 
       {signedIn && (
         <div className="rounded-lg border border-border p-4 space-y-3">

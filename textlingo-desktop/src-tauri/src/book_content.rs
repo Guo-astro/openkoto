@@ -287,9 +287,183 @@ fn html_document_to_text(html: &str) -> String {
         .join("\n")
 }
 
+/// A book split into chapters for sync (mirrors apps/web/src/lib/books.ts).
+#[derive(Debug, Clone, PartialEq)]
+pub struct ParsedBook {
+    pub title: String,
+    pub author: Option<String>,
+    pub language: Option<String>,
+    /// "epub" | "txt"
+    pub format: String,
+    pub chapters: Vec<ParsedChapter>,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct ParsedChapter {
+    pub title: String,
+    pub text: String,
+}
+
+/// Chapter records must stay well under the 512 KB inline payload limit.
+pub const MAX_CHAPTER_CHARS: usize = 60_000;
+
+fn chapter_heading_regex() -> Regex {
+    Regex::new(r"^\s*(第[0-9０-９零〇一二三四五六七八九十百千两]+[章回节卷集部篇]|序章|序言|楔子|终章|尾声|后记|番外|Chapter\s+\d+|CHAPTER\s+[0-9IVXLC]+|Prologue|Epilogue)[^\n]{0,40}$")
+        .expect("valid chapter heading regex")
+}
+
+pub fn split_oversized(chapters: Vec<ParsedChapter>) -> Vec<ParsedChapter> {
+    let mut out = Vec::new();
+    for ch in chapters {
+        if ch.text.chars().count() <= MAX_CHAPTER_CHARS {
+            out.push(ch);
+            continue;
+        }
+        let mut buf: Vec<&str> = Vec::new();
+        let mut size = 0usize;
+        let mut part = 1;
+        let mut parts: Vec<ParsedChapter> = Vec::new();
+        for p in ch.text.split('\n').filter(|p| !p.is_empty()) {
+            let len = p.chars().count();
+            if size + len > MAX_CHAPTER_CHARS && !buf.is_empty() {
+                parts.push(ParsedChapter { title: format!("{} ({})", ch.title, part), text: buf.join("\n") });
+                part += 1;
+                buf.clear();
+                size = 0;
+            }
+            buf.push(p);
+            size += len + 1;
+        }
+        if !buf.is_empty() {
+            parts.push(ParsedChapter { title: format!("{} ({})", ch.title, part), text: buf.join("\n") });
+        }
+        out.extend(parts);
+    }
+    out
+}
+
+/// TXT: split on chapter headings (第X章 / Chapter N / 序章 …).
+pub fn parse_txt_book(text: &str, title: &str) -> ParsedBook {
+    let text = text.trim_start_matches('\u{feff}').replace("\r\n", "\n").replace('\r', "\n");
+    let heading = chapter_heading_regex();
+    let mut chapters: Vec<ParsedChapter> = Vec::new();
+    let mut current_title = String::new();
+    let mut body: Vec<&str> = Vec::new();
+    let push = |t: &str, body: &mut Vec<&str>, chapters: &mut Vec<ParsedChapter>| {
+        let joined = body.join("\n").trim().to_string();
+        body.clear();
+        if !joined.is_empty() || !t.is_empty() {
+            chapters.push(ParsedChapter { title: t.to_string(), text: joined });
+        }
+    };
+    for line in text.split('\n') {
+        if heading.is_match(line) {
+            push(&current_title, &mut body, &mut chapters);
+            current_title = line.trim().to_string();
+        } else {
+            body.push(line);
+        }
+    }
+    push(&current_title, &mut body, &mut chapters);
+    let named: Vec<ParsedChapter> = chapters
+        .into_iter()
+        .enumerate()
+        .map(|(i, c)| ParsedChapter {
+            title: if c.title.is_empty() {
+                if i == 0 { title.to_string() } else { format!("#{}", i + 1) }
+            } else {
+                c.title
+            },
+            text: c.text,
+        })
+        .filter(|c| !c.text.is_empty())
+        .collect();
+    let chapters = if named.is_empty() {
+        vec![ParsedChapter { title: title.to_string(), text: text.trim().to_string() }]
+    } else {
+        named
+    };
+    ParsedBook {
+        title: title.to_string(),
+        author: None,
+        language: None,
+        format: "txt".into(),
+        chapters: split_oversized(chapters),
+    }
+}
+
+fn first_capture(re: &str, text: &str) -> Option<String> {
+    Regex::new(re)
+        .ok()?
+        .captures(text)
+        .and_then(|c| c.get(1))
+        .map(|m| html_escape::decode_html_entities(m.as_str().trim()).into_owned())
+        .map(|s| Regex::new(r"<[^>]*>").map(|r| r.replace_all(&s, "").trim().to_string()).unwrap_or(s))
+        .filter(|s| !s.is_empty())
+}
+
+/// EPUB: one chapter per spine HTML document with text; title from h1–h3 or <title>.
+pub fn parse_epub_book(path: &Path, fallback_title: &str) -> Result<ParsedBook, String> {
+    let file = File::open(path).map_err(|error| format!("could not open file: {error}"))?;
+    let mut archive =
+        ZipArchive::new(file).map_err(|error| format!("invalid EPUB archive: {error}"))?;
+    let container_xml = read_archive_text(&mut archive, "META-INF/container.xml", MAX_EPUB_METADATA_BYTES)?;
+    let package_path = parse_package_path(&container_xml)
+        .ok_or_else(|| "META-INF/container.xml has no rootfile path".to_string())?;
+    let package_path = normalize_archive_path("", &package_path)?;
+    let package_xml = read_archive_text(&mut archive, &package_path, MAX_EPUB_METADATA_BYTES)?;
+    let (manifest, spine) = parse_package_document(&package_xml);
+    let package_dir = package_path.rsplit_once('/').map(|(d, _)| d).unwrap_or("");
+    let by_id: HashMap<&str, &ManifestItem> = manifest.iter().map(|i| (i.id.as_str(), i)).collect();
+    let items: Vec<&ManifestItem> = if spine.is_empty() {
+        manifest.iter().filter(|i| is_html_item(i)).collect()
+    } else {
+        spine.iter().filter_map(|id| by_id.get(id.as_str()).copied()).filter(|i| is_html_item(i)).collect()
+    };
+    let mut chapters = Vec::new();
+    for item in items {
+        let Ok(entry) = normalize_archive_path(package_dir, &item.href) else { continue };
+        let Ok(html) = read_archive_text(&mut archive, &entry, MAX_EPUB_CHAPTER_BYTES) else { continue };
+        let text = html_document_to_text(&html);
+        if text.trim().is_empty() {
+            continue;
+        }
+        let heading = first_capture(r"(?is)<h[1-3]\b[^>]*>(.*?)</h[1-3]\s*>", &html)
+            .or_else(|| first_capture(r"(?is)<title\b[^>]*>(.*?)</title\s*>", &html));
+        chapters.push(ParsedChapter {
+            title: heading.unwrap_or_else(|| format!("#{}", chapters.len() + 1)),
+            text,
+        });
+    }
+    if chapters.is_empty() {
+        return Err("no readable chapters (image-only or fixed-layout EPUB?)".into());
+    }
+    Ok(ParsedBook {
+        title: first_capture(r"(?is)<dc:title\b[^>]*>(.*?)</dc:title>", &package_xml)
+            .unwrap_or_else(|| fallback_title.to_string()),
+        author: first_capture(r"(?is)<dc:creator\b[^>]*>(.*?)</dc:creator>", &package_xml),
+        language: first_capture(r"(?is)<dc:language\b[^>]*>(.*?)</dc:language>", &package_xml),
+        format: "epub".into(),
+        chapters: split_oversized(chapters),
+    })
+}
+
 #[cfg(test)]
 mod tests {
-    use super::normalize_archive_path;
+    use super::*;
+
+    #[test]
+    fn txt_books_split_on_chapter_headings() {
+        let book = parse_txt_book("前言文字\n第一章 开始\n正文一\n第二章 继续\n正文二\n", "小说");
+        let titles: Vec<&str> = book.chapters.iter().map(|c| c.title.as_str()).collect();
+        assert_eq!(titles, vec!["小说", "第一章 开始", "第二章 继续"]);
+        assert_eq!(book.chapters[2].text, "正文二");
+        let plain = parse_txt_book("no headings here", "T");
+        assert_eq!(plain.chapters.len(), 1);
+        let big = split_oversized(vec![ParsedChapter { title: "c".into(), text: "x".repeat(40_000) + "\n" + &"y".repeat(40_000) }]);
+        assert_eq!(big.len(), 2);
+        assert_eq!(big[0].title, "c (1)");
+    }
 
     #[test]
     fn archive_paths_resolve_relative_segments_and_percent_encoding() {

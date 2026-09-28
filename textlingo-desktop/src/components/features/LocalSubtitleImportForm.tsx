@@ -25,7 +25,7 @@ export function LocalSubtitleImportForm({ onSave, onCancel }: LocalSubtitleImpor
                 multiple: false,
                 filters: [{
                     name: 'Subtitle',
-                    extensions: ['srt']
+                    extensions: ['srt', 'lrc']
                 }]
             });
 

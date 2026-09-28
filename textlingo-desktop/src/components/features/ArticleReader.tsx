@@ -45,6 +45,7 @@ import {
   DropdownMenuSeparator,
 } from "../ui/dropdown-menu";
 import { useConfig } from "../../lib/hooks";
+import { useCloudDataChanged } from "../../lib/hooks/useCloudDataChanged";
 import { buildMediaResourceUrl } from "../../lib/media";
 
 const DEFAULT_BATCH_TRANSLATION_CONCURRENCY = 3;
@@ -181,6 +182,11 @@ export function ArticleReader({
   // Config hook
   const { config } = useConfig();
   const targetLanguage = config?.target_language || "zh-CN";
+
+  // 云同步带来远端修改时刷新(翻译、精讲、重新切分)
+  useCloudDataChanged(() => {
+    void refreshArticle();
+  });
 
   // 刷新文章数据 - 仅更新本地状态，不触发父组件更新
   const refreshArticle = async () => {

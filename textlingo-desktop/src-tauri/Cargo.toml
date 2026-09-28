@@ -43,6 +43,8 @@ rusqlite = { version = "0.32", features = ["bundled"] }
 tauri-plugin-deep-link = "2"
 sha2 = "0.10"
 flate2 = "1"
+chacha20poly1305 = "0.10"
+tokio-tungstenite = { version = "0.21", features = ["native-tls"] }
 
 [target.'cfg(any(target_os = "macos", windows, target_os = "linux"))'.dependencies]
 tauri-plugin-single-instance = { version = "2", features = ["deep-link"] }

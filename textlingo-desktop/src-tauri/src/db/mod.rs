@@ -7,6 +7,7 @@
 //! One `Database` per data directory is cached process-wide ([`open`]); tests pass temp dirs.
 //! The first open of a data directory imports the legacy JSON files (see [`legacy`]).
 
+pub mod books;
 pub mod legacy;
 pub mod repo;
 
@@ -16,7 +17,7 @@ use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex, OnceLock};
 
 pub const DB_FILE: &str = "openkoto.sqlite3";
-const SCHEMA_VERSION: i64 = 1;
+const SCHEMA_VERSION: i64 = 2;
 
 pub struct Database {
     conn: Mutex<Connection>,
@@ -106,6 +107,9 @@ fn migrate_schema(conn: &Connection) -> Result<(), String> {
     }
     if version < 1 {
         conn.execute_batch(SCHEMA_V1).map_err(sql_err)?;
+    }
+    if version < 2 {
+        conn.execute_batch(SCHEMA_V2).map_err(sql_err)?;
     }
     conn.execute_batch(&format!("PRAGMA user_version = {SCHEMA_VERSION};"))
         .map_err(sql_err)?;
@@ -269,6 +273,48 @@ CREATE TABLE IF NOT EXISTS sync_record (
     PRIMARY KEY (type, id)
 );
 CREATE INDEX IF NOT EXISTS sync_record_dirty ON sync_record(dirty) WHERE dirty = 1;
+COMMIT;
+"#;
+
+/// Schema v2: books (Book / BookChapter records), lyrics metadata, desktop reading locators.
+const SCHEMA_V2: &str = r#"
+BEGIN;
+CREATE TABLE IF NOT EXISTS book (
+    id TEXT PRIMARY KEY NOT NULL,
+    title TEXT NOT NULL,
+    author TEXT,
+    language TEXT,
+    format TEXT NOT NULL,
+    total_chars INTEGER NOT NULL DEFAULT 0,
+    default_mode TEXT NOT NULL DEFAULT 'native',
+    original_only INTEGER NOT NULL DEFAULT 0,
+    file_sha256 TEXT,
+    file_size INTEGER,
+    -- desktop-only: sha256 of the file last uploaded to /api/v1/books/:id/file
+    file_uploaded_sha TEXT,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS book_chapter (
+    article_id TEXT PRIMARY KEY NOT NULL,
+    book_id TEXT NOT NULL,
+    chapter_index INTEGER NOT NULL,
+    title TEXT,
+    is_segmented INTEGER NOT NULL DEFAULT 0,
+    char_count INTEGER NOT NULL DEFAULT 0
+);
+CREATE INDEX IF NOT EXISTS book_chapter_book ON book_chapter(book_id, chapter_index);
+CREATE TABLE IF NOT EXISTS lyrics_meta (
+    article_id TEXT PRIMARY KEY NOT NULL,
+    artist TEXT,
+    album TEXT,
+    language TEXT,
+    lrc_offset_ms INTEGER,
+    source_format TEXT,
+    cover_url TEXT
+);
+ALTER TABLE book_progress ADD COLUMN locator TEXT;
+ALTER TABLE book_progress ADD COLUMN page_number INTEGER;
 COMMIT;
 "#;
 

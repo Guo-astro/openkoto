@@ -27,7 +27,7 @@ fn now() -> String {
     chrono::Utc::now().to_rfc3339()
 }
 
-fn record(
+pub(crate) fn record(
     conn: &Connection,
     track: Track,
     record_type: &str,
@@ -1147,6 +1147,14 @@ pub fn mirror_article(conn: &Connection, article: &Article, track: Track) -> Res
 /// Delete an article and its segments; tombstones the Article, its Segments and the
 /// LyricsMeta / BookChapter keyed by the article id (spec §4.2 client-side cascade).
 pub fn delete_article(conn: &Connection, id: &str, track: Track) -> Result<bool, String> {
+    // A desktop book article shares its id with the Book record.
+    if super::books::load_book(conn, id)?.is_some() {
+        super::books::delete_book(conn, id, track)?;
+    }
+    conn.execute("delete from book_chapter where article_id = ?1", [id])
+        .map_err(sql_err)?;
+    conn.execute("delete from lyrics_meta where article_id = ?1", [id])
+        .map_err(sql_err)?;
     let segments = load_segments(conn, id)?;
     conn.execute("delete from segment where article_id = ?1", [id])
         .map_err(sql_err)?;

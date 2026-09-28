@@ -473,7 +473,12 @@
       "syncNow": "Sync now",
       "quotaExceeded": "{{count}} items were not uploaded because your plan limit was reached.",
       "autoSyncHint": "Sync runs automatically on start, a few seconds after changes and every 5 minutes. API keys are never synced.",
-      "lastError": "Last error"
+      "lastError": "Last error",
+      "switchTitle": "Different account",
+      "switchDesc": "You signed in as {{email}}, but the data on this computer was synced with {{previous}}. Upload it to the new account, or keep it on this computer only? Nothing is uploaded until you choose.",
+      "switchUpload": "Upload to this account",
+      "switchLocalOnly": "Keep local only",
+      "tokenFileWarning": "No system keychain is available, so your sign-in is stored in an encrypted file readable only by your user account. Install a Secret Service (e.g. GNOME Keyring or KWallet) for stronger protection."
     }
   },
   "favorites": {
@@ -705,7 +710,7 @@
     "fileLabel": "Subtitle File",
     "filePlaceholder": "Select a subtitle file...",
     "selectFileTitle": "Select subtitle file",
-    "description": "Import an .srt subtitle file as a standalone reading material.",
+    "description": "Import an .srt subtitle file or .lrc lyrics as a standalone reading material.",
     "titleLabel": "Title (Optional)",
     "titlePlaceholder": "Leave empty to use the file name",
     "import": "Import",

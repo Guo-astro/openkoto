@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useCloudDataChanged } from "../../lib/hooks/useCloudDataChanged";
 import { invoke } from "@tauri-apps/api/core";
 import { save } from "@tauri-apps/plugin-dialog";
 import { useTranslation } from "react-i18next";
@@ -163,6 +164,11 @@ export function FavoritesPage({ onBack, onSelectArticle }: FavoritesPageProps) {
       setIsLoading(false);
     }
   };
+
+  // 云同步应用了远端修改(生词、词包、复习记录):刷新
+  useCloudDataChanged(() => {
+    void loadFavorites();
+  });
 
   useEffect(() => {
     void loadFavorites();

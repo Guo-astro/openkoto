@@ -3111,11 +3111,146 @@ pub async fn import_srt_file_cmd(
     file_path: String,
     title: Option<String>,
 ) -> Result<Article, String> {
-    let article = create_article_from_srt(std::path::Path::new(&file_path), title)?;
+    let path = std::path::Path::new(&file_path);
+    let is_lrc = path
+        .extension()
+        .and_then(|e| e.to_str())
+        .map(|e| e.eq_ignore_ascii_case("lrc"))
+        .unwrap_or(false);
+    if is_lrc {
+        return import_lrc_file(&app_handle, path, title);
+    }
+    let article = create_article_from_srt(path, title)?;
     let article_json = serde_json::to_string(&article)
         .map_err(|e| format!("Failed to serialize article: {}", e))?;
     save_article(&app_handle, &article.id, &article_json)?;
     Ok(article)
+}
+
+/// .lrc → lyrics article (timed segments) + LyricsMeta (artist / album / offset), both synced.
+fn import_lrc_file(
+    app_handle: &AppHandle,
+    path: &std::path::Path,
+    title: Option<String>,
+) -> Result<Article, String> {
+    let (article, parsed) = crate::lyrics::create_article_from_lrc(path, title)?;
+    let article_json = serde_json::to_string(&article)
+        .map_err(|e| format!("Failed to serialize article: {}", e))?;
+    save_article(app_handle, &article.id, &article_json)?;
+    let meta = crate::db::books::LyricsMeta {
+        article_id: article.id.clone(),
+        artist: parsed.meta.artist.clone(),
+        album: parsed.meta.album.clone(),
+        language: None,
+        lrc_offset_ms: parsed.meta.offset_ms,
+        source_format: Some(parsed.format.clone()),
+        cover_url: None,
+    };
+    crate::storage::database(app_handle)?.write(|tx| {
+        crate::db::books::save_lyrics_meta(tx, &meta, crate::db::repo::Track::Record)
+    })?;
+    crate::sync::notify_local_change();
+    Ok(article)
+}
+
+/// Reading position of a book (`book_id` = the desktop book article id).
+#[tauri::command]
+pub async fn get_book_progress_cmd(
+    app_handle: AppHandle,
+    book_id: String,
+) -> Result<Option<crate::db::books::BookProgress>, String> {
+    crate::storage::database(&app_handle)?
+        .read(|c| crate::db::books::load_progress(c, &book_id.to_lowercase()))
+}
+
+/// Save the reading position (EPUB CFI and/or PDF page); synced as BookProgress.
+#[tauri::command]
+pub async fn save_book_progress_cmd(
+    app_handle: AppHandle,
+    book_id: String,
+    locator: Option<String>,
+    page_number: Option<i64>,
+    chapter_index: Option<i64>,
+) -> Result<(), String> {
+    let book_id = book_id.to_lowercase();
+    let db = crate::storage::database(&app_handle)?;
+    let changed = db.write(|tx| {
+        let previous = crate::db::books::load_progress(tx, &book_id)?;
+        let progress = crate::db::books::BookProgress {
+            book_id: book_id.clone(),
+            chapter_index: chapter_index
+                .or_else(|| page_number.map(|p| (p - 1).max(0)))
+                .or(previous.as_ref().map(|p| p.chapter_index))
+                .unwrap_or(0),
+            mode: previous.as_ref().map(|p| p.mode.clone()).unwrap_or_else(|| "native".into()),
+            locator: locator.clone().or(previous.as_ref().and_then(|p| p.locator.clone())),
+            page_number: page_number.or(previous.as_ref().and_then(|p| p.page_number)),
+            updated_at: chrono::Utc::now().to_rfc3339(),
+            ..Default::default()
+        };
+        crate::db::books::save_progress(tx, &progress, crate::db::repo::Track::Record)
+    })?;
+    if changed {
+        crate::sync::notify_local_change();
+    }
+    Ok(())
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct LegacyProgressEntry {
+    pub key: String,
+    pub value: String,
+}
+
+/// Book id from a reader URL / path: `…/book/<id>.<ext>` → `<id>` (UUIDs only).
+pub fn book_id_from_path(path: &str) -> Option<String> {
+    let decoded = urlencoding::decode(path).map(|c| c.into_owned()).unwrap_or_else(|_| path.to_string());
+    let file = decoded.rsplit(['/', '\\']).next()?;
+    let stem = file.split('.').next()?;
+    uuid::Uuid::parse_str(stem).ok().map(|u| u.to_string())
+}
+
+/// One-time import of the old localStorage progress (`epub-location-<url>`, `pdf-page-<url>`).
+/// Existing (e.g. synced) progress is never overwritten. Returns how many were imported.
+#[tauri::command]
+pub async fn migrate_book_progress_cmd(
+    app_handle: AppHandle,
+    entries: Vec<LegacyProgressEntry>,
+) -> Result<usize, String> {
+    let db = crate::storage::database(&app_handle)?;
+    let imported = db.write(|tx| {
+        let mut n = 0;
+        for e in &entries {
+            let (book_path, locator, page) = if let Some(p) = e.key.strip_prefix("epub-location-") {
+                (p, Some(e.value.clone()), None)
+            } else if let Some(p) = e.key.strip_prefix("pdf-page-") {
+                (p, None, e.value.trim().parse::<i64>().ok())
+            } else {
+                continue;
+            };
+            let Some(book_id) = book_id_from_path(book_path) else { continue };
+            if crate::db::books::load_progress(tx, &book_id)?.is_some() {
+                continue;
+            }
+            let progress = crate::db::books::BookProgress {
+                book_id,
+                chapter_index: page.map(|p| (p - 1).max(0)).unwrap_or(0),
+                mode: "native".into(),
+                locator,
+                page_number: page,
+                updated_at: chrono::Utc::now().to_rfc3339(),
+                ..Default::default()
+            };
+            if crate::db::books::save_progress(tx, &progress, crate::db::repo::Track::Record)? {
+                n += 1;
+            }
+        }
+        Ok(n)
+    })?;
+    if imported > 0 {
+        crate::sync::notify_local_change();
+    }
+    Ok(imported)
 }
 
 #[tauri::command]
@@ -3311,7 +3446,7 @@ const BOOKS_DIR: &str = "books";
 
 /// 读取 TXT 文件内容，UTF-8 优先，非 UTF-8 时自动检测编码（GBK/GB2312/Big5 等）。
 /// 中文小说 txt 常见 GBK 编码，直接 read_to_string 会失败。
-fn read_txt_decoded(path: &std::path::Path) -> Result<String, String> {
+pub(crate) fn read_txt_decoded(path: &std::path::Path) -> Result<String, String> {
     let bytes = std::fs::read(path).map_err(|e| format!("读取文件失败: {}", e))?;
 
     // 去掉 UTF-8 BOM 的快速路径
@@ -3440,6 +3575,15 @@ pub async fn import_book_cmd(
     let article_json =
         serde_json::to_string(&article).map_err(|e| format!("序列化文章失败: {}", e))?;
     save_article(&app_handle, &id, &article_json)?;
+
+    // EPUB/TXT 书籍同步为 Book + 章节记录(同步规范 §2.2);失败不影响本地导入
+    if book_type == "epub" || book_type == "txt" {
+        if let Ok(data_dir) = crate::storage::get_app_data_dir(&app_handle) {
+            if let Err(e) = crate::storage::register_local_book_in_dir(&data_dir, &id) {
+                eprintln!("[ImportBook] 书籍同步记录创建失败: {}", e);
+            }
+        }
+    }
 
     println!(
         "[ImportBook] 书籍导入成功: {} ({})",
@@ -4396,5 +4540,23 @@ mod sentence_split_tests {
             split_into_sentences("Dr. É. Zola wrote. Then Mr. A. Smith read."),
             vec!["Dr. É. Zola wrote.", "Then Mr. A. Smith read."]
         );
+    }
+}
+
+#[cfg(test)]
+mod book_progress_tests {
+    use super::book_id_from_path;
+
+    #[test]
+    fn book_ids_from_reader_urls() {
+        assert_eq!(
+            book_id_from_path("http://127.0.0.1:19420/book/0b8e2c1a-5d4f-4e3a-9b2c-1d0e9f8a7b99.epub").as_deref(),
+            Some("0b8e2c1a-5d4f-4e3a-9b2c-1d0e9f8a7b99")
+        );
+        assert_eq!(
+            book_id_from_path("/data/books/0b8e2c1a-5d4f-4e3a-9b2c-1d0e9f8a7b99.chapters.txt").as_deref(),
+            Some("0b8e2c1a-5d4f-4e3a-9b2c-1d0e9f8a7b99")
+        );
+        assert_eq!(book_id_from_path("http://127.0.0.1:19420/book/translated-mono.pdf"), None);
     }
 }

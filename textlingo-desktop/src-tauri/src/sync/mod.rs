@@ -7,6 +7,7 @@
 //! - Scheduling and auth live in [`crate::cloud`].
 
 pub mod apply;
+pub mod dedupe;
 pub mod engine;
 pub mod hlc;
 pub mod merge;

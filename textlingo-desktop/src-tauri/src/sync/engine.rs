@@ -98,6 +98,8 @@ pub struct SyncReport {
     pub rebuilt: bool,
     pub replayed_cards: Vec<String>,
     pub diagnostics: Vec<String>,
+    /// Same-word cards merged on the first sync (spec §9).
+    pub deduped: usize,
 }
 
 #[derive(Debug, Clone)]
@@ -135,6 +137,8 @@ pub struct EngineOptions {
     pub replay: ReplayOptions,
     /// Server-issued device id sent with pushes (the local id is used when absent).
     pub device_id: Option<String>,
+    /// First sync of an account on this device: merge same-word cards after the pull (§9).
+    pub dedupe: bool,
 }
 
 impl Default for EngineOptions {
@@ -145,6 +149,7 @@ impl Default for EngineOptions {
             max_repush_rounds: 2,
             replay: ReplayOptions::default(),
             device_id: None,
+            dedupe: false,
         }
     }
 }
@@ -193,10 +198,10 @@ fn sha256_hex(bytes: &[u8]) -> String {
         .collect()
 }
 
-/// Can this dirty record be pushed now? BookMarks need their Book on the server; the desktop
-/// has no Book records yet (P3), so desktop bookmarks stay local-dirty until then.
+/// Can this dirty record be pushed now? BookMarks / BookProgress need their Book record
+/// (PDF books have none: server-side books are EPUB/TXT only), so those stay local-dirty.
 fn pushable(conn: &Connection, r: &LocalRecord) -> Result<bool, String> {
-    if r.record_type == "BookMark" && !r.deleted {
+    if (r.record_type == "BookMark" || r.record_type == "BookProgress") && !r.deleted {
         let Some(book_id) = lower_str(r.payload.as_ref(), "bookId") else {
             return Ok(false);
         };
@@ -210,7 +215,7 @@ fn pushable(conn: &Connection, r: &LocalRecord) -> Result<bool, String> {
 struct Cycle {
     report: SyncReport,
     cards: BTreeSet<String>,
-    touched_articles: BTreeSet<String>,
+    touched: apply::Touched,
 }
 
 impl<'a, T: Transport> HttpSyncEngine<'a, T> {
@@ -238,7 +243,7 @@ impl<'a, T: Transport> HttpSyncEngine<'a, T> {
         let mut cycle = Cycle {
             report: SyncReport::default(),
             cards: BTreeSet::new(),
-            touched_articles: BTreeSet::new(),
+            touched: apply::Touched::default(),
         };
         if rebuild {
             self.rebuild(&mut cycle).await?;
@@ -253,6 +258,12 @@ impl<'a, T: Transport> HttpSyncEngine<'a, T> {
                     return Err(e);
                 }
             }
+        }
+        if self.opts.dedupe {
+            let opts = &self.opts.replay;
+            cycle.report.deduped = self
+                .db
+                .write(|tx| super::dedupe::dedupe_vocabulary(tx, opts))?;
         }
         let pushed = self.push_all(&mut cycle).await;
         self.materialize(&mut cycle);
@@ -273,7 +284,16 @@ impl<'a, T: Transport> HttpSyncEngine<'a, T> {
     }
 
     fn materialize(&self, cycle: &mut Cycle) {
-        for article_id in std::mem::take(&mut cycle.touched_articles) {
+        let touched = std::mem::take(&mut cycle.touched);
+        for book_id in touched.books {
+            if let Err(e) = crate::storage::materialize_book_in_dir(&self.data_dir, &book_id) {
+                cycle
+                    .report
+                    .diagnostics
+                    .push(format!("materialize book {book_id}: {e}"));
+            }
+        }
+        for article_id in touched.articles {
             if let Err(e) = crate::storage::materialize_article_in_dir(&self.data_dir, &article_id)
             {
                 cycle
@@ -497,7 +517,7 @@ impl<'a, T: Transport> HttpSyncEngine<'a, T> {
                 )?;
                 crate::db::repo::delete_segment(conn, &seg.id)?;
             }
-            cycle.touched_articles.insert(purge.article_id.clone());
+            cycle.touched.articles.insert(purge.article_id.clone());
         }
 
         let new_hash = store::payload_hash(record.payload.as_ref());
@@ -509,7 +529,7 @@ impl<'a, T: Transport> HttpSyncEngine<'a, T> {
                 conn,
                 &record,
                 local_record.and_then(|l| l.payload.as_ref()),
-                &mut cycle.touched_articles,
+                &mut cycle.touched,
             )?;
         }
 

@@ -449,7 +449,7 @@ async fn conflict_is_merged_and_repushed_at_most_twice() {
     let mut cycle = Cycle {
         report: SyncReport::default(),
         cards: BTreeSet::new(),
-        touched_articles: BTreeSet::new(),
+        touched: crate::sync::apply::Touched::default(),
     };
     engine.push_all(&mut cycle).await.unwrap();
     assert_eq!(cycle.report.conflicts, 1);
@@ -614,4 +614,128 @@ fn chunking_respects_op_limit() {
         vec![500, 500, 201]
     );
     assert_eq!(gunzip(&gzip(b"hello").unwrap()).unwrap(), b"hello");
+}
+
+#[tokio::test]
+async fn remote_books_become_readable_and_bookmarks_push_once_the_book_exists() {
+    let (dir, database) = setup("engine-books");
+    let server = MockServer::default();
+    let book = "0b8e2c1a-5d4f-4e3a-9b2c-1d0e9f8a7b99";
+    let ch1 = "c1000000-0000-4000-8000-000000000001";
+    let ch2 = "c1000000-0000-4000-8000-000000000002";
+    server.insert_remote(
+        "Book",
+        book,
+        &hlc(1790000000000, "bbbbbbbb"),
+        Some(json!({
+            "id": book, "title": "Remote Novel", "format": "epub", "totalChars": 6,
+            "defaultMode": "native", "originalOnly": false, "createdAt": "2026-09-28T00:00:00Z"
+        })),
+    );
+    for (i, (id, text)) in [(ch1, "第一章正文"), (ch2, "第二章正文")]
+        .iter()
+        .enumerate()
+    {
+        server.insert_remote("Article", id, &hlc(1790000000001, "bbbbbbbb"), Some(json!({
+            "id": id, "title": format!("Ch{}", i + 1), "content": text, "sourceType": "book", "createdAt": "2026-09-28T00:00:00Z"
+        })));
+        server.insert_remote("BookChapter", id, &hlc(1790000000002, "bbbbbbbb"), Some(json!({
+            "articleId": id, "bookId": book, "index": i, "title": format!("Ch{}", i + 1), "isSegmented": false, "charCount": 5
+        })));
+    }
+    server.insert_remote(
+        "BookProgress",
+        book,
+        &hlc(1790000000003, "bbbbbbbb"),
+        Some(json!({
+            "bookId": book, "chapterIndex": 1, "mode": "native", "updatedAt": "2026-09-28T01:00:00Z"
+        })),
+    );
+    // A lyrics article from iOS with its LyricsMeta.
+    let song = "5c000000-0000-4000-8000-000000000001";
+    server.insert_remote("Article", song, &hlc(1790000000004, "bbbbbbbb"), Some(json!({
+        "id": song, "title": "Song", "content": "la la", "sourceType": "lyrics", "createdAt": "2026-09-28T00:00:00Z"
+    })));
+    server.insert_remote("Segment", "5c000000-0000-4000-8000-0000000000a1", &hlc(1790000000005, "bbbbbbbb"), Some(json!({
+        "id": "5c000000-0000-4000-8000-0000000000a1", "articleId": song, "order": 0, "text": "la la",
+        "isNewParagraph": true, "startTime": 1.5, "endTime": 3.0, "createdAt": "2026-09-28T00:00:00Z"
+    })));
+    server.insert_remote(
+        "LyricsMeta",
+        song,
+        &hlc(1790000000006, "bbbbbbbb"),
+        Some(json!({
+            "articleId": song, "artist": "Singer", "lrcOffsetMs": 200, "sourceFormat": "lrc"
+        })),
+    );
+
+    let engine = HttpSyncEngine::new(database.clone(), &server, opts());
+    engine.sync().await.unwrap();
+
+    // The book shows up as a desktop book article, readable from its chapters.
+    let article: Article =
+        serde_json::from_str(&std::fs::read_to_string(dir.join("articles").join(book)).unwrap())
+            .unwrap();
+    assert_eq!(article.source_type.as_deref(), Some("book"));
+    assert_eq!(article.book_type.as_deref(), Some("txt"));
+    assert!(article.content.contains("第二章正文"));
+    assert!(std::path::Path::new(article.book_path.as_deref().unwrap()).exists());
+    // Chapters do not appear as separate articles.
+    assert!(!dir.join("articles").join(ch1).exists());
+    let lyrics: Article =
+        serde_json::from_str(&std::fs::read_to_string(dir.join("articles").join(song)).unwrap())
+            .unwrap();
+    assert_eq!(lyrics.source_type.as_deref(), Some("lyrics"));
+    assert_eq!(lyrics.segments[0].start_time, Some(1.5));
+    database
+        .read(|c| {
+            assert_eq!(
+                crate::db::books::load_progress(c, book)?
+                    .unwrap()
+                    .chapter_index,
+                1
+            );
+            assert_eq!(
+                crate::db::books::load_lyrics_meta(c, song)?
+                    .unwrap()
+                    .artist
+                    .as_deref(),
+                Some("Singer")
+            );
+            Ok(())
+        })
+        .unwrap();
+
+    // A bookmark on that book is now pushable (its Book record exists).
+    let bookmark = crate::types::Bookmark {
+        id: "b0000000-0000-4000-8000-000000000001".into(),
+        book_path: article.book_path.clone().unwrap(),
+        book_type: "txt".into(),
+        title: "mark".into(),
+        note: None,
+        selected_text: None,
+        page_number: Some(2),
+        epub_cfi: None,
+        created_at: "2026-09-28T02:00:00Z".into(),
+        color: None,
+    };
+    database
+        .write(|tx| repo::save_bookmark(tx, &bookmark, None, repo::Track::Record).map(|_| ()))
+        .unwrap();
+    engine.sync().await.unwrap();
+    let pushed = server
+        .get("BookMark", &bookmark.id)
+        .expect("bookmark pushed");
+    assert_eq!(pushed.payload.unwrap()["bookId"], book);
+
+    // Remote delete removes the desktop book.
+    server.insert_remote(
+        "Book",
+        book,
+        &hlc(chrono::Utc::now().timestamp_millis() + 1000, "bbbbbbbb"),
+        None,
+    );
+    engine.sync().await.unwrap();
+    assert!(!dir.join("articles").join(book).exists());
+    teardown(dir);
 }

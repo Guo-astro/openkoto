@@ -19,6 +19,7 @@ pub mod transfer_export;
 pub mod types;
 mod video_server;
 mod youtube;
+pub mod lyrics;
 
 // Re-exports
 use agent_worker::{mark_running_tasks_interrupted_in_dir, AgentWorkerManager};
@@ -147,8 +148,17 @@ pub fn run() {
             cloud::commands::cloud_account,
             cloud::commands::cloud_sync_now,
             cloud::commands::cloud_sync_status,
+            cloud::commands::cloud_resolve_account_switch,
+            // 书籍阅读进度(同步为 BookProgress)
+            commands::get_book_progress_cmd,
+            commands::save_book_progress_cmd,
+            commands::migrate_book_progress_cmd,
         ])
         .setup(|app| {
+            // Before anything touches the session (token-file fallback lives in the data dir).
+            if let Ok(dir) = app.path().app_data_dir() {
+                cloud::set_data_dir(dir);
+            }
             {
                 use tauri_plugin_deep_link::DeepLinkExt;
                 // Dev builds / AppImages are not registered by an installer.
@@ -168,6 +178,7 @@ pub fn run() {
                 let _ = commands::init_app(app_handle.clone()).await;
                 // SQLite + legacy import are ready: start cloud sync (no-op until signed in).
                 cloud::scheduler::start(app_handle.clone());
+                cloud::realtime::start(app_handle.clone());
                 if let Ok(app_data_dir) = app_handle.path().app_data_dir() {
                     // Start the persistent log file as early as possible so the
                     // very first PDF translation of a session is captured.

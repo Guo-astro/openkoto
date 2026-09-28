@@ -193,7 +193,7 @@ impl<'a> ApiClient<'a> {
         }
     }
 
-    async fn access_tokens(&self) -> Result<Tokens, TransportError> {
+    pub async fn access_tokens(&self) -> Result<Tokens, TransportError> {
         let Some(tokens) = self.state.tokens() else {
             return Err(TransportError::new(
                 Some(401),
@@ -261,6 +261,64 @@ impl<'a> ApiClient<'a> {
     /// GET /api/v1/me
     pub async fn me(&self) -> Result<Value, TransportError> {
         self.json_authed(Method::GET, "/api/v1/me", None).await
+    }
+
+    /// PUT /api/v1/books/:id/file (original EPUB/TXT, spec: books routes).
+    pub async fn put_book_file(
+        &self,
+        book_id: &str,
+        ext: &str,
+        sha256: &str,
+        bytes: Vec<u8>,
+    ) -> Result<(), TransportError> {
+        let path = format!("/api/v1/books/{book_id}/file?ext={ext}&sha256={sha256}");
+        let resp = self
+            .send_authed(
+                Method::PUT,
+                &path,
+                Some(bytes),
+                Some("application/octet-stream"),
+            )
+            .await?;
+        if !resp.status().is_success() {
+            return Err(error_from_response(resp).await);
+        }
+        Ok(())
+    }
+
+    /// GET /api/v1/books/:id/file
+    pub async fn get_book_file(&self, book_id: &str) -> Result<Vec<u8>, TransportError> {
+        let resp = self
+            .send_authed(
+                Method::GET,
+                &format!("/api/v1/books/{book_id}/file"),
+                None,
+                None,
+            )
+            .await?;
+        if !resp.status().is_success() {
+            return Err(error_from_response(resp).await);
+        }
+        resp.bytes()
+            .await
+            .map(|b| b.to_vec())
+            .map_err(network_error)
+    }
+
+    /// DELETE /api/v1/books/:id/file
+    pub async fn delete_book_file(&self, book_id: &str) -> Result<(), TransportError> {
+        let resp = self
+            .send_authed(
+                Method::DELETE,
+                &format!("/api/v1/books/{book_id}/file"),
+                None,
+                None,
+            )
+            .await?;
+        if !resp.status().is_success() && resp.status() != StatusCode::NOT_FOUND {
+            return Err(error_from_response(resp).await);
+        }
+        Ok(())
     }
 
     /// POST /api/v1/auth/logout (revokes this device).

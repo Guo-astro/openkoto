@@ -137,16 +137,22 @@ pub async fn cloud_login_start(app: AppHandle) -> Result<LoginStart, String> {
                     );
                     return;
                 }
-                if let Some(u) = &user {
-                    if let Err(e) = scheduler::prepare_for_account(&task_app, &u.id) {
-                        eprintln!("[cloud] prepare_for_account: {e}");
+                let mut transition = scheduler::AccountTransition::Same;
+                if let (Some(u), Ok(db)) = (&user, crate::storage::database(&task_app)) {
+                    match scheduler::begin_account(&db, &u.id, &u.email) {
+                        Ok(t) => transition = t,
+                        Err(e) => eprintln!("[cloud] begin_account: {e}"),
                     }
                 }
+                let needs_choice = transition == scheduler::AccountTransition::SwitchPending;
                 let _ = task_app.emit(
                     EVENT_AUTH_CHANGED,
-                    json!({ "signedIn": true, "user": user }),
+                    json!({ "signedIn": true, "user": user, "needsAccountChoice": needs_choice }),
                 );
-                let _ = scheduler::run_sync(&task_app).await;
+                if !needs_choice {
+                    let _ = scheduler::run_sync(&task_app).await;
+                }
+                super::realtime::reconnect();
             }
             Err(e) => {
                 let _ = task_app.emit(EVENT_AUTH_CHANGED, json!({ "signedIn": false, "error": e }));
@@ -190,6 +196,12 @@ pub async fn cloud_logout(app: AppHandle) -> Result<(), String> {
         let mut status = st.status.lock().unwrap();
         status.last_report = None;
     }
+    // An unanswered account-switch question is dropped with the session.
+    if let Ok(db) = crate::storage::database(&app) {
+        let _ =
+            db.write(|tx| crate::sync::store::set_meta(tx, scheduler::META_PENDING_SWITCH, None));
+    }
+    super::realtime::reconnect();
     let _ = app.emit(EVENT_AUTH_CHANGED, json!({ "signedIn": false }));
     scheduler::emit_status(&app);
     Ok(())
@@ -238,5 +250,19 @@ pub async fn cloud_sync_now(app: AppHandle) -> Result<SyncStatus, String> {
 
 #[tauri::command]
 pub async fn cloud_sync_status(app: AppHandle) -> Result<SyncStatus, String> {
+    Ok(current_status(&app))
+}
+
+/// Answer the account-switch question: `upload = true` uploads this computer's data to the new
+/// account, `false` keeps it local-only. Then syncs.
+#[tauri::command]
+pub async fn cloud_resolve_account_switch(
+    app: AppHandle,
+    upload: bool,
+) -> Result<SyncStatus, String> {
+    let db = crate::storage::database(&app)?;
+    scheduler::resolve_account_switch(&db, upload)?;
+    scheduler::emit_status(&app);
+    let _ = scheduler::run_sync(&app).await;
     Ok(current_status(&app))
 }

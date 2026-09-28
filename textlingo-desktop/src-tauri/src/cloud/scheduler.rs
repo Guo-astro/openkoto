@@ -21,8 +21,119 @@ const MAX_BACKOFF: Duration = Duration::from_secs(5 * 60);
 
 /// Record types the desktop projects into its own tables; anything else in `sync_record`
 /// belongs to the previous account and is dropped on an account switch.
-const DESKTOP_TYPES: &str =
-    "'Vocabulary','WordPack','WordPackMembership','ReviewEvent','Article','Segment','BookMark'";
+const DESKTOP_TYPES: &str = "'Vocabulary','WordPack','WordPackMembership','ReviewEvent','Article','Segment','BookMark','Book','BookChapter','BookProgress','LyricsMeta'";
+
+pub const META_ACCOUNT_EMAIL: &str = "accountEmail";
+/// JSON `{ userId, email, previousUserId, previousEmail }` while the user decides.
+pub const META_PENDING_SWITCH: &str = "pendingAccountSwitch";
+/// Merge same-word cards on the next successful sync (spec §9).
+pub const META_DEDUPE_PENDING: &str = "dedupePending";
+
+/// Wakes the scheduler for an immediate sync (realtime `changed` notification).
+fn remote_change_notify() -> &'static tokio::sync::Notify {
+    static N: std::sync::OnceLock<tokio::sync::Notify> = std::sync::OnceLock::new();
+    N.get_or_init(tokio::sync::Notify::new)
+}
+
+pub fn notify_remote_change() {
+    remote_change_notify().notify_one();
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum AccountTransition {
+    /// Same account as last time: continue incrementally.
+    Same,
+    /// First account on this device: full pull, upload local data, merge duplicates.
+    Fresh,
+    /// A different account than last time: nothing is uploaded until the user chooses.
+    SwitchPending,
+}
+
+fn reset_sync_state(tx: &rusqlite::Connection, upload: bool) -> Result<(), String> {
+    store::set_meta(tx, META_CURSOR, None)?;
+    tx.execute("delete from sync_record where deleted = 1", [])
+        .map_err(crate::db::sql_err)?;
+    tx.execute(
+        &format!("delete from sync_record where type not in ({DESKTOP_TYPES})"),
+        [],
+    )
+    .map_err(crate::db::sql_err)?;
+    let sql = if upload {
+        "update sync_record set rev = 0, dirty = 1, op_id = NULL"
+    } else {
+        "update sync_record set rev = 0, dirty = 0, op_id = NULL"
+    };
+    tx.execute(sql, []).map_err(crate::db::sql_err)?;
+    tx.execute(
+        "update book set file_uploaded_sha = case when ?1 then NULL else file_sha256 end",
+        [upload],
+    )
+    .map_err(crate::db::sql_err)?;
+    store::set_meta(tx, META_LAST_ERROR, None)?;
+    Ok(())
+}
+
+/// Called right after a successful sign-in, before anything is synced.
+pub fn begin_account(
+    db: &crate::db::Database,
+    user_id: &str,
+    email: &str,
+) -> Result<AccountTransition, String> {
+    db.write(|tx| {
+        let previous = store::get_meta(tx, META_ACCOUNT_USER)?;
+        match previous.as_deref() {
+            Some(p) if p == user_id => {
+                store::set_meta(tx, META_PENDING_SWITCH, None)?;
+                Ok(AccountTransition::Same)
+            }
+            None => {
+                reset_sync_state(tx, true)?;
+                store::set_meta(tx, META_ACCOUNT_USER, Some(user_id))?;
+                store::set_meta(tx, META_ACCOUNT_EMAIL, Some(email))?;
+                store::set_meta(tx, META_DEDUPE_PENDING, Some("1"))?;
+                Ok(AccountTransition::Fresh)
+            }
+            Some(previous_user) => {
+                let pending = json!({
+                    "userId": user_id,
+                    "email": email,
+                    "previousUserId": previous_user,
+                    "previousEmail": store::get_meta(tx, META_ACCOUNT_EMAIL)?,
+                });
+                store::set_meta(tx, META_PENDING_SWITCH, Some(&pending.to_string()))?;
+                Ok(AccountTransition::SwitchPending)
+            }
+        }
+    })
+}
+
+/// The user's answer to the account-switch question: `upload = true` pushes this computer's
+/// data into the new account; `false` keeps it local-only (dirty flags cleared).
+pub fn resolve_account_switch(db: &crate::db::Database, upload: bool) -> Result<(), String> {
+    db.write(|tx| {
+        let Some(pending) = store::get_meta(tx, META_PENDING_SWITCH)? else {
+            return Ok(());
+        };
+        let v: serde_json::Value = serde_json::from_str(&pending).map_err(|e| e.to_string())?;
+        reset_sync_state(tx, upload)?;
+        store::set_meta(tx, META_ACCOUNT_USER, v["userId"].as_str())?;
+        store::set_meta(tx, META_ACCOUNT_EMAIL, v["email"].as_str())?;
+        store::set_meta(
+            tx,
+            META_DEDUPE_PENDING,
+            if upload { Some("1") } else { None },
+        )?;
+        store::set_meta(tx, META_PENDING_SWITCH, None)?;
+        Ok(())
+    })
+}
+
+pub fn pending_switch(db: &crate::db::Database) -> Option<serde_json::Value> {
+    db.read(|c| store::get_meta(c, META_PENDING_SWITCH))
+        .ok()
+        .flatten()
+        .and_then(|s| serde_json::from_str(&s).ok())
+}
 
 pub fn app_version(app: &AppHandle) -> String {
     app.package_info().version.to_string()
@@ -41,7 +152,9 @@ pub fn current_status(app: &AppHandle) -> SyncStatus {
     status.signed_in = tokens.is_some();
     status.user = tokens.and_then(|t| t.user);
     status.base_url = api_base(app);
+    status.token_storage = super::token_storage_kind().to_string();
     if let Ok(db) = crate::storage::database(app) {
+        status.pending_account_switch = pending_switch(&db);
         let _ = db.read(|c| {
             status.pending_changes = store::dirty_count(c)?;
             status.last_sync_at = store::get_meta(c, META_LAST_SYNC_AT)?;
@@ -56,39 +169,15 @@ pub fn emit_status(app: &AppHandle) {
     let _ = app.emit(EVENT_SYNC_STATUS, current_status(app));
 }
 
-/// First sign-in on this device, or a different account than last time: start the account's
-/// sync from scratch (full pull, then everything local is pushed — spec §9).
-pub fn prepare_for_account(app: &AppHandle, user_id: &str) -> Result<(), String> {
-    let db = crate::storage::database(app)?;
-    db.write(|tx| {
-        let previous = store::get_meta(tx, META_ACCOUNT_USER)?;
-        if previous.as_deref() == Some(user_id) {
-            return Ok(());
-        }
-        store::set_meta(tx, META_CURSOR, None)?;
-        tx.execute("delete from sync_record where deleted = 1", [])
-            .map_err(crate::db::sql_err)?;
-        tx.execute(
-            &format!("delete from sync_record where type not in ({DESKTOP_TYPES})"),
-            [],
-        )
-        .map_err(crate::db::sql_err)?;
-        tx.execute(
-            "update sync_record set rev = 0, dirty = 1, op_id = NULL",
-            [],
-        )
-        .map_err(crate::db::sql_err)?;
-        store::set_meta(tx, META_ACCOUNT_USER, Some(user_id))?;
-        store::set_meta(tx, META_LAST_ERROR, None)?;
-        Ok(())
-    })
-}
-
 async fn run_sync_inner(app: &AppHandle) -> Result<SyncReport, SyncError> {
     let st = state();
     let Some(tokens) = st.tokens() else {
         return Err(SyncError::Local("NOT_SIGNED_IN".into()));
     };
+    let db = crate::storage::database(app)?;
+    if pending_switch(&db).is_some() {
+        return Err(SyncError::Local("ACCOUNT_CHOICE_PENDING".into()));
+    }
     let _guard = st.sync_lock.lock().await;
     st.status.lock().unwrap().syncing = true;
     emit_status(app);
@@ -102,7 +191,11 @@ async fn run_sync_inner(app: &AppHandle) -> Result<SyncReport, SyncError> {
         resolve_base_url(config.cloud_api_base.as_deref()),
         &app_version(app),
     );
-    let db = crate::storage::database(app)?;
+    let dedupe = db
+        .read(|c| store::get_meta(c, META_DEDUPE_PENDING))
+        .ok()
+        .flatten()
+        .is_some();
     let engine = HttpSyncEngine::new(
         db.clone(),
         &api,
@@ -112,10 +205,19 @@ async fn run_sync_inner(app: &AppHandle) -> Result<SyncReport, SyncError> {
                 desired_retention: config.srs_desired_retention,
                 time_zone: ReplayTimeZone::Local,
             },
+            dedupe,
             ..EngineOptions::default()
         },
     );
-    let result = engine.sync().await;
+    let mut result = engine.sync().await;
+    if let Ok(report) = result.as_mut() {
+        if dedupe {
+            let _ = db.write(|tx| store::set_meta(tx, META_DEDUPE_PENDING, None));
+        }
+        // Original book files (upload / download / delete) after the records are in place.
+        let problems = super::book_files::sync_book_files(&db, db.data_dir(), &api).await;
+        report.diagnostics.extend(problems);
+    }
 
     let now = chrono::Utc::now().to_rfc3339();
     let _ = db.write(|tx| {
@@ -136,7 +238,7 @@ async fn run_sync_inner(app: &AppHandle) -> Result<SyncReport, SyncError> {
         }
     }
     if let Ok(report) = &result {
-        if report.applied > 0 || !report.replayed_cards.is_empty() {
+        if report.applied > 0 || !report.replayed_cards.is_empty() || report.deduped > 0 {
             let _ = app.emit(EVENT_DATA_CHANGED, json!({ "applied": report.applied }));
         }
     }
@@ -199,13 +301,25 @@ fn has_dirty(app: &AppHandle) -> bool {
 pub fn start(app: AppHandle) {
     tauri::async_runtime::spawn(async move {
         let mut backoff: Option<Duration> = None;
+        // Books imported before book sync existed become Book records (one-time, idempotent).
+        if let Ok(dir) = crate::storage::get_app_data_dir(&app) {
+            let _ = tauri::async_runtime::spawn_blocking(move || {
+                crate::storage::backfill_books_in_dir(&dir)
+            })
+            .await;
+        }
         attempt(&app, &mut backoff).await; // app start
         loop {
             let wait = backoff.unwrap_or(PERIODIC);
-            let local = tokio::select! {
-                _ = crate::sync::local_change() => true,
-                _ = tokio::time::sleep(wait) => false,
+            let (local, remote) = tokio::select! {
+                _ = crate::sync::local_change() => (true, false),
+                _ = remote_change_notify().notified() => (false, true),
+                _ = tokio::time::sleep(wait) => (false, false),
             };
+            if remote {
+                attempt(&app, &mut backoff).await;
+                continue;
+            }
             if local {
                 // Debounce: sync 3 s after the last write.
                 loop {
@@ -228,6 +342,77 @@ pub fn start(app: AppHandle) {
 mod tests {
     use super::*;
     use crate::sync::engine::TransportError;
+
+    #[test]
+    fn account_switch_is_never_silent() {
+        let dir = crate::db::test_util::temp_dir("account-switch");
+        let db = crate::db::open(&dir).unwrap();
+        let rec = |dirty: bool| crate::sync::protocol::LocalRecord {
+            record_type: "Vocabulary".into(),
+            id: "3f0c2a4e-1d2b-4c5d-9e8f-0a1b2c3d4e5f".into(),
+            rev: 7,
+            hlc: "1790000000000-0000-aaaaaaaa".into(),
+            deleted: false,
+            payload: Some(serde_json::Map::new()),
+            dirty,
+            op_id: None,
+        };
+        db.write(|tx| store::put_record(tx, &rec(false))).unwrap();
+
+        // First account: everything is uploaded and duplicates merged.
+        assert_eq!(
+            begin_account(&db, "u1", "a@x").unwrap(),
+            AccountTransition::Fresh
+        );
+        let r = db
+            .read(|c| store::get_record(c, "Vocabulary", &rec(false).id))
+            .unwrap()
+            .unwrap();
+        assert!(r.dirty && r.rev == 0);
+        assert!(db
+            .read(|c| store::get_meta(c, META_DEDUPE_PENDING))
+            .unwrap()
+            .is_some());
+        assert_eq!(
+            begin_account(&db, "u1", "a@x").unwrap(),
+            AccountTransition::Same
+        );
+
+        // Different account: parked until the user decides.
+        assert_eq!(
+            begin_account(&db, "u2", "b@x").unwrap(),
+            AccountTransition::SwitchPending
+        );
+        let pending = pending_switch(&db).unwrap();
+        assert_eq!(pending["previousEmail"], "a@x");
+        assert_eq!(
+            db.read(|c| store::get_meta(c, META_ACCOUNT_USER))
+                .unwrap()
+                .as_deref(),
+            Some("u1")
+        );
+
+        // Keep local-only: dirty flags cleared, nothing to push.
+        resolve_account_switch(&db, false).unwrap();
+        assert!(pending_switch(&db).is_none());
+        assert_eq!(db.read(|c| store::dirty_count(c)).unwrap(), 0);
+        assert_eq!(
+            db.read(|c| store::get_meta(c, META_ACCOUNT_USER))
+                .unwrap()
+                .as_deref(),
+            Some("u2")
+        );
+
+        // Switching again and choosing upload marks everything dirty.
+        assert_eq!(
+            begin_account(&db, "u3", "c@x").unwrap(),
+            AccountTransition::SwitchPending
+        );
+        resolve_account_switch(&db, true).unwrap();
+        assert_eq!(db.read(|c| store::dirty_count(c)).unwrap(), 1);
+        crate::db::close(&dir);
+        let _ = std::fs::remove_dir_all(dir);
+    }
 
     #[test]
     fn backoff_policy() {

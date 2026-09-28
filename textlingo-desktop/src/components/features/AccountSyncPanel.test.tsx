@@ -105,4 +105,32 @@ describe("AccountSyncPanel", () => {
     await userEvent.click(screen.getByRole("button", { name: /Sign out/ }));
     await waitFor(() => expect(invokeMock).toHaveBeenCalledWith("cloud_logout"));
   });
+
+  it("asks before uploading to a different account and warns about file token storage", async () => {
+    const switching: SyncStatus = {
+      ...signedIn,
+      tokenStorage: "file",
+      pendingAccountSwitch: { userId: "u2", email: "new@example.com", previousUserId: "u1", previousEmail: "old@example.com" },
+    };
+    invokeMock.mockImplementation((command: string) => {
+      switch (command) {
+        case "cloud_sync_status":
+          return Promise.resolve(switching);
+        case "cloud_account":
+          return Promise.resolve({ signedIn: true, user: { id: "u2", email: "new@example.com" }, plan: "free" });
+        case "cloud_resolve_account_switch":
+          return Promise.resolve({ ...signedIn, pendingAccountSwitch: null });
+        default:
+          return Promise.resolve(null);
+      }
+    });
+
+    render(<AccountSyncPanel />);
+    expect(await screen.findByTestId("account-switch")).toBeInTheDocument();
+    expect(screen.getByTestId("token-file-warning")).toBeInTheDocument();
+    expect(invokeMock).not.toHaveBeenCalledWith("cloud_resolve_account_switch", expect.anything());
+
+    await userEvent.click(screen.getByRole("button", { name: "Keep local only" }));
+    await waitFor(() => expect(invokeMock).toHaveBeenCalledWith("cloud_resolve_account_switch", { upload: false }));
+  });
 });

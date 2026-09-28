@@ -11,10 +11,13 @@
 
 pub mod api;
 pub mod auth;
+pub mod book_files;
 pub mod commands;
 pub mod loopback;
+pub mod realtime;
 pub mod scheduler;
 pub mod secrets;
+pub mod token_file;
 
 use crate::sync::engine::SyncReport;
 use serde::{Deserialize, Serialize};
@@ -93,6 +96,11 @@ pub struct SyncStatus {
     pub last_report: Option<SyncReport>,
     pub base_url: String,
     pub user: Option<TokenUser>,
+    /// "keychain" | "file" (encrypted file fallback, shown as a warning).
+    pub token_storage: String,
+    /// Signed in to a different account than last time: waiting for the user to choose
+    /// whether local data is uploaded (never done silently).
+    pub pending_account_switch: Option<serde_json::Value>,
 }
 
 /// Process-wide cloud state.
@@ -114,16 +122,52 @@ pub trait TokenStore: Send + Sync {
 
 const TOKENS_ACCOUNT: &str = "cloud-session";
 
-/// Keychain entry `openkoto-desktop / cloud-session` (JSON).
+/// Where the session tokens currently live.
+pub fn token_storage_kind() -> &'static str {
+    if TOKEN_FILE_IN_USE.load(std::sync::atomic::Ordering::SeqCst) {
+        "file"
+    } else {
+        "keychain"
+    }
+}
+
+static TOKEN_FILE_IN_USE: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+
+fn data_dir_cell() -> &'static OnceLock<std::path::PathBuf> {
+    static DIR: OnceLock<std::path::PathBuf> = OnceLock::new();
+    &DIR
+}
+
+/// App data dir, set once at startup (used by the token-file fallback).
+pub fn set_data_dir(dir: std::path::PathBuf) {
+    let _ = data_dir_cell().set(dir);
+}
+
+/// Keychain entry `openkoto-desktop / cloud-session` (JSON). When the keychain is unusable
+/// (e.g. Linux without a Secret Service) it falls back to an encrypted 0600 file
+/// ([`token_file`]) and the UI shows a warning.
 pub struct KeyringTokenStore;
+
+impl KeyringTokenStore {
+    fn file() -> Option<token_file::TokenFile> {
+        data_dir_cell().get().map(|d| token_file::TokenFile::new(d))
+    }
+}
 
 impl TokenStore for KeyringTokenStore {
     fn load(&self) -> Result<Option<Tokens>, String> {
         use secrets::SecretStore;
-        match secrets::KeyringStore.get(TOKENS_ACCOUNT)? {
-            Some(json) => Ok(serde_json::from_str(&json).ok()),
-            None => Ok(None),
+        let from_keychain = secrets::KeyringStore.get(TOKENS_ACCOUNT);
+        if let Ok(Some(json)) = &from_keychain {
+            return Ok(serde_json::from_str(json).ok());
         }
+        if let Some(file) = Self::file() {
+            if let Ok(Some(json)) = file.load() {
+                TOKEN_FILE_IN_USE.store(true, std::sync::atomic::Ordering::SeqCst);
+                return Ok(serde_json::from_str(&json).ok());
+            }
+        }
+        from_keychain.map(|_| None)
     }
 
     fn save(&self, tokens: Option<&Tokens>) -> Result<(), String> {
@@ -131,9 +175,31 @@ impl TokenStore for KeyringTokenStore {
         match tokens {
             Some(t) => {
                 let json = serde_json::to_string(t).map_err(|e| e.to_string())?;
-                secrets::KeyringStore.set(TOKENS_ACCOUNT, &json)
+                match secrets::KeyringStore.set(TOKENS_ACCOUNT, &json) {
+                    Ok(()) => {
+                        if let Some(file) = Self::file() {
+                            file.delete();
+                        }
+                        TOKEN_FILE_IN_USE.store(false, std::sync::atomic::Ordering::SeqCst);
+                        Ok(())
+                    }
+                    Err(keychain_error) => {
+                        let file = Self::file().ok_or(keychain_error.clone())?;
+                        file.save(&json)
+                            .map_err(|e| format!("{keychain_error}; file fallback: {e}"))?;
+                        TOKEN_FILE_IN_USE.store(true, std::sync::atomic::Ordering::SeqCst);
+                        Ok(())
+                    }
+                }
             }
-            None => secrets::KeyringStore.delete(TOKENS_ACCOUNT),
+            None => {
+                if let Some(file) = Self::file() {
+                    file.delete();
+                }
+                TOKEN_FILE_IN_USE.store(false, std::sync::atomic::Ordering::SeqCst);
+                let _ = secrets::KeyringStore.delete(TOKENS_ACCOUNT);
+                Ok(())
+            }
         }
     }
 }
