@@ -7,6 +7,17 @@ import Foundation
 public enum SourceType: String, Codable, Sendable, CaseIterable {
     case article
     case web
+    /// 歌词（LRC / 带时间轴的纯文本），附带一条 `LyricsMeta`（同步协议 §2.2）。
+    case lyrics
+    /// 网页 / 桌面导入的书籍章节正文（归属见 `BookChapter`）。
+    case book
+
+    /// 宽松解码：不认识的来源（别的客户端将来新增的）按普通文章处理。
+    /// 严格解码会让整篇文章被同步静默丢弃，而它的正文本身完全可读。
+    public init(from decoder: Decoder) throws {
+        let raw = try decoder.singleValueContainer().decode(String.self)
+        self = SourceType(rawValue: raw) ?? .article
+    }
 }
 
 public enum SRSState: String, Codable, Sendable {
@@ -435,6 +446,25 @@ public struct ReviewEvent: Codable, Identifiable, Sendable, Hashable {
         resultIntervalDays = try c.decodeIfPresent(Int.self, forKey: .resultIntervalDays) ?? 0
         resultState = (try? c.decodeIfPresent(SRSState.self, forKey: .resultState)) ?? .new
         voidsEventId = try c.decodeIfPresent(UUID.self, forKey: .voidsEventId)
+    }
+}
+
+extension ReviewEvent {
+    /// 是撤销标记（同步协议 §6：`voidsEventId` 非空、grade 0）。
+    public var isVoidMarker: Bool { voidsEventId != nil }
+
+    /// 真正"算数"的复习：去重（按 id）、去掉撤销标记与被它作废的事件、去掉非法评分（1–4 之外）。
+    ///
+    /// 统计、打卡、"今日已复习"与 FSRS 重放**必须用同一套口径**（`packages/core`
+    /// 的 `effectiveReviewEvents`）：否则网页上撤销的一次复习，在 iOS 统计里还算着，
+    /// 而且 grade 0 会被图表归到 "easy" 那一栏。
+    public static func effective(_ events: [ReviewEvent]) -> [ReviewEvent] {
+        var seen: Set<UUID> = []
+        let unique = events.filter { seen.insert($0.id).inserted }
+        let voided = Set(unique.compactMap(\.voidsEventId))
+        return unique.filter {
+            $0.voidsEventId == nil && !voided.contains($0.id) && (1...4).contains($0.grade)
+        }
     }
 }
 

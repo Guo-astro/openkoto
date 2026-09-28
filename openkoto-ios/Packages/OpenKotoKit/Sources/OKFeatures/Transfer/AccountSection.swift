@@ -19,6 +19,7 @@ struct AccountSection: View {
     @State private var appleFlow = AppleSignInFlow()
     @State private var confirmSignOut = false
     @State private var safariURL: SafariDestination?
+    @State private var showPaywall = false
 
     var body: some View {
         if let account = store.accountSession {
@@ -66,6 +67,11 @@ struct AccountSection: View {
         .sheet(item: $safariURL) { destination in
             SafariView(url: destination.url).ignoresSafeArea()
         }
+        .sheet(isPresented: $showPaywall) {
+            if let commerce = store.commerce {
+                PaywallView(commerce: commerce, account: account)
+            }
+        }
     }
 
     @ViewBuilder
@@ -85,6 +91,14 @@ struct AccountSection: View {
 
         LabeledContent(L("settings.account.plan")) {
             Text(verbatim: account.plan.rawValue.capitalized)
+        }
+
+        if store.commerce != nil {
+            Button {
+                showPaywall = true
+            } label: {
+                Label(L("paywall.open"), systemImage: "sparkles")
+            }
         }
 
         if let pending = account.summary?.pendingDeletion {

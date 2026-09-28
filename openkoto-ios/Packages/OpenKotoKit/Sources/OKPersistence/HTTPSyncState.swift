@@ -12,6 +12,9 @@ public struct HTTPSyncMeta: Codable, FetchableRecord, PersistableRecord, Sendabl
     public var payloadHash: String?
     public var deleted: Bool
     public var syncedAt: Date
+    /// 子记录（Segment / BookChapter / LyricsMeta）的父文章 id（migration v13）。
+    /// 用来判断"本地没了"到底是被删 / 被重新切分，还是父记录压根没进本机。
+    public var parentId: String?
 
     public enum CodingKeys: String, CodingKey {
         case recordName = "record_name"
@@ -19,6 +22,7 @@ public struct HTTPSyncMeta: Codable, FetchableRecord, PersistableRecord, Sendabl
         case payloadHash = "payload_hash"
         case deleted
         case syncedAt = "synced_at"
+        case parentId = "parent_id"
     }
 
     public init(
@@ -31,6 +35,7 @@ public struct HTTPSyncMeta: Codable, FetchableRecord, PersistableRecord, Sendabl
         self.payloadHash = payloadHash
         self.deleted = deleted
         self.syncedAt = syncedAt
+        self.parentId = nil
     }
 }
 
@@ -122,10 +127,61 @@ extension ContentRepository {
         }
     }
 
+    /// 指定记录名的元数据（一页 pull 用，免得每页都把整张表读进内存）。
+    public func httpSyncMeta(names: [String]) async throws -> [String: HTTPSyncMeta] {
+        guard !names.isEmpty else { return [:] }
+        return try await database.writer.read { db in
+            var result: [String: HTTPSyncMeta] = [:]
+            for chunk in stride(from: 0, to: names.count, by: 500) {
+                let slice = Array(names[chunk..<min(chunk + 500, names.count)])
+                for row in try HTTPSyncMeta.filter(keys: slice).fetchAll(db) {
+                    result[row.recordName] = row
+                }
+            }
+            return result
+        }
+    }
+
     public func saveHTTPSyncMeta(_ rows: [HTTPSyncMeta]) async throws {
         guard !rows.isEmpty else { return }
         try await database.writer.write { db in
             for row in rows { try row.save(db) }
+        }
+    }
+
+    /// 云上还活着、本地却已经没有的子记录（Segment / BookChapter / LyricsMeta）。
+    ///
+    /// 只认两种"本地没了"：父文章还在（重新切分换掉了旧句子）或父文章有本地墓碑（被删了）。
+    /// 父文章压根没进本机的（示例文章去重、还停在 `pending_cloud_payload` 里等依赖）
+    /// 一律不算 —— 给它们推墓碑等于把别的设备的内容删掉。
+    public func orphanedChildRecords() async throws -> [(type: CloudRecordType, id: String)] {
+        try await database.writer.read { db in
+            let checks: [(CloudRecordType, String, String)] = [
+                (.segment, "segment", "id"),
+                (.bookChapter, "book_chapter", "article_id"),
+                (.lyricsMeta, "lyrics_meta", "article_id"),
+            ]
+            var result: [(type: CloudRecordType, id: String)] = []
+            for (type, table, key) in checks {
+                let prefix = "\(type.rawValue)_"
+                let ids = try String.fetchAll(
+                    db,
+                    sql: """
+                        SELECT substr(m.record_name, ?) FROM http_sync_meta m
+                        WHERE m.record_name LIKE ? AND m.deleted = 0
+                          AND NOT EXISTS (SELECT 1 FROM \(table) t
+                                          WHERE t.\(key) = substr(m.record_name, ?))
+                          AND NOT EXISTS (SELECT 1 FROM pending_cloud_payload p
+                                          WHERE p.record_name = m.record_name)
+                          AND (EXISTS (SELECT 1 FROM article a WHERE a.id = m.parent_id)
+                               OR EXISTS (SELECT 1 FROM deleted_record d
+                                          WHERE d.table_name = 'article'
+                                            AND d.record_id = m.parent_id))
+                        """,
+                    arguments: [prefix.count + 1, prefix + "%", prefix.count + 1])
+                result += ids.map { (type, $0) }
+            }
+            return result
         }
     }
 }

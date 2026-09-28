@@ -681,9 +681,14 @@ import Testing
         let applied = try await repo.applyCloudPayloads(
             [try payload(clash), try payload(innocent)], now: t2)
 
-        #expect(applied == 1)
-        let words = Set(try await repo.loadAll().favorites.map(\.word))
-        #expect(words == ["夢", "空"])  // 原有的没被冲掉，无辜的那条进来了
+        // 同词同来源现在按同步协议 §9 合并（本机那张更早，留下；远端那张记成被合并），
+        // 不再撞 UNIQUE —— 两条都算"处理掉了"，停放表里什么都不剩。
+        #expect(applied == 2)
+        let favorites = try await repo.loadAll().favorites
+        #expect(Set(favorites.map(\.word)) == ["夢", "空"])  // 原有的没被冲掉，无辜的那条进来了
+        #expect(favorites.contains { $0.id == mine.id })
+        #expect(!favorites.contains { $0.id == clash.id })
+        #expect(try await repo.pendingCloudPayloadCount() == 0)
     }
 
     // MARK: - 复习进度：绝不 LWW

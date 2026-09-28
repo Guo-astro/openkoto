@@ -113,6 +113,10 @@ extension ContentStore {
         }
 
         syncStatus = .syncing
+        // 这一轮已经覆盖了排队中的"写入后同步"。
+        debouncedSyncTask?.cancel()
+        debouncedSyncTask = nil
+        defer { lastSyncFinishedAt = Date() }
         do {
             try await engine.pull()
             try await engine.push()
@@ -124,6 +128,64 @@ extension ContentStore {
             await load()
             syncStatus = syncStatus(for: error, provider: provider)
         }
+    }
+
+    // MARK: - 自动同步（OpenKoto 云）
+
+    /// 开始观察本地写入：写入后 `syncDebounceInterval`（3 秒）内没有新写入就同步一次。
+    ///
+    /// CloudKit 不需要这个：CKSyncEngine 有系统调度与推送。HTTP 引擎没有，
+    /// 不补的话"在 iPhone 上复习完、打开 Mac"看到的永远是上一次手动同步的状态。
+    public func startAutoSync() {
+        guard localChangeSubscription == nil else { return }
+        localChangeSubscription = repository.observeSyncedTableChanges { [weak self] in
+            Task { @MainActor in self?.localDataDidChange() }
+        }
+    }
+
+    public func stopAutoSync() {
+        localChangeSubscription?.cancel()
+        localChangeSubscription = nil
+        debouncedSyncTask?.cancel()
+        debouncedSyncTask = nil
+        stopPeriodicSync()
+    }
+
+    /// 本地写入通知。同步自己合并远端记录也会写库 —— 同步进行中与刚结束的那一瞬间
+    /// 来的通知都是它自己的回声，忽略掉，否则每轮同步都会再引出一轮。
+    func localDataDidChange() {
+        guard syncProvider == .openkoto, syncStatus != .syncing else { return }
+        if let finished = lastSyncFinishedAt, Date().timeIntervalSince(finished) < 1 { return }
+        scheduleDebouncedSync()
+    }
+
+    func scheduleDebouncedSync() {
+        debouncedSyncTask?.cancel()
+        let delay = syncDebounceInterval
+        debouncedSyncTask = Task { [weak self] in
+            try? await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
+            guard !Task.isCancelled, let self else { return }
+            self.debouncedSyncTask = nil
+            await self.syncNow()
+        }
+    }
+
+    /// 前台期间每 `periodicSyncInterval`（5 分钟）同步一次。进后台时停。
+    public func startPeriodicSync() {
+        guard periodicSyncTask == nil else { return }
+        let interval = periodicSyncInterval
+        periodicSyncTask = Task { [weak self] in
+            while !Task.isCancelled {
+                try? await Task.sleep(nanoseconds: UInt64(interval * 1_000_000_000))
+                guard !Task.isCancelled, let self else { return }
+                if self.syncProvider == .openkoto { await self.syncNow() }
+            }
+        }
+    }
+
+    public func stopPeriodicSync() {
+        periodicSyncTask?.cancel()
+        periodicSyncTask = nil
     }
 
     /// 丢掉同步进度，下一次同步把云端的东西全量重新拉一遍（OpenKoto 云还会全量推一遍）。

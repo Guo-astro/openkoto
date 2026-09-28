@@ -1,6 +1,7 @@
 #if os(iOS)
 import SwiftUI
 import OKAccount
+import OKCommerce
 import OKDesignSystem
 import OKLocalization
 
@@ -135,6 +136,10 @@ public struct RootTabView: View {
             }
             store.glossCacheContext = { [appConfig] in appConfig.glossCacheContext }
             store.accountSession = account
+            // 交易监听越早越好：上次没入账的、续订、家长批准的购买都从这里来。
+            let commerce = StoreManager(session: account)
+            commerce.startObservingTransactions()
+            store.commerce = commerce
             account.onSignedIn = { [store] in await store.accountDidSignIn() }
             account.onSignedOut = { [store] in await store.accountDidSignOut() }
             await store.load()
@@ -143,6 +148,9 @@ public struct RootTabView: View {
             if store.syncProvider == .openkoto {
                 Task { await store.syncNow() }
             }
+            // 写入后 3 秒同步 + 前台每 5 分钟同步（只对 OpenKoto 云生效，内部自己判断）。
+            store.startAutoSync()
+            store.startPeriodicSync()
             // 必须在 load 之后：favorites 还空着时排期会算出「没有任何到期卡」，
             // 把已经排好的提醒全撤掉。
             await ReviewReminder.reschedule(favorites: store.favorites)
@@ -158,6 +166,9 @@ public struct RootTabView: View {
                 if store.syncProvider == .openkoto {
                     Task { await store.syncNow() }
                 }
+                store.startPeriodicSync()
+            } else if scenePhase == .background {
+                store.stopPeriodicSync()
             }
             // 进出前台各重排一次：退到后台那次收的是这一程的复习成果
             //（做完的卡到期日已经推后，明天不该再被催）；回到前台那次管的是

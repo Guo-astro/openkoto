@@ -30,15 +30,25 @@ public struct CloudPayload: Sendable {
 public struct CloudPayloadOptions: Sendable, Equatable {
     public var includeBookProgress: Bool
     public var includeMemberships: Bool
+    public var includeLyricsMeta: Bool
+    /// 复习事件除了按 `reviewed_at` 扫水位线，再加上"从没上过 OpenKoto 云"的
+    /// （`review_log.hlc IS NULL`）。同词合并复制出来的事件时间是旧的，只靠水位线推不上去。
+    public var includeUnsyncedReviewEvents: Bool
 
-    public init(includeBookProgress: Bool = false, includeMemberships: Bool = false) {
+    public init(
+        includeBookProgress: Bool = false, includeMemberships: Bool = false,
+        includeLyricsMeta: Bool = false, includeUnsyncedReviewEvents: Bool = false
+    ) {
         self.includeBookProgress = includeBookProgress
         self.includeMemberships = includeMemberships
+        self.includeLyricsMeta = includeLyricsMeta
+        self.includeUnsyncedReviewEvents = includeUnsyncedReviewEvents
     }
 
     public static let cloudKit = CloudPayloadOptions()
     public static let openKoto = CloudPayloadOptions(
-        includeBookProgress: true, includeMemberships: true)
+        includeBookProgress: true, includeMemberships: true, includeLyricsMeta: true,
+        includeUnsyncedReviewEvents: true)
 }
 
 /// 词包成员记录的 payload（协议 §2.2：`vocabularyId, packId`）。
@@ -179,7 +189,10 @@ extension ContentRepository {
             let eventRecords: [ReviewLogRecord]
             if let since = cutoff() {
                 eventRecords = try ReviewLogRecord
-                    .filter(Column("reviewed_at") >= since).fetchAll(db)
+                    .filter(
+                        Column("reviewed_at") >= since
+                            || (options.includeUnsyncedReviewEvents && Column("hlc") == nil)
+                    ).fetchAll(db)
             } else {
                 eventRecords = try ReviewLogRecord.fetchAll(db)
             }
@@ -323,6 +336,26 @@ extension ContentRepository {
                             type: .wordPackMembership,
                             id: "\(record.vocabularyId)_\(record.packId)", data: data,
                             updatedAt: record.createdAt))
+                }
+            }
+
+            // 歌词元数据（仅 OpenKoto 云）。
+            if options.includeLyricsMeta {
+                let lyricsRecords: [LyricsMetaRecord]
+                if let since = cutoff() {
+                    lyricsRecords = try LyricsMetaRecord
+                        .filter(Column("updated_at") >= since).fetchAll(db)
+                } else {
+                    lyricsRecords = try LyricsMetaRecord.fetchAll(db)
+                }
+                for record in lyricsRecords {
+                    guard let model = try? record.domainModel(),
+                        let data = try? encoder.encode(model)
+                    else { continue }
+                    payloads.append(
+                        CloudPayload(
+                            type: .lyricsMeta, id: record.articleId, data: data,
+                            updatedAt: record.updatedAt))
                 }
             }
 
@@ -517,6 +550,20 @@ extension ContentRepository {
                 record.sourceArticleId = nil
                 record.sourceSegmentId = nil
             }
+            // 同词同来源的另一张卡已经在本机（两台设备各建了一张）：按协议 §9 合并。
+            if local == nil, let duplicate = try Self.duplicateLocalCard(of: record, db) {
+                if Self.keeps(duplicate, over: record) {
+                    // 本机那张留下；远端这张记成"被合并"，它的事件到了再改指过来。
+                    try Self.mergeVocabulary(
+                        loser: record.id, into: duplicate.id, db, now: now,
+                        touched: &touchedVocabulary)
+                    return .applied
+                }
+                try Self.mergeVocabulary(
+                    loser: duplicate.id, into: record.id, db, now: now,
+                    touched: &touchedVocabulary)
+                // 被合并方的事件已经改指到这张卡上，卡片要先落地（事件表没有外键，顺序无妨）。
+            }
             try record.save(db)
             touchedVocabulary.insert(payload.id)
             return .applied
@@ -599,12 +646,19 @@ extension ContentRepository {
             log.hlc = payload.hlc
             try log.insert(db)
             touchedVocabulary.insert(uuidString(model.vocabularyId))
+            // 这张卡早先被合并掉了：事件照收（只追加），再复制一条指向保留卡。
+            if let keeper = try Self.keeperID(forMerged: log.vocabularyId, db) {
+                try Self.repointEvent(log, to: keeper, db)
+                touchedVocabulary.insert(keeper)
+            }
             return .applied
 
         case .wordPackMembership:
             let parts = payload.id.split(separator: "_", maxSplits: 1)
             guard parts.count == 2 else { return .skipped }
-            let (vocabId, packId) = (String(parts[0]), String(parts[1]))
+            var (vocabId, packId) = (String(parts[0]), String(parts[1]))
+            // 成员关系指向一张被合并掉的卡：挂到保留卡上。
+            if let keeper = try Self.keeperID(forMerged: vocabId, db) { vocabId = keeper }
             // 墓碑命中是**终局**，不能停放等着 —— 等下去等于慢慢复活一条用户删过的关系。
             guard try !isTombstoned(db, .wordPackMembership, payload.id) else { return .skipped }
             guard try FavoriteVocabularyRecord.fetchOne(db, key: vocabId) != nil,
@@ -718,6 +772,21 @@ extension ContentRepository {
             try MediaPartRecord(model).insert(db)
             return .applied
 
+        case .lyricsMeta:
+            guard let model = try? decoder.decode(LyricsMeta.self, from: payload.data)
+            else { return .skipped }
+            let articleID = uuidString(model.articleId)
+            guard try !isTombstoned(db, .article, articleID) else { return .skipped }
+            guard try ArticleRecord.fetchOne(db, key: articleID) != nil else { return .deferred }
+            // payload 本身没有 updatedAt，比的是记录时间（HLC 的 wall / CloudKit 的修改时间）。
+            if let local = try LyricsMetaRecord.fetchOne(db, key: articleID),
+                local.updatedAt >= payload.updatedAt
+            {
+                return .skipped
+            }
+            try LyricsMetaRecord(model, updatedAt: payload.updatedAt).save(db)
+            return .applied
+
         case .bookProgress:
             guard let model = try? decoder.decode(BookProgress.self, from: payload.data)
             else { return .skipped }
@@ -797,8 +866,16 @@ extension ContentRepository {
         case .bookProgress:
             // 进度没有独立墓碑；书删了它随 FK 级联。收到了也照删不误。
             _ = try BookProgressRecord.deleteOne(db, key: deletion.id)
-        case .segment, .reviewEvent, .bookChapter, .mediaPart:
-            // 段落与归属行随父级联；复习事件只增不删。都不会收到独立的删除。
+        case .lyricsMeta:
+            _ = try LyricsMetaRecord.deleteOne(db, key: deletion.id)
+        case .segment:
+            // 文章被重新切分（协议 §4.3）或被删除时，旧句子会逐条收到墓碑。
+            // 句子没有本地墓碑表：它的"复活"只可能跟着父文章一起，而文章有墓碑。
+            _ = try SegmentRecord.deleteOne(db, key: deletion.id)
+        case .bookChapter:
+            _ = try BookChapterRecord.deleteOne(db, key: deletion.id)
+        case .reviewEvent, .mediaPart:
+            // 复习事件只增不删；媒体本版不同步。
             break
         }
     }

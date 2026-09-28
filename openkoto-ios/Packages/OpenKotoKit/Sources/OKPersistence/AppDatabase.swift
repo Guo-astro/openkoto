@@ -493,6 +493,31 @@ public struct AppDatabase: Sendable {
                 t.add(column: "hlc", .text)
             }
         }
+        // 歌词元数据（同步协议 §2.2 `LyricsMeta`）。歌词本体是 `source_type = 'lyrics'`
+        // 的 article + 逐行 segment（`start_time` 即时间戳），这里只放歌手 / 专辑之类。
+        // `updated_at` 给推送水位线用（协议里的 payload 本身没有这个字段）。
+        migrator.registerMigration("v13") { db in
+            try db.create(table: "lyrics_meta") { t in
+                t.primaryKey("article_id", .text).references("article", onDelete: .cascade)
+                t.column("artist", .text)
+                t.column("album", .text)
+                t.column("language", .text)
+                t.column("lrc_offset_ms", .integer)
+                t.column("source_format", .text)
+                t.column("cover_url", .text)
+                t.column("music_links", .text)
+                t.column("updated_at", .datetime).notNull()
+            }
+            try db.alter(table: "http_sync_meta") { t in
+                t.add(column: "parent_id", .text)
+            }
+            // 同词卡片合并的映射（同步协议 §9，见 ContentRepository+Dedupe）。
+            try db.create(table: "merged_vocabulary") { t in
+                t.primaryKey("loser_id", .text)
+                t.column("keeper_id", .text).notNull()
+                t.column("merged_at", .datetime).notNull()
+            }
+        }
         return migrator
     }
 }

@@ -5,6 +5,7 @@ import OKModels
 import OKSegmentation
 import OKAIClient
 import OKAccount
+import OKCommerce
 import OKBooks
 import OKMedia
 import OKPersistence
@@ -26,6 +27,8 @@ public final class ContentStore {
     /// 全部文章/章节的句子计数：进度徽章不需要正文，启动时只查计数。
     public internal(set) var segmentCounts: [UUID: ContentRepository.SegmentCounts] = [:]
     public private(set) var books: [Book] = []
+    /// 歌词文章（`sourceType == .lyrics`）的元数据：articleId → 歌手 / 专辑……
+    public private(set) var lyricsMeta: [UUID: LyricsMeta] = [:]
     /// 视频/音频。转写文稿是 article 行，字幕句是 segment 行——
     /// 精讲、生词、SRS、统计因此一行不改即对媒体生效。
     public private(set) var medias: [Media] = []
@@ -83,8 +86,18 @@ public final class ContentStore {
     @ObservationIgnored var cloudSyncEngineProvider: SyncProvider?
     /// OpenKoto 云账号（App 壳注入）。nil = 没有账号能力（预览 / 测试）。
     @ObservationIgnored public var accountSession: AccountSession?
+    /// StoreKit 购买（App 壳注入；需要 `accountSession`）。
+    @ObservationIgnored public var commerce: StoreManager?
     /// 测试注入：按 provider 造引擎。nil 时用生产实现（CloudKit / HTTP）。
     @ObservationIgnored public var syncEngineFactory: ((SyncProvider) async -> (any SyncEngine)?)?
+    /// 自动同步（OpenKoto 云）：本地写入观察、防抖任务、前台定时器。见 ContentStore+Sync。
+    @ObservationIgnored var localChangeSubscription: LocalChangeSubscription?
+    @ObservationIgnored var debouncedSyncTask: Task<Void, Never>?
+    @ObservationIgnored var periodicSyncTask: Task<Void, Never>?
+    @ObservationIgnored var lastSyncFinishedAt: Date?
+    /// 写入后等多久再同步（协议 §8：3 秒）与前台定时同步的间隔（5 分钟）。测试可调小。
+    @ObservationIgnored public var syncDebounceInterval: TimeInterval = 3
+    @ObservationIgnored public var periodicSyncInterval: TimeInterval = 300
 
     /// 真实精讲入口（App 壳注入）。签名：原文 → 结构化精讲 + 溯源元数据。
     @ObservationIgnored public var explanationProvider:
@@ -174,6 +187,7 @@ public final class ContentStore {
             segmentCounts = snapshot.segmentCounts
             favorites = snapshot.favorites
             packs = snapshot.packs
+            lyricsMeta = (try? await repository.loadLyricsMeta()) ?? [:]
             await loadBooks()
             await loadMedia()
             await refreshStats()
@@ -416,7 +430,9 @@ public final class ContentStore {
                 chapterArticleCache[articleID] = article
             }
             if segments.isEmpty, let article = try await repository.article(id: articleID) {
-                if let lazySegmenter {
+                if article.sourceType == .lyrics {
+                    segments = LyricsLines.segments(for: article)
+                } else if let lazySegmenter {
                     segments = await lazySegmenter(article)
                 } else {
                     segments = await bookChapterSegments(for: article)

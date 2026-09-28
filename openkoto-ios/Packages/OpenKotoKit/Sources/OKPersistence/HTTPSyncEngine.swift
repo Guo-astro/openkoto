@@ -19,7 +19,7 @@ public actor HTTPSyncEngine: SyncEngine {
     /// 协议 §2.2 首批同步的类型。Media / MediaPart 本版保留类型名但不同步。
     public static let syncedTypes: Set<CloudRecordType> = [
         .vocabulary, .wordPack, .wordPackMembership, .reviewEvent, .article, .segment,
-        .book, .bookChapter, .bookMark, .bookProgress,
+        .book, .bookChapter, .bookMark, .bookProgress, .lyricsMeta,
     ]
     /// 协议 §2.1：payload 序列化后超过 512 KB 走 blob。
     public static let inlinePayloadLimit = 512 * 1024
@@ -120,10 +120,13 @@ public actor HTTPSyncEngine: SyncEngine {
                     switch result.status {
                     case .applied:
                         lastReport.pushed += 1
-                        let row = HTTPSyncMeta(
+                        var row = HTTPSyncMeta(
                             recordName: pending.recordName, rev: result.rev ?? 0,
                             hlc: pending.op.hlc, payloadHash: pending.hash,
                             deleted: pending.op.deleted, syncedAt: now())
+                        row.parentId =
+                            Self.parentID(type: pending.op.type, id: pending.op.id, payload: pending.op.payload)
+                            ?? meta[pending.recordName]?.parentId
                         saved.append(row)
                         meta[row.recordName] = row
                         if pending.op.type == CloudRecordType.reviewEvent.rawValue {
@@ -242,6 +245,21 @@ public actor HTTPSyncEngine: SyncEngine {
                 recordName: name, hash: nil, size: 200)
         }
 
+        // 子记录的墓碑（协议 §4.2 / §4.3）：删文章时它的 Segment / LyricsMeta / BookChapter，
+        // 以及重新切分后被替换掉的旧 Segment。iOS 本地靠外键级联删掉这些行、不记墓碑，
+        // 所以这里反过来找："云上有（元数据里记着、且不是墓碑）而本地已经没有"的子记录。
+        for orphan in try await repository.orphanedChildRecords() {
+            let name = CloudRecord.recordName(orphan.type, orphan.id)
+            guard byName[name] == nil, let known = meta[name], !known.deleted else { continue }
+            byName[name] = PendingOp(
+                op: SyncPushOp(
+                    opId: UUID().uuidString.lowercased(), type: orphan.type.rawValue,
+                    id: orphan.id, baseRev: known.rev,
+                    hlc: clock?.tick() ?? HLCTimestamp.legacy(now(), node: node).description,
+                    deleted: true, payload: nil),
+                recordName: name, hash: nil, size: 200)
+        }
+
         let payloads = try await repository.pendingCloudPayloads(
             since: watermark, options: .openKoto)
         let nowMs = Self.milliseconds(now())
@@ -308,6 +326,12 @@ public actor HTTPSyncEngine: SyncEngine {
         let syncedAt = now()
         let nowMs = Self.milliseconds(syncedAt)
 
+        let known = try await repository.httpSyncMeta(
+            names: records.compactMap { record in
+                CloudRecordType(rawValue: record.type).map {
+                    CloudRecord.recordName($0, record.id.lowercased())
+                }
+            })
         for record in records {
             // 不认识的类型：跳过但照样推进游标（协议 §2.2 末）。
             guard let type = CloudRecordType(rawValue: record.type),
@@ -315,6 +339,11 @@ public actor HTTPSyncEngine: SyncEngine {
             else { continue }
             let id = record.id.lowercased()
             let name = CloudRecord.recordName(type, id)
+            // 自己推上去的版本被 pull 原样带回来（同 rev 同 HLC）：本地早就是这个状态了，
+            // 不要再合并一遍 —— 那会让本地已经删掉 / 替换掉的行（比如重新切分前的旧句子）复活。
+            if let seen = known[name], seen.rev >= record.rev, seen.hlc == record.hlc {
+                continue
+            }
             if let stamp = HLCTimestamp(record.hlc) {
                 if stamp.wall - nowMs > Self.maxClockSkewMs {
                     logger.error(
@@ -354,17 +383,32 @@ public actor HTTPSyncEngine: SyncEngine {
                 ?? HLCTimestamp(record.hlc)?.date ?? syncedAt
             payloads.append(
                 CloudPayload(type: type, id: id, data: data, updatedAt: updatedAt, hlc: record.hlc))
-            metas.append(
-                HTTPSyncMeta(
-                    recordName: name, rev: record.rev, hlc: record.hlc,
-                    payloadHash: Self.canonicalHash(type: type, data: data),
-                    deleted: false, syncedAt: syncedAt))
+            var row = HTTPSyncMeta(
+                recordName: name, rev: record.rev, hlc: record.hlc,
+                payloadHash: Self.canonicalHash(type: type, data: data),
+                deleted: false, syncedAt: syncedAt)
+            row.parentId = Self.parentID(
+                type: record.type, id: id, payload: record.payload ?? (try? JSONValue(jsonData: data)))
+            metas.append(row)
         }
 
-        if !payloads.isEmpty { try await repository.applyCloudPayloads(payloads, now: syncedAt) }
+        // 先删后写：同一页里重新切分的文章会同时带来旧句子的墓碑与新句子，
+        // 新旧句子的 (article_id, order) 相同，先写的话会撞唯一约束、只能停放到下一轮。
+        // 一页内同一条记录只会出现一次，所以先删不会误删这页里新写的东西。
         if !deletions.isEmpty { try await repository.applyCloudDeletions(deletions, now: syncedAt) }
+        if !payloads.isEmpty { try await repository.applyCloudPayloads(payloads, now: syncedAt) }
         try await repository.saveHTTPSyncMeta(metas)
         return metas.count
+    }
+
+    /// 子记录的父文章 id（小写）：Segment 取 payload 的 `articleId`，
+    /// BookChapter / LyricsMeta 的主键本身就是文章 id。其余类型 nil。
+    static func parentID(type: String, id: String, payload: JSONValue?) -> String? {
+        switch CloudRecordType(rawValue: type) {
+        case .segment: return payload?["articleId"]?.stringValue?.lowercased()
+        case .bookChapter, .lyricsMeta: return id.lowercased()
+        default: return nil
+        }
     }
 
     /// 远端 payload 的"本机编码指纹"：按类型解码再用本机编码器编回去后取哈希。
@@ -390,6 +434,7 @@ public actor HTTPSyncEngine: SyncEngine {
         case .bookChapter: canonical = reencode(BookChapter.self)
         case .bookMark: canonical = reencode(BookMark.self)
         case .bookProgress: canonical = reencode(BookProgress.self)
+        case .lyricsMeta: canonical = reencode(LyricsMeta.self)
         case .media: canonical = reencode(Media.self)
         case .mediaPart: canonical = reencode(MediaPart.self)
         }

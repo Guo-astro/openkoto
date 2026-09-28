@@ -51,13 +51,7 @@ public enum ReviewReplay {
     /// 参与计算的事件：去重（id 小写）、去掉撤销标记与被作废的、去掉非法评分
     /// （与 `packages/core` 的 `effectiveReviewEvents` 同规则）。
     public static func effectiveEvents(_ events: [ReviewEvent]) -> [ReviewEvent] {
-        var seen: Set<UUID> = []
-        let unique = events.filter { seen.insert($0.id).inserted }
-        let voided = Set(unique.compactMap(\.voidsEventId))
-        return unique.filter {
-            $0.voidsEventId == nil && !voided.contains($0.id)
-                && FSRS.Grade(rawValue: $0.grade) != nil
-        }
+        ReviewEvent.effective(events)
     }
 
     /// 确定性排序：`(reviewedAt, hlc, id 小写)`（同步协议 §6）。缺 HLC 的按空串排。

@@ -98,13 +98,9 @@ struct ArticleRecord: Codable, FetchableRecord, PersistableRecord {
     }
 
     func domainModel() throws -> Article {
-        let resolvedSourceType: SourceType? = try sourceType.map {
-            guard let value = SourceType(rawValue: $0) else {
-                throw PersistenceError.corruptRow(
-                    table: Self.databaseTableName, id: id, reason: "unknown source_type \($0)")
-            }
-            return value
-        }
+        // 不认识的来源按普通文章读：`loadAll()` 是全表 map，一行抛错就是整个书库加载失败，
+        // 而别的客户端同步来的新来源类型（将来新增的）完全可能落到这里。
+        let resolvedSourceType: SourceType? = sourceType.map { SourceType(rawValue: $0) ?? .article }
         return Article(
             id: try parseUUID(id, table: Self.databaseTableName),
             title: title,

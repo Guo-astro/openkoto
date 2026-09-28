@@ -274,8 +274,9 @@ import Testing
         try await sync(engine)
 
         // 很久没同步：本地游标早于墓碑地板
-        for _ in 0..<3 {
-            let other = vocab(word: "x", updatedAt: t0)
+        for index in 0..<3 {
+            // 词要各不相同：同词同来源的卡片会按协议 §9 合并成一张
+            let other = vocab(word: "x\(index)", updatedAt: t0)
             cloud.write(type: "Vocabulary", id: other.id.uuidString, hlc: "1790000000001-0000-bbbbbbbb", payload: try payload(other))
         }
         cloud.tombstoneFloor = cloud.currentSeq

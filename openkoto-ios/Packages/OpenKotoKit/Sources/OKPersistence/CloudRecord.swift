@@ -29,6 +29,8 @@ public enum CloudRecordType: String, Sendable, CaseIterable {
     /// CloudKit 那边刻意不同步阅读位置（见 `pendingCloudPayloads`），
     /// 这里多一个 case 只是让两套引擎共用同一份合并代码。
     case bookProgress = "BookProgress"
+    /// 歌词元数据（id = articleId）。同样只走 OpenKoto 云。
+    case lyricsMeta = "LyricsMeta"
 
     /// 合并顺序：被引用的先落地。
     ///
@@ -39,18 +41,20 @@ public enum CloudRecordType: String, Sendable, CaseIterable {
     /// 就能接上。跨批次到达的靠 `pending_cloud_payload` 停放重试（见 migration v10）。
     var mergeOrder: Int {
         switch self {
+        // 与协议 §2.3 的 mergeOrder 同序。
         case .book: return 0
         case .media: return 1
         case .article: return 2
-        case .bookChapter: return 3
-        case .mediaPart: return 4
-        case .segment: return 5
-        case .wordPack: return 6
-        case .vocabulary: return 7
-        case .wordPackMembership: return 8
-        case .bookMark: return 9
-        case .bookProgress: return 10
-        case .reviewEvent: return 11
+        case .lyricsMeta: return 3
+        case .bookChapter: return 4
+        case .mediaPart: return 5
+        case .segment: return 6
+        case .wordPack: return 7
+        case .vocabulary: return 8
+        case .wordPackMembership: return 9
+        case .bookMark: return 10
+        case .bookProgress: return 11
+        case .reviewEvent: return 12
         }
     }
 }
