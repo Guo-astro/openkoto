@@ -11,10 +11,12 @@ import { requireByok, translateLyricsByok } from "./byok";
 import { CONFIG_KEYS, ConfigStore, configDir, isConfigKey, resolveAuth, type Env, type ResolvedAuth } from "./config";
 import { csvToVocab } from "./csv";
 import { CliError, EXIT, notLoggedIn, planRequired, toCliError, usageError } from "./errors";
-import { LibraryClient, type Vocab } from "./library";
+import { importBook } from "./book-import";
+import { parseChapterRanges } from "./books";
+import { LibraryClient, type Job, type Vocab } from "./library";
 import { mergeTranslations, toBilingualLrc, toMarkdown, type TranslatedLine } from "./lyrics";
 
-export const VERSION = "0.1.0";
+export const VERSION = "0.2.0";
 const ENTITLEMENT_CACHE_MS = 60 * 60 * 1000;
 
 export interface CliDeps {
@@ -647,6 +649,129 @@ export async function runCli(argv: string[], partial: Partial<CliDeps> = {}): Pr
       const { library } = await gated();
       const res = await library.listChapters(bookId);
       emit(res, () => [`${res.book.title}: ${res.total} chapters`, ...res.items.map((c) => `${String(c.index + 1).padStart(3)}. ${c.title ?? "(untitled)"}  (${c.articleId})`)]);
+    });
+
+  book
+    .command("import <file>")
+    .description("import an .epub or .txt book (parsed locally, synced to all devices)")
+    .action(async (file: string) => {
+      if (!/\.(epub|txt)$/i.test(file)) throw usageError("only .epub and .txt books are supported");
+      const bytes = new Uint8Array(await readFile(file));
+      const ctx = await gated();
+      const res = await importBook(
+        { client: ctx.client, tokenStore: ctx.auth.tokenStore, fetch: deps.fetch, now: deps.now, onProgress: json ? undefined : info },
+        bytes,
+        basename(file),
+      );
+      emit(res, () => `Imported "${res.title}" (${res.chapters} chapters): ${res.bookId}`);
+    });
+  book
+    .command("translate <bookId>")
+    .description("translate chapters with hosted AI in the background (spends AI credits)")
+    .requiredOption("--to <lang>", "target language code, e.g. zh")
+    .option("--chapters <ranges>", "1-based chapter ranges, e.g. 1-5,8 (default: all)")
+    .option("--watch", "wait and show progress until the job finishes")
+    .action(async (bookId: string, opts: { to: string; chapters?: string; watch?: boolean }) => {
+      if (!/^[A-Za-z-]{2,12}$/.test(opts.to)) throw usageError("--to must be a language code like zh or en");
+      const { library } = await gated();
+      let chapters: string[] | undefined;
+      if (opts.chapters) {
+        const list = await library.listChapters(bookId);
+        let indexes: number[];
+        try {
+          indexes = parseChapterRanges(opts.chapters, list.total);
+        } catch (err) {
+          throw usageError((err as Error).message);
+        }
+        chapters = indexes.map((i) => list.items[i]?.articleId).filter((id): id is string => !!id);
+        if (!chapters.length) throw usageError(`no chapters match ${opts.chapters} (the book has ${list.total})`);
+      }
+      const job = await library.createTranslateBookJob({ bookId, targetLanguage: opts.to, chapters });
+      if (opts.watch) return watchJob(library, job.id);
+      emit(job, () => [`Queued job ${job.id} (${job.total} chapters).`, `Follow it with: koto job status ${job.id} --watch`]);
+    });
+
+  // ---- jobs ---------------------------------------------------------------
+
+  const TERMINAL = new Set(["done", "failed", "canceled", "paused"]);
+  const jobLine = (j: Job) => `${j.id}  ${j.kind}  ${j.status}  ${j.progress}/${j.total}${j.error ? `  (${j.error})` : ""}`;
+  const watchJob = async (library: LibraryClient, id: string) => {
+    const sleep = deps.sleep ?? ((ms: number) => new Promise<void>((r) => setTimeout(r, ms)));
+    let job = await library.getJob(id);
+    let last = "";
+    while (!TERMINAL.has(job.status)) {
+      const line = jobLine(job);
+      if (line !== last && !json) info(line);
+      last = line;
+      await sleep(3000);
+      job = await library.getJob(id);
+    }
+    emit(job, () => jobLine(job));
+    if (job.status === "failed") throw new CliError(EXIT.ERROR, "JOB_FAILED", `job ${id} failed${job.error ? `: ${job.error}` : ""}`);
+    if (job.status === "paused" && job.error === "INSUFFICIENT_CREDITS") throw new CliError(EXIT.PLAN, "INSUFFICIENT_CREDITS", "job paused: not enough AI credits");
+  };
+
+  const jobCmd = program.command("job").description("background jobs (book translation)");
+  jobCmd
+    .command("list")
+    .description("recent jobs")
+    .action(async () => {
+      const { library } = await gated();
+      const res = await library.listJobs();
+      emit(res, () => (res.jobs.length ? res.jobs.map(jobLine) : "No jobs."));
+    });
+  jobCmd
+    .command("status <id>")
+    .description("show a job's progress")
+    .option("--watch", "poll until the job finishes")
+    .action(async (id: string, opts: { watch?: boolean }) => {
+      const { library } = await gated();
+      if (opts.watch) return watchJob(library, id);
+      const job = await library.getJob(id);
+      emit(job, () => jobLine(job));
+    });
+  jobCmd
+    .command("cancel <id>")
+    .description("cancel a queued or running job")
+    .action(async (id: string) => {
+      const { library } = await gated();
+      emit(await library.cancelJob(id), () => `Canceled ${id}`);
+    });
+
+  // ---- API keys -----------------------------------------------------------
+
+  const keys = program.command("keys").description("API keys for scripts, CI and MCP (Plus)");
+  keys
+    .command("list")
+    .description("list active API keys")
+    .action(async () => {
+      const { client } = await gated();
+      const res = await client.apiKeys.list();
+      emit(res, () =>
+        res.keys.length
+          ? res.keys.map((k) => `${k.id}  ${k.prefix}…  ${k.name}  [${k.scopes.join(",")}]${k.expiresAt ? `  expires ${k.expiresAt.slice(0, 10)}` : ""}`)
+          : "No API keys.",
+      );
+    });
+  keys
+    .command("create")
+    .description("create an API key (the secret is shown once)")
+    .option("--name <name>", "label", "koto CLI")
+    .option("--scopes <scopes>", "comma separated, e.g. vocab:read,library:read", "vocab:read,library:read")
+    .option("--expires-days <n>", "expire after N days", parseLimit)
+    .action(async (opts: { name: string; scopes: string; expiresDays?: number }) => {
+      const { client } = await gated();
+      const scopes = opts.scopes.split(",").map((s) => s.trim()).filter(Boolean);
+      const key = await client.apiKeys.create({ name: opts.name, scopes, ...(opts.expiresDays ? { expiresInDays: opts.expiresDays } : {}) });
+      emit(key, () => [`Created ${key.name} [${key.scopes.join(",")}] — copy it now, it will not be shown again:`, key.key]);
+    });
+  keys
+    .command("revoke <id>")
+    .description("revoke an API key")
+    .action(async (id: string) => {
+      const { client } = await gated();
+      await client.apiKeys.revoke(id);
+      emit({ ok: true, id }, () => `Revoked ${id}`);
     });
 
   // ---- search -------------------------------------------------------------

@@ -247,6 +247,19 @@
     "creditsDesc": "¥{{price}} = {{credits}} credits — about 10,000 sentence translations or 2,000 explanations. Valid for 12 months.",
     "buyCredits": "Buy credits",
     "checkoutFailed": "Couldn't open checkout, please try again",
-    "notes": "Web payments are processed securely by Creem; cancel renewal any time."
+    "notes": "Web payments are processed securely by Creem; cancel renewal any time.",
+    "usd": "Charged in USD on the web: ${{price}}"
+  },
+  "oauth": {
+    "title": "Connect an AI assistant",
+    "confirm": "“{{name}}” wants to access your OpenKoto account.",
+    "redirect": "You will be sent back to {{host}}.",
+    "scopeRead": "Read your vocabulary, lyrics, articles and books",
+    "scopeWrite": "Add and edit vocabulary and lyrics, and record reviews",
+    "scopeAi": "Use hosted AI features (spends your AI credits)",
+    "warning": "Only allow this if you are connecting an assistant yourself right now. You can revoke it any time under Account → Devices.",
+    "approve": "Allow",
+    "deny": "Deny",
+    "invalid": "This authorization request is invalid or has expired."
   }
 }

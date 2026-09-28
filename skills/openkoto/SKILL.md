@@ -50,6 +50,10 @@ If `koto` is missing: `npm i -g @openkoto/cli`, then the user runs `koto login`.
 | Add article | `koto article add --file a.md \| --url https://… [--title T] --json` | `{id,title,segments}` |
 | Articles | `koto article list --json`, `koto article show <id> --json` | `{items,total}` / `{article,segments}` |
 | Books | `koto book list --json`, `koto book chapters <bookId> --json` | `{items,total}` / `{book,items:[{index,title,articleId}],total}` |
+| Import book | `koto book import novel.epub\|novel.txt --json` | `{bookId,title,author,format,chapters,totalChars,fileSize,sha256}` |
+| Translate book (background, credits) | `koto book translate <bookId> --to zh [--chapters 1-5] [--watch] --json` | `{id,status,total}` (job) |
+| Jobs | `koto job list --json`, `koto job status <id> [--watch] --json`, `koto job cancel <id>` | `{jobs:[Job]}` / `Job{id,kind,status,progress,total,error}` |
+| API keys | `koto keys list\|create [--name N --scopes a,b --expires-days D]\|revoke <id> --json` | `create` returns the secret `key` once |
 | Read a chapter | `koto article show <chapterArticleId> --json` | `{article,segments}` |
 | Search everything | `koto search <query> [--types book,article,lyrics,vocab] --json` | `{items:[{kind,id,title,subtitle}],total}` |
 | Settings | `koto config get --json`, `koto config set <key> [value]` | keys: `api_base`, `byok.base_url`, `byok.api_key`, `byok.model` |
@@ -71,4 +75,10 @@ A `Vocab` object has these fields: `id, word, meaning, reading?, example?, usage
 
 # MCP alternative
 
-If the `openkoto` MCP server is configured (see README.md), prefer its tools: `search_library`, `list_due_vocab`, `add_vocab`, `review_vocab`, `get_lyrics`, `save_lyrics_translation`, `create_lyrics`, `list_books`. They return the same JSON shapes.
+If the `openkoto` MCP server is configured, prefer its tools. It is either the remote server `https://openkoto.app/mcp` or the local `npx @openkoto/mcp` (see README.md).
+
+- Read: `search_library`, `list_due_vocab`, `get_review_stats`, `get_lyrics`, `list_books`, `read_chapter`
+- Write: `add_vocab`, `update_vocab`, `review_vocab`, `save_lyrics_translation`, `create_lyrics`
+- Hosted AI (spends credits): `translate_lyrics`, `create_word_pack_from_text`
+
+They return the same JSON shapes as the CLI.

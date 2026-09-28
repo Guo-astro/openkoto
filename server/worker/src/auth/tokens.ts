@@ -10,6 +10,8 @@ export const REFRESH_TOKEN_TTL_MS = 90 * 24 * 60 * 60 * 1000;
 export const AUDIENCE = "openkoto-api";
 export const FIRST_PARTY_SCOPES = ["sync", "vocab:read", "vocab:write", "library:read", "library:write", "ai:use", "account"];
 export const API_KEY_SCOPES = ["sync", "vocab:read", "vocab:write", "library:read", "library:write", "ai:use"];
+/** Third-party MCP clients (OAuth, devices.platform = "mcp"): no raw sync, no account management. */
+export const MCP_SCOPES = ["vocab:read", "vocab:write", "library:read", "library:write", "ai:use"];
 
 type SigningKey = CryptoKey | KeyObject;
 
@@ -101,6 +103,7 @@ export function parseDeviceInfo(input: unknown): DeviceInfo {
 
 export interface TokenResponse {
   accessToken: string;
+  scopes: string[];
   refreshToken: string;
   tokenType: "Bearer";
   expiresIn: number;
@@ -127,9 +130,12 @@ async function issueRefreshToken(env: Env, userId: string, deviceId: string, fam
 async function tokenResponse(env: Env, userId: string, deviceId: string, refreshToken: string): Promise<TokenResponse> {
   const user = await userRow(env, userId);
   const plan = await currentPlan(env, userId);
-  const accessToken = await signAccessToken(env, { sub: userId, did: deviceId, scp: FIRST_PARTY_SCOPES, plan, email: user.email });
+  const device = await env.DB.prepare("select platform from devices where id = ?").bind(deviceId).first<{ platform: string }>();
+  const scp = device?.platform === "mcp" ? MCP_SCOPES : FIRST_PARTY_SCOPES;
+  const accessToken = await signAccessToken(env, { sub: userId, did: deviceId, scp, plan, email: user.email });
   return {
     accessToken,
+    scopes: scp,
     refreshToken,
     tokenType: "Bearer",
     expiresIn: ACCESS_TOKEN_TTL_S,

@@ -6,6 +6,8 @@ import type { SegmentExplanation, VocabularyItem } from "./models";
 import {
   CHAPTER_BATCH_SIZE,
   explainPrompt,
+  extractVocabPrompt,
+  parseExtractedVocab,
   lineAlignmentRetryMessage,
   parseBatchTranslations,
   parseLineTranslations,
@@ -13,6 +15,8 @@ import {
   translateLyricsPrompt,
   translatePrompt,
   wordGlossPrompt,
+  type ExtractVocabInput,
+  type ExtractedVocab,
   type PromptMessages,
 } from "./prompts";
 
@@ -166,4 +170,11 @@ export async function translateChapterItems(
     opts.onProgress?.(Math.min(i + batch.length, items.length), items.length);
   }
   return out;
+}
+
+/** Candidate study words from a passage (see `extractVocabPrompt`). */
+export async function extractVocabulary(chat: ChatFn, input: ExtractVocabInput): Promise<ExtractedVocab[]> {
+  const prompt = extractVocabPrompt(input);
+  const result = await chat(toMessages(prompt), { temperature: prompt.temperature, json: true });
+  return parseExtractedVocab(result.content, Math.max(1, Math.min(input.max ?? 15, 50)));
 }

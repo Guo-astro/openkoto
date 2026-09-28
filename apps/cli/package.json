@@ -1,6 +1,6 @@
 {
   "name": "@openkoto/cli",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "koto — the OpenKoto command line: vocabulary review, lyrics translation and your reading library from the terminal.",
   "type": "module",
   "license": "MIT",
@@ -23,7 +23,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "commander": "^14.0.3"
+    "commander": "^14.0.3",
+    "fflate": "^0.8.2"
   },
   "devDependencies": {
     "@openkoto/client": "workspace:*",

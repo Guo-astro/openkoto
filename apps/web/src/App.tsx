@@ -9,6 +9,7 @@ import { DevicePage } from "./pages/DevicePage";
 import { HomePage } from "./pages/HomePage";
 import { LegalPage } from "./pages/LegalPage";
 import { LoginPage } from "./pages/LoginPage";
+import { OAuthConsentPage } from "./pages/OAuthConsentPage";
 import { PricingPage } from "./pages/PricingPage";
 import { ReviewPage } from "./pages/ReviewPage";
 import { VocabPage } from "./pages/VocabPage";
@@ -46,6 +47,7 @@ export function App() {
                   <Route path="/lyrics/:id" element={<LyricsDetailPage />} />
                   <Route path="/account" element={<AccountPage />} />
                   <Route path="/device" element={<DevicePage />} />
+                  <Route path="/oauth/consent" element={<OAuthConsentPage />} />
                 </Route>
               </Route>
             </Routes>

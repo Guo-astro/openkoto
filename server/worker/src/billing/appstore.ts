@@ -104,8 +104,25 @@ export async function applyTransaction(env: Env, userId: string, tx: AppStoreTra
   return { sku: sku.id, plan: sku.plan ?? null };
 }
 
-function sameUuid(a: string | undefined, b: string): boolean {
-  return !!a && a.toLowerCase() === b.toLowerCase();
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/**
+ * The appAccountToken iOS attaches to purchases (OKCommerce AppAccountToken.forUser):
+ * the user id itself when it is a UUID, otherwise a v5-style UUID from
+ * sha256("openkoto.appAccountToken:" + id)[0..<16].
+ */
+export async function appAccountTokenFor(userId: string): Promise<string> {
+  if (UUID_RE.test(userId)) return userId.toLowerCase();
+  const digest = new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(`openkoto.appAccountToken:${userId}`)));
+  const b = digest.slice(0, 16);
+  b[6] = (b[6]! & 0x0f) | 0x50;
+  b[8] = (b[8]! & 0x3f) | 0x80;
+  const hex = [...b].map((x) => x.toString(16).padStart(2, "0")).join("");
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+}
+
+async function belongsTo(token: string | undefined, userId: string): Promise<boolean> {
+  return !!token && token.toLowerCase() === (await appAccountTokenFor(userId));
 }
 
 export const appStoreApi = new Hono<AppBindings>().post("/verify", requireAuth("account"), async (c) => {
@@ -114,7 +131,7 @@ export const appStoreApi = new Hono<AppBindings>().post("/verify", requireAuth("
   if (!signedTransaction) throw badRequest("signedTransaction is required");
   const tx = await fetchTransaction(c.env, transactionIdFromJws(signedTransaction));
   // Purchases are bound to accounts via appAccountToken = user id.
-  if (!sameUuid(tx.appAccountToken, p.userId)) throw forbidden("transaction belongs to a different account");
+  if (!(await belongsTo(tx.appAccountToken, p.userId))) throw forbidden("transaction belongs to a different account");
   return c.json({ ok: true, ...(await applyTransaction(c.env, p.userId, tx)) });
 });
 

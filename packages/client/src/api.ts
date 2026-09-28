@@ -123,6 +123,9 @@ export class ApiError extends Error {
   }
 }
 
+/** Same values as the DOM `RequestCredentials` (declared here so the client also type-checks without DOM libs). */
+export type FetchCredentials = "include" | "omit" | "same-origin";
+
 export type FetchLike = (input: string, init?: RequestInit) => Promise<Response>;
 
 export interface OpenKotoClientOptions {
@@ -134,7 +137,7 @@ export interface OpenKotoClientOptions {
   tokenStore?: TokenStore;
   fetch?: FetchLike;
   /** "include" = web cookie session: no bearer header, cookies sent. */
-  credentials?: RequestCredentials;
+  credentials?: FetchCredentials;
   /** Called once when refresh fails and the stored tokens were cleared (user must sign in again). */
   onSessionExpired?: () => void;
   /** Injectable for tests. */
@@ -212,7 +215,7 @@ export class OpenKotoClient {
   private readonly clientName: string;
   private readonly tokenStore?: TokenStore;
   private readonly fetchImpl: FetchLike;
-  private readonly credentials?: RequestCredentials;
+  private readonly credentials?: FetchCredentials;
   private readonly onSessionExpired?: () => void;
   private readonly now: () => number;
   private readonly sleep: (ms: number, signal?: AbortSignal) => Promise<void>;
@@ -253,7 +256,8 @@ export class OpenKotoClient {
     if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
     const init: RequestInit = { method, headers };
     if (opts.body !== undefined) init.body = JSON.stringify(opts.body);
-    if (this.credentials) init.credentials = this.credentials;
+    // `credentials` is absent from some runtimes' RequestInit typings (Cloudflare Workers).
+    if (this.credentials) (init as RequestInit & { credentials?: FetchCredentials }).credentials = this.credentials;
     return this.fetchImpl(this.url(path, opts.query), init);
   }
 

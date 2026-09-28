@@ -247,6 +247,19 @@
     "creditsDesc": "¥{{price}} = {{credits}} 积分，约可翻译 1 万句或精讲 2000 句。购买后 12 个月内有效。",
     "buyCredits": "购买积分",
     "checkoutFailed": "无法打开支付页面，请稍后重试",
-    "notes": "网页端通过 Creem 安全支付，支持随时取消续订。"
+    "notes": "网页端通过 Creem 安全支付，支持随时取消续订。",
+    "usd": "网页端以美元结算：${{price}}"
+  },
+  "oauth": {
+    "title": "连接 AI 助手",
+    "confirm": "「{{name}}」请求访问你的 OpenKoto 账号。",
+    "redirect": "完成后将返回 {{host}}。",
+    "scopeRead": "读取你的生词、歌词、文章和书籍",
+    "scopeWrite": "添加和编辑生词与歌词，并记录复习结果",
+    "scopeAi": "使用云端 AI 功能（消耗你的 AI 点数）",
+    "warning": "只有在你本人正在连接助手时才点允许。之后可随时在「账号 → 设备」中撤销。",
+    "approve": "允许",
+    "deny": "拒绝",
+    "invalid": "授权请求无效或已过期。"
   }
 }

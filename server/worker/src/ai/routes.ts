@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import {
   explainSentence,
+  extractVocabulary,
   glossWord,
   PROMPT_VERSION,
   translateChapterItems,
@@ -94,6 +95,26 @@ export const aiApi = new Hono<AppBindings>()
     );
     if (result.aligned) await store(key, result);
     return c.json({ ...result, credits, cached: false });
+  })
+
+  .post("/extract-vocab", async (c) => {
+    const p = principalOf(c);
+    const body = (await c.req.json()) as { text?: unknown; targetLanguage?: unknown; max?: unknown; level?: unknown };
+    const text = str(body.text, "text", 12_000);
+    const target = lang(body.targetLanguage);
+    const max = typeof body.max === "number" && Number.isFinite(body.max) ? Math.max(1, Math.min(Math.floor(body.max), 50)) : 15;
+    const level = typeof body.level === "string" ? body.level.slice(0, 40) : undefined;
+    const key = await cacheKey([PROMPT_VERSION.extractVocab, c.env.AI_MODEL, target, max, level ?? "", text]);
+    const hit = await cached<{ items: unknown[] }>(key);
+    if (hit) return c.json({ ...hit, credits: 0, cached: true });
+    const est = estimateTokens(text);
+    const { result, credits } = await metered(
+      c.env,
+      { userId: p.userId, feature: "extract_vocab", keyId: p.keyId, estimateInput: est + 400, estimateOutput: max * 80 },
+      (chat) => extractVocabulary(chat, { text, targetLanguage: target, max, level }),
+    );
+    await store(key, { items: result });
+    return c.json({ items: result, credits, cached: false });
   })
 
   .post("/translate-chapter", async (c) => {

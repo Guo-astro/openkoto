@@ -27,4 +27,32 @@
   },
   "triggers": { "crons": ["17 3 * * *"] },
   "assets": { "directory": "../../apps/web/dist", "binding": "ASSETS", "not_found_handling": "single-page-application", "run_worker_first": ["/api/*", "/auth/*", "/.well-known/*", "/mcp", "/mcp/*"] }
+,
+  "env": {
+    // Staging on workers.dev: Creem test mode, console email, BYOK/hosted AI via secrets.
+    "staging": {
+      "name": "openkoto-api-staging",
+      "vars": {
+        "APP_ORIGIN": "https://openkoto-api-staging.workers.dev",
+        "APP_NAME": "OpenKoto (staging)",
+        "EMAIL_PROVIDER": "console",
+        "EMAIL_FROM": "OpenKoto <noreply@openkoto.app>",
+        "APPLE_APP_BUNDLE_ID": "com.openkoto.ios",
+        "APPSTORE_ENVIRONMENT": "Sandbox",
+        "GOOGLE_CLIENT_ID": "506826712750-uubvvapb2v0l976jutqsree5gaavq3jd.apps.googleusercontent.com",
+        "CREEM_API_BASE": "https://test-api.creem.io",
+        "CREEM_PRODUCTS": "{\"prod_6v5Z5VzHCJkH2Lw13OaCZN\":\"plus_year\",\"prod_IOVBOniqHPSdkhfecE5Lu\":\"pro_month\",\"prod_6wLJyGLDKYAsMSkMACVVFU\":\"pro_year\",\"prod_1Sq0hHek0znn21NM7qwlo1\":\"credits_3000\"}"
+      },
+      "d1_databases": [
+        { "binding": "DB", "database_name": "openkoto-staging", "database_id": "09957c00-d55f-4bb7-9a21-031ae7f03995", "migrations_dir": "migrations" }
+      ],
+      "r2_buckets": [{ "binding": "BUCKET", "bucket_name": "openkoto-files-staging" }],
+      "durable_objects": { "bindings": [{ "name": "VAULT", "class_name": "UserVault" }] },
+      "queues": {
+        "producers": [{ "binding": "JOBS", "queue": "openkoto-jobs-staging" }],
+        "consumers": [{ "queue": "openkoto-jobs-staging", "max_batch_size": 5, "max_retries": 3 }]
+      },
+      "triggers": { "crons": ["17 3 * * *"] }
+    }
+  }
 }

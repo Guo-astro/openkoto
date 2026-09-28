@@ -11,6 +11,7 @@ export const PROMPT_VERSION = {
   webClean: "webclean-v1",
   translateLyrics: "lyrics-translate-v1",
   translateChapter: "chapter-translate-v1",
+  extractVocab: "extract-vocab-v1",
 } as const;
 
 export type PromptTask = keyof typeof PROMPT_VERSION;
@@ -325,4 +326,68 @@ export function parseBatchTranslations(content: string): { id: string; translati
     const id = typeof o.id === "number" ? String(o.id) : o.id;
     return typeof id === "string" && typeof o.translation === "string" ? [{ id, translation: o.translation }] : [];
   });
+}
+
+// MARK: - extractVocab
+
+export interface ExtractVocabInput {
+  text: string;
+  targetLanguage: string;
+  /** Maximum number of items (default 15). */
+  max?: number;
+  /** Learner level hint, e.g. "JLPT N3", "B1", "beginner". */
+  level?: string;
+}
+
+/**
+ * Pick study-worthy words from a passage (word packs from lyrics, chapters, articles).
+ * Reply: JSON array of {word, reading, meaning, example} — parse with `parseExtractedVocab`.
+ */
+export function extractVocabPrompt(input: ExtractVocabInput): PromptMessages {
+  const lang = nativeLanguageName(input.targetLanguage);
+  const max = Math.max(1, Math.min(input.max ?? 15, 50));
+  return {
+    task: "extractVocab",
+    version: PROMPT_VERSION.extractVocab,
+    system: `You are a language teacher building a vocabulary list. The learner's native language is ${lang}.${input.level ? ` The learner's level is ${input.level}.` : ""}
+
+From the text the user sends, pick at most ${max} words or fixed expressions that are most worth learning${input.level ? " at that level" : ""}.
+
+Rules:
+- Use the dictionary form of each word; list each word once.
+- Skip proper nouns, particles, numbers and words any learner already knows.
+- "example" must be a sentence copied verbatim from the text that contains the word.
+- Return ONLY raw JSON, with no markdown fences and no explanation:
+[{"word": "...", "reading": "pronunciation (kana / pinyin / IPA), or empty", "meaning": "concise meaning in ${lang}", "example": "..."}]`,
+    user: input.text,
+    temperature: 0.2,
+  };
+}
+
+export interface ExtractedVocab {
+  word: string;
+  meaning: string;
+  reading?: string;
+  example?: string;
+}
+
+/** Parse an `extractVocab` reply; malformed items are dropped and words deduplicated. */
+export function parseExtractedVocab(content: string, max = 50): ExtractedVocab[] {
+  const seen = new Set<string>();
+  const out: ExtractedVocab[] = [];
+  for (const item of arrayOf(content)) {
+    if (typeof item !== "object" || item === null) continue;
+    const o = item as Record<string, unknown>;
+    const word = typeof o.word === "string" ? o.word.trim() : "";
+    const meaning = typeof o.meaning === "string" ? o.meaning.trim() : "";
+    const key = word.normalize("NFKC").toLowerCase();
+    if (!word || !meaning || seen.has(key)) continue;
+    seen.add(key);
+    const v: ExtractedVocab = { word, meaning };
+    if (typeof o.reading === "string" && o.reading.trim()) v.reading = o.reading.trim();
+    if (typeof o.example === "string" && o.example.trim()) v.example = o.example.trim();
+    out.push(v);
+    if (out.length >= max) break;
+  }
+  return out;
 }

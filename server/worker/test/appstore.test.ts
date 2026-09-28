@@ -90,3 +90,19 @@ describe("App Store purchases", () => {
     expect((await json<{ plan: string }>(await api(t.accessToken, "/api/v1/me"))).plan).toBe("plus");
   });
 });
+
+describe("appAccountToken", () => {
+  it("matches the iOS derivation for non-UUID ids and passes UUIDs through", async () => {
+    const { appAccountTokenFor } = await import("../src/billing/appstore");
+    const uuid = "3F0C2A4E-1D2B-4C5D-9E8F-0A1B2C3D4E5F";
+    expect(await appAccountTokenFor(uuid)).toBe(uuid.toLowerCase());
+    const derived = await appAccountTokenFor("abc123");
+    expect(derived).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-5[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
+    expect(await appAccountTokenFor("abc123")).toBe(derived);
+  });
+
+  it("gives new users UUID ids", async () => {
+    const t = await nativeLogin("uuid-id@example.com");
+    expect(t.user.id).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i);
+  });
+});

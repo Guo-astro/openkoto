@@ -2,7 +2,16 @@
 
 Goal: help the user read a book from their OpenKoto library by summarising or explaining chapters, keeping a character list, and saving new words.
 
-Books are imported in the OpenKoto apps (EPUB/TXT). The CLI reads them but does not import or translate whole books yet. Hosted book translation arrives in a later release.
+There are two ways to import a book. The user can import it in an OpenKoto app, or you can run `koto book import <file.epub|txt> --json`.
+
+Hosted translation of whole chapters runs as a background job and spends AI credits. Always confirm with the user before starting one:
+
+```bash
+koto book translate <bookId> --to zh --chapters 1-3 --json
+koto job status <jobId> --watch --json
+```
+
+If a job is `paused` with the error `INSUFFICIENT_CREDITS`, the user needs more credits.
 
 1. **Find the book.** Run `koto book list --json`, or `koto search "<title>" --types book --json`.
 2. **List the chapters.** Run `koto book chapters <bookId> --json`. It returns `items[].index` (0-based), `title` and `articleId`.

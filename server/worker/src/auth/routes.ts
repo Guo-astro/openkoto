@@ -93,6 +93,8 @@ async function exchangeAuthCode(env: Env, body: Record<string, unknown>) {
     used_at: number | null;
   }>();
   if (!row || row.used_at || row.expires_at < Date.now()) throw oauthError("invalid_grant", "authorization code is invalid or expired");
+  // Codes issued to third-party MCP clients are only redeemable at the MCP token endpoint.
+  if (row.client_id.startsWith("mcp_")) throw oauthError("invalid_grant", "authorization code was issued to another client");
   if (row.redirect_uri !== redirectUri) throw oauthError("invalid_grant", "redirect_uri mismatch");
   if ((await sha256Base64url(verifier)) !== row.code_challenge) throw oauthError("invalid_grant", "PKCE verification failed");
 

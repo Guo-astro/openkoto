@@ -35,6 +35,8 @@ function buildAuth(env: Env) {
       updateAge: 60 * 60 * 24,
     },
     advanced: {
+      // UUID ids double as StoreKit appAccountTokens (App Store purchases are bound to accounts).
+      database: { generateId: "uuid" },
       useSecureCookies: env.APP_ORIGIN.startsWith("https://"),
       defaultCookieAttributes: { sameSite: "lax" },
     },

@@ -11,6 +11,7 @@ interface Sku {
   kind: "subscription" | "credits";
   plan?: "plus" | "pro";
   priceCny: number;
+  priceUsd?: number;
   credits?: number;
   web: boolean;
 }
@@ -87,6 +88,7 @@ export function PricingPage() {
                     <span>
                       <span className="text-xl font-semibold">¥{sku.priceCny}</span>
                       <span className="text-sm text-muted-foreground"> / {t(sku.id.endsWith("year") ? "pricing.year" : "pricing.month")}</span>
+                      {sku.web && sku.priceUsd && <span className="block text-xs text-muted-foreground">{t("pricing.usd", { price: sku.priceUsd })}</span>}
                     </span>
                     {sku.web ? (
                       <Button size="sm" disabled={busy !== null || account?.plan === tier.plan} onClick={() => buy(sku.id)}>

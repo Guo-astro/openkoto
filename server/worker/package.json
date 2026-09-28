@@ -12,7 +12,11 @@
     "db:migrate:local": "wrangler d1 migrations apply openkoto --local"
   },
   "dependencies": {
+    "@cfworker/json-schema": "^4.1.1",
+    "@modelcontextprotocol/sdk": "^1.30.1",
+    "@openkoto/client": "workspace:*",
     "@openkoto/core": "workspace:*",
+    "@openkoto/mcp-tools": "workspace:*",
     "better-auth": "^1.7.6",
     "hono": "^4.13.9",
     "jose": "^6.2.12",
