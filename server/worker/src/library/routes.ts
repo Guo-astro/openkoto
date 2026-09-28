@@ -25,7 +25,7 @@ import {
   type WordPack,
 } from "@openkoto/core";
 import type { AppBindings } from "../env";
-import { principalOf, requireAuth } from "../auth/middleware";
+import { principalOf, requireAuth, requirePlusForAgents } from "../auth/middleware";
 import { currentPlan } from "../billing/entitlements";
 import { ApiError, badRequest, notFound } from "../lib/http";
 import { vaultFor, type VaultApi } from "../sync/routes";
@@ -247,6 +247,7 @@ function packRefs(input: VocabInput): string[] {
 const LYRICS_FORMATS = new Set<LyricsSourceFormat>(["lrc", "txt", "srt"]);
 
 export const libraryApi = new Hono<AppBindings>()
+  .use("*", requirePlusForAgents())
   // ---- vocabulary ----
   .get("/vocab", requireAuth("vocab:read"), async (c) => {
     const v = vault(c);

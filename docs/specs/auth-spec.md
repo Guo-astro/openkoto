@@ -56,7 +56,9 @@
   │                                          &redirect_uri=openkoto://auth/callback
   │                                          &code_challenge=…&code_challenge_method=S256&state=…
   │                                        未登录 → 跳转 /login?next=… → 登录后回到本 URL
-  │                                        已登录 → 生成一次性 code（有效期 5 分钟）
+  │                                        已登录 → 跳转确认页 /authorize-app（用户点「允许」）
+  │                                        → POST /api/v1/auth/native/approve（Cookie 会话 + 同源校验）
+  │                                        → 生成一次性 code（有效期 5 分钟）；点「取消」返回 error=access_denied
   │ ◀──────────── 302 redirect_uri?code=…&state=…
   │ 校验 state
   │ POST /api/v1/auth/token ─────────────▶ grant_type=authorization_code

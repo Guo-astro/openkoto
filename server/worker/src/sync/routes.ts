@@ -6,6 +6,7 @@ import {
   PLAN_LIMITS,
   PROTOCOL_VERSION,
   type PushOp,
+  type PushResult,
   type RecordType,
   type SyncRecord,
 } from "@openkoto/core";
@@ -41,9 +42,22 @@ function toWire(record: VaultRecord, origin: string): SyncRecord {
   return blobKey ? { ...rest, blobUrl: `${origin}/api/v1/sync/blob/${encodeURIComponent(blobKey)}` } : rest;
 }
 
+const BLOB_KEY_RE = /^[A-Za-z]+\/[A-Za-z0-9_.:-]{1,200}\/[0-9a-f]{64}$/;
+
 function blobObjectKey(userId: string, blobKey: string): string {
-  if (!/^[A-Za-z]+\/[A-Za-z0-9_.:-]+\/[0-9a-f]{64}$/.test(blobKey)) throw badRequest("invalid blob key");
+  if (!BLOB_KEY_RE.test(blobKey)) throw badRequest("invalid blob key");
   return `blobs/${userId}/${blobKey}`;
+}
+
+async function prefixBytes(env: Env, prefix: string, exceptKey?: string): Promise<number> {
+  let total = 0;
+  let cursor: string | undefined;
+  do {
+    const page = await env.BUCKET.list({ prefix, cursor, limit: 1000 });
+    for (const obj of page.objects) if (obj.key !== exceptKey) total += obj.size;
+    cursor = page.truncated ? page.cursor : undefined;
+  } while (cursor);
+  return total;
 }
 
 export const syncApi = new Hono<AppBindings>()
@@ -107,7 +121,31 @@ export const syncApi = new Hono<AppBindings>()
     if (body.ops.length > MAX_PUSH_OPS) throw new ApiError(413, "PAYLOAD_TOO_LARGE", `at most ${MAX_PUSH_OPS} ops per request`);
     const deviceId = p.deviceId ?? String(body.deviceId ?? p.via);
     const plan = await currentPlan(c.env, p.userId);
-    return c.json(await vaultFor(c.env, p.userId).push(deviceId, body.ops, plan));
+
+    // Blob references must point at an object this user actually uploaded for this record;
+    // its real size is recorded so pull budgets and storage accounting stay honest.
+    const early = new Map<number, PushResult>();
+    const ops: PushOp[] = [];
+    for (const [i, op] of body.ops.entries()) {
+      if (op && typeof op === "object" && op.blobKey && !op.deleted) {
+        const expectedPrefix = `${op.type}/${String(op.id ?? "").toLowerCase()}/`;
+        let head: R2Object | null = null;
+        if (BLOB_KEY_RE.test(op.blobKey) && op.blobKey.startsWith(expectedPrefix)) head = await c.env.BUCKET.head(`blobs/${p.userId}/${op.blobKey}`);
+        if (!head) {
+          early.set(i, { opId: String(op.opId ?? ""), status: "rejected", code: "INVALID_PAYLOAD", message: "blob not found" });
+          continue;
+        }
+        ops.push({ ...op, blobSize: head.size } as PushOp);
+      } else {
+        ops.push(op);
+      }
+    }
+    const pushed = await vaultFor(c.env, p.userId).push(deviceId, ops, plan);
+    if (!early.size) return c.json(pushed);
+    const results: PushResult[] = [];
+    let next = 0;
+    for (let i = 0; i < body.ops.length; i++) results.push(early.get(i) ?? pushed.results[next++]!);
+    return c.json({ ...pushed, results });
   })
 
   .get("/stats", async (c) => {
@@ -144,8 +182,13 @@ export const syncApi = new Hono<AppBindings>()
   .put("/blob/:key", async (c) => {
     const p = principalOf(c);
     const key = blobObjectKey(p.userId, decodeURIComponent(c.req.param("key")));
-    const length = Number(c.req.header("Content-Length") ?? 0);
+    const length = Number(c.req.header("Content-Length") ?? NaN);
+    if (!Number.isFinite(length) || length <= 0) throw badRequest("Content-Length is required");
     if (length > MAX_BLOB_BYTES) throw new ApiError(413, "PAYLOAD_TOO_LARGE", "blob too large");
+    // Blobs share the plan's file storage with book files.
+    const limits = PLAN_LIMITS[await currentPlan(c.env, p.userId)];
+    const used = (await prefixBytes(c.env, `blobs/${p.userId}/`, key)) + (await prefixBytes(c.env, `books/${p.userId}/`));
+    if (used + length > limits.fileBytesTotal) throw new ApiError(402, "QUOTA_EXCEEDED", "storage quota exceeded");
     await c.env.BUCKET.put(key, c.req.raw.body, { httpMetadata: { contentType: "application/gzip" } });
     return c.json({ ok: true });
   })

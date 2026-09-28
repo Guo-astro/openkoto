@@ -15,9 +15,7 @@ function useSegments(articleId: string | undefined): SegmentRow[] | undefined {
   const { store } = useLibrary();
   return useLiveQuery(async () => {
     if (!articleId) return [];
-    const all = await store.live("Segment");
-    return all
-      .filter((r) => String(r.payload?.articleId ?? "").toLowerCase() === articleId)
+    return (await store.children("Segment", articleId))
       .map((r) => ({ id: r.id, payload: r.payload as unknown as ArticleSegment }))
       .sort((a, b) => a.payload.order - b.payload.order);
   }, [store, articleId]);

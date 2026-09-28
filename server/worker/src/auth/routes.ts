@@ -31,34 +31,30 @@ export function isAllowedRedirect(clientId: string, redirectUri: string): boolea
   }
 }
 
-/** Browser-facing routes (not under /api). */
-export const nativeAuthorize = new Hono<AppBindings>().get("/auth/native/authorize", async (c) => {
-  const q = c.req.query();
+function validateNativeRequest(q: Record<string, string | undefined>) {
   const clientId = q.client_id ?? "";
   const redirectUri = q.redirect_uri ?? "";
   if (!NATIVE_CLIENTS.has(clientId)) throw badRequest("unknown client_id");
   if (!isAllowedRedirect(clientId, redirectUri)) throw badRequest("redirect_uri not allowed");
-  if (q.code_challenge_method !== "S256" || !q.code_challenge || q.code_challenge.length < 43) {
+  if (q.code_challenge_method !== "S256" || !q.code_challenge || q.code_challenge.length < 43 || q.code_challenge.length > 128) {
     throw badRequest("PKCE S256 code_challenge is required");
   }
+  return { clientId, redirectUri, codeChallenge: q.code_challenge, state: q.state };
+}
 
+/**
+ * Browser-facing entry for the apps' sign-in. It never issues a code by itself: a signed-in
+ * user is sent to the consent page (/authorize-app), so a page or local app that merely opens
+ * this URL can't mint tokens silently.
+ */
+export const nativeAuthorize = new Hono<AppBindings>().get("/auth/native/authorize", async (c) => {
+  validateNativeRequest(c.req.query());
+  const here = new URL(c.req.url);
   const principal = await resolvePrincipal(c.env, c.req.raw);
   if (!principal || principal.via !== "session") {
-    const next = new URL(c.req.url);
-    return c.redirect(`/login?next=${encodeURIComponent(next.pathname + next.search)}`);
+    return c.redirect(`/login?next=${encodeURIComponent(here.pathname + here.search)}`);
   }
-
-  const code = randomToken(32);
-  await c.env.DB.prepare(
-    "insert into auth_codes (code_hash, user_id, client_id, redirect_uri, code_challenge, expires_at) values (?, ?, ?, ?, ?, ?)",
-  )
-    .bind(await sha256Hex(code), principal.userId, clientId, redirectUri, q.code_challenge, Date.now() + AUTH_CODE_TTL_MS)
-    .run();
-
-  const target = new URL(redirectUri);
-  target.searchParams.set("code", code);
-  if (q.state) target.searchParams.set("state", q.state);
-  return c.redirect(target.toString());
+  return c.redirect(`/authorize-app${here.search}`);
 });
 
 async function readBody(req: Request): Promise<Record<string, unknown>> {
@@ -139,6 +135,25 @@ async function exchangeDeviceCode(env: Env, body: Record<string, unknown>) {
 }
 
 export const authApi = new Hono<AppBindings>()
+  // Called by the consent page with the user's explicit approval.
+  .post("/native/approve", requireSession(), async (c) => {
+    const body = (await readBody(c.req.raw)) as Record<string, string | undefined>;
+    const req = validateNativeRequest(body);
+    const target = new URL(req.redirectUri);
+    if (body.approve === "false") {
+      target.searchParams.set("error", "access_denied");
+    } else {
+      const code = randomToken(32);
+      await c.env.DB.prepare(
+        "insert into auth_codes (code_hash, user_id, client_id, redirect_uri, code_challenge, expires_at) values (?, ?, ?, ?, ?, ?)",
+      )
+        .bind(await sha256Hex(code), principalOf(c).userId, req.clientId, req.redirectUri, req.codeChallenge, Date.now() + AUTH_CODE_TTL_MS)
+        .run();
+      target.searchParams.set("code", code);
+    }
+    if (req.state) target.searchParams.set("state", req.state);
+    return c.json({ redirect: target.toString() });
+  })
   .get("/providers", (c) => {
     const providers: string[] = [];
     if (c.env.GOOGLE_CLIENT_ID && c.env.GOOGLE_CLIENT_SECRET) providers.push("google");

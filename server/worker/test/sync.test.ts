@@ -218,3 +218,33 @@ describe("realtime", () => {
     b.ws.close();
   });
 });
+
+describe("blobs", () => {
+  it("only accepts references to uploaded blobs and enforces the storage quota", async () => {
+    const t = await nativeLogin("blob@example.com");
+    const sha = "a".repeat(64);
+    const blobKey = `Article/big-1/${sha}`;
+    const op = (opId: string) => ({ opId, type: "Article", id: "big-1", baseRev: 0, hlc: hlc(), deleted: false, blobKey });
+    const missing = await push(t.accessToken, [op("b-1")]);
+    expect(missing.results[0]).toMatchObject({ status: "rejected", code: "INVALID_PAYLOAD" });
+
+    const up = await api(t.accessToken, `/api/v1/sync/blob/${encodeURIComponent(blobKey)}`, {
+      method: "PUT",
+      body: new Uint8Array(1024),
+      headers: { "Content-Type": "application/gzip", "Content-Length": "1024" },
+    });
+    expect(up.status).toBe(200);
+    const ok = await push(t.accessToken, [op("b-2")]);
+    expect(ok.results[0]).toMatchObject({ status: "applied" });
+    const pulled = await json<{ records: { id: string; blobUrl?: string }[] }>(await api(t.accessToken, "/api/v1/sync/pull"));
+    expect(pulled.records.find((r) => r.id === "big-1")?.blobUrl).toContain("/api/v1/sync/blob/");
+
+    // Free plan: 50 MB of files in total.
+    const huge = await api(t.accessToken, `/api/v1/sync/blob/${encodeURIComponent(`Article/big-2/${"b".repeat(64)}`)}`, {
+      method: "PUT",
+      body: "x",
+      headers: { "Content-Type": "application/gzip", "Content-Length": String(50 * 1024 * 1024) },
+    });
+    expect(huge.status).toBe(402);
+  });
+});

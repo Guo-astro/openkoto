@@ -122,8 +122,7 @@ export function LyricsDetailPage() {
   const meta = useRecord<LyricsMeta>("LyricsMeta", articleId);
   const segments = useLiveQuery(
     async () =>
-      (await store.live("Segment"))
-        .filter((r) => String(r.payload?.articleId ?? "").toLowerCase() === articleId)
+      (await store.children("Segment", articleId))
         .map((r) => ({ id: r.id, payload: r.payload as unknown as ArticleSegment }))
         .sort((a, b) => a.payload.order - b.payload.order) as SegmentRow[],
     [store, articleId],

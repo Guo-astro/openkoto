@@ -28,6 +28,7 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 const APPLIED_OP_RETENTION_MS = 30 * DAY_MS;
 const PULL_BYTE_BUDGET = 4 * 1024 * 1024;
 const SERVER_NODE = "ffffffff";
+const FREE_CHAPTERS_PER_BOOK = 600;
 
 interface RecordRow {
   type: string;
@@ -258,7 +259,11 @@ export class UserVault extends DurableObject<Env> {
     let payload: JsonObject | null = null;
     if (!deleted) {
       if (op.blobKey) {
-        if (!op.blobKey.startsWith(`${op.type}/`)) return this.rejected(op, "INVALID_PAYLOAD", "invalid blobKey");
+        const size = (op as PushOp & { blobSize?: number }).blobSize;
+        if (!/^[A-Za-z]+\/[A-Za-z0-9_.:-]{1,200}\/[0-9a-f]{64}$/.test(op.blobKey) || !op.blobKey.startsWith(`${op.type}/`) || typeof size !== "number") {
+          return this.rejected(op, "INVALID_PAYLOAD", "invalid blobKey");
+        }
+        payloadBytes = size;
       } else {
         if (!op.payload || typeof op.payload !== "object" || Array.isArray(op.payload)) {
           return this.rejected(op, "INVALID_PAYLOAD", "payload must be an object");
@@ -281,7 +286,8 @@ export class UserVault extends DurableObject<Env> {
     const wins = !existing || existing.rev === op.baseRev || compareHlc(op.hlc, existing.hlc) > 0;
     if (!wins) return { opId: op.opId, status: "conflict", rev: existing.rev, current: rowToRecord(existing) };
 
-    const creating = !deleted && (!existing || existing.deleted === 1);
+    // Changing an article's class (e.g. chapter → lyrics) is checked like a new record.
+    const creating = !deleted && (!existing || existing.deleted === 1 || (op.type === "Article" && existing.cls !== classify(op.type, payload)));
     const cls = classify(op.type, payload);
     const bytes = fileBytes(op.type, payload);
     if (!deleted) {
@@ -322,10 +328,8 @@ export class UserVault extends DurableObject<Env> {
       vocabulary: this.count("select count(*) as n from record where type = 'Vocabulary' and deleted = 0"),
       books: this.count("select count(*) as n from record where type = 'Book' and deleted = 0"),
       lyrics: this.count("select count(*) as n from record where type = 'Article' and cls = 'lyrics' and deleted = 0"),
-      articles: this.count(
-        `select count(*) as n from record where type = 'Article' and cls = 'article' and deleted = 0
-         and id not in (select lower(json_extract(payload, '$.articleId')) from record where type = 'BookChapter' and deleted = 0)`,
-      ),
+      articles: this.count("select count(*) as n from record where type = 'Article' and cls = 'article' and deleted = 0"),
+      chapters: this.count("select count(*) as n from record where type = 'Article' and cls = 'chapter' and deleted = 0"),
       fileBytes: this.count("select coalesce(sum(file_bytes), 0) as n from record where type = 'Book' and deleted = 0"),
     };
   }
@@ -344,6 +348,8 @@ export class UserVault extends DurableObject<Env> {
     if (type === "Book" && limits.books !== null && usage.books >= limits.books) return "book limit reached";
     if (type === "Article" && cls === "lyrics" && limits.lyrics !== null && usage.lyrics >= limits.lyrics) return "lyrics limit reached";
     if (type === "Article" && cls === "article" && limits.articles !== null && usage.articles >= limits.articles) return "article limit reached";
+    // Book chapters aren't counted as articles, but can't be an unlimited side door either.
+    if (type === "Article" && cls === "chapter" && limits.books !== null && usage.chapters >= limits.books * FREE_CHAPTERS_PER_BOOK) return "chapter limit reached";
     return null;
   }
 

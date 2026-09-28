@@ -5,6 +5,12 @@ import { newId, randomBase62, randomToken, sha256Hex } from "../lib/crypto";
 import { badRequest, unauthenticated } from "../lib/http";
 import { currentPlan } from "../billing/entitlements";
 
+// Set by auth/middleware to invalidate its device cache without an import cycle.
+let forgetDeviceCache: (deviceId: string) => void = () => {};
+export function onDeviceRevoked(fn: (deviceId: string) => void): void {
+  forgetDeviceCache = fn;
+}
+
 export const ACCESS_TOKEN_TTL_S = 15 * 60;
 export const REFRESH_TOKEN_TTL_MS = 90 * 24 * 60 * 60 * 1000;
 export const AUDIENCE = "openkoto-api";
@@ -194,6 +200,7 @@ export async function rotateRefreshToken(env: Env, presented: string): Promise<T
 }
 
 export async function revokeDevice(env: Env, userId: string, deviceId: string): Promise<boolean> {
+  forgetDeviceCache(deviceId);
   const now = Date.now();
   const res = await env.DB.batch([
     env.DB.prepare("update devices set revoked_at = ? where id = ? and user_id = ? and revoked_at is null").bind(now, deviceId, userId),

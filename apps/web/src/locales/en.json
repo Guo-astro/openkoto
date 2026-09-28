@@ -276,5 +276,14 @@
     "cost": "Used {{credits}} credits",
     "noCredits": "Not enough credits. Buy credits or upgrade to Pro on the pricing page.",
     "needsPlus": "The study assistant is a Plus / Pro feature and uses AI credits."
+  },
+  "authorizeApp": {
+    "title": "Allow {{app}} to sign in?",
+    "body": "{{app}} will sign in as {{email}} and sync your words, library and lyrics.",
+    "warning": "Only allow this if you just started signing in from the app yourself.",
+    "allow": "Allow",
+    "ios": "the OpenKoto iOS / Mac app",
+    "desktop": "OpenKoto for desktop",
+    "failed": "Authorization failed. Go back to the app and sign in again."
   }
 }

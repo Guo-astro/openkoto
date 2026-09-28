@@ -68,9 +68,18 @@ export async function nativeLogin(email: string, platform = "ios"): Promise<Toke
     url(`/auth/native/authorize?client_id=ios&redirect_uri=${encodeURIComponent(redirectUri)}&code_challenge=${challenge}&code_challenge_method=S256&state=xyz`),
     { headers: { Cookie: cookie }, redirect: "manual" },
   );
-  const location = authorize.headers.get("Location") ?? "";
+  // The authorize endpoint only forwards to the consent page; approving there issues the code.
+  const consent = authorize.headers.get("Location") ?? "";
+  if (!consent.startsWith("/authorize-app?")) throw new Error(`expected consent redirect: ${authorize.status} ${consent}`);
+  const params = Object.fromEntries(new URLSearchParams(consent.slice("/authorize-app?".length)));
+  const approved = await SELF.fetch(url("/api/v1/auth/native/approve"), {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: cookie, Origin: ORIGIN },
+    body: JSON.stringify(params),
+  });
+  const location = (await json<{ redirect: string }>(approved)).redirect;
   const code = new URL(location).searchParams.get("code");
-  if (!code) throw new Error(`no code in redirect: ${authorize.status} ${location}`);
+  if (!code) throw new Error(`no code in redirect: ${approved.status} ${location}`);
   const res = await SELF.fetch(url("/api/v1/auth/token"), {
     method: "POST",
     headers: { "Content-Type": "application/json" },

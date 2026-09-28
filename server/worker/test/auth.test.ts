@@ -72,6 +72,38 @@ describe("native login", () => {
   });
 });
 
+describe("native consent", () => {
+  it("never issues a code without an explicit approval", async () => {
+    const cookie = await signInWithEmail("consent@example.com");
+    const { challenge } = await pkce();
+    const res = await SELF.fetch(
+      url(`/auth/native/authorize?client_id=ios&redirect_uri=${encodeURIComponent("openkoto://auth/callback")}&code_challenge=${challenge}&code_challenge_method=S256&state=s`),
+      { headers: { Cookie: cookie }, redirect: "manual" },
+    );
+    expect(res.headers.get("Location")).toMatch(/^\/authorize-app\?/);
+    expect(res.headers.get("Location")).not.toContain("code=");
+    const denied = await SELF.fetch(url("/api/v1/auth/native/approve"), {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Cookie: cookie, Origin: "http://localhost:8787" },
+      body: JSON.stringify({ client_id: "ios", redirect_uri: "openkoto://auth/callback", code_challenge: challenge, code_challenge_method: "S256", state: "s", approve: "false" }),
+    });
+    const target = new URL((await json<{ redirect: string }>(denied)).redirect);
+    expect(target.searchParams.get("error")).toBe("access_denied");
+    expect(target.searchParams.get("state")).toBe("s");
+  });
+
+  it("rejects approvals without a same-origin browser session", async () => {
+    const cookie = await signInWithEmail("consent2@example.com");
+    const { challenge } = await pkce();
+    const res = await SELF.fetch(url("/api/v1/auth/native/approve"), {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Cookie: cookie, Origin: "https://evil.example" },
+      body: JSON.stringify({ client_id: "ios", redirect_uri: "openkoto://auth/callback", code_challenge: challenge, code_challenge_method: "S256" }),
+    });
+    expect(res.status).toBe(403);
+  });
+});
+
 describe("device code flow", () => {
   it("lets the CLI sign in after browser approval", async () => {
     const start = await json<{ deviceCode: string; userCode: string; interval: number }>(

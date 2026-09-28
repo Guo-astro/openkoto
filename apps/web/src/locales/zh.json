@@ -276,5 +276,14 @@
     "cost": "本次消耗 {{credits}} 积分",
     "noCredits": "积分不足，请在定价页购买积分或升级 Pro。",
     "needsPlus": "学习助手是 Plus / Pro 会员功能，并按用量消耗 AI 积分。"
+  },
+  "authorizeApp": {
+    "title": "允许{{app}}登录？",
+    "body": "{{app}}将以 {{email}} 的身份登录，并同步你的生词、书架和歌词。",
+    "warning": "只有在你本人刚刚在应用里点了登录时才允许。",
+    "allow": "允许",
+    "ios": "OpenKoto iOS / Mac 应用",
+    "desktop": "OpenKoto 桌面版",
+    "failed": "授权失败，请回到应用重新登录。"
   }
 }

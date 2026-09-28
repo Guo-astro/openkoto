@@ -5,6 +5,8 @@ import type { RecordType, SyncRecord } from "@openkoto/core";
 interface RecordRow extends LocalRecord {
   /** Dexie can't index booleans; 1 = dirty. */
   dirtyFlag: 0 | 1;
+  /** Lowercased parent id (segment → article, chapter → book) for indexed child lookups. */
+  parent?: string;
 }
 
 interface MetaRow {
@@ -29,15 +31,33 @@ class LibraryDb extends Dexie {
       meta: "key",
       pending: "++seq",
     });
+    this.version(2)
+      .stores({ records: "[type+id], type, dirtyFlag, [type+parent]" })
+      .upgrade((tx) =>
+        tx
+          .table<RecordRow>("records")
+          .toCollection()
+          .modify((row) => {
+            const parent = parentOf(row);
+            if (parent) row.parent = parent;
+          }),
+      );
   }
 }
 
+function parentOf(record: LocalRecord): string | undefined {
+  const p = record.payload;
+  const id = p?.articleId ?? p?.bookId;
+  return typeof id === "string" && (record.type === "Segment" || record.type === "BookChapter" || record.type === "BookMark") ? id.toLowerCase() : undefined;
+}
+
 function toRow(record: LocalRecord): RecordRow {
-  return { ...record, dirtyFlag: record.dirty ? 1 : 0 };
+  const parent = parentOf(record);
+  return { ...record, dirtyFlag: record.dirty ? 1 : 0, ...(parent ? { parent } : {}) };
 }
 
 function fromRow(row: RecordRow): LocalRecord {
-  const { dirtyFlag: _flag, ...record } = row;
+  const { dirtyFlag: _flag, parent: _parent, ...record } = row;
   return record;
 }
 
@@ -93,6 +113,12 @@ export class IndexedDbStore implements LocalStore {
 
   transaction<T>(fn: () => Promise<T>): Promise<T> {
     return this.db.transaction("rw", [this.db.records, this.db.meta, this.db.pending], fn);
+  }
+
+  /** Live children of a parent (segments of an article, chapters of a book), via the index. */
+  async children(type: RecordType, parentId: string): Promise<LocalRecord[]> {
+    const rows = await this.db.records.where("[type+parent]").equals([type, parentId.toLowerCase()]).toArray();
+    return rows.map(fromRow).filter((r) => !r.deleted && r.payload);
   }
 
   /** Live records of a type (tombstones excluded), for UI queries. */

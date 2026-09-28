@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import type { AppBindings, Env } from "../env";
 import { principalOf, requireAuth, requireSession } from "../auth/middleware";
+import { getAuth } from "../auth/better-auth";
 import { API_KEY_SCOPES, createApiKey } from "../auth/tokens";
 import { activeSubscriptions, currentPlan, planAtLeast } from "../billing/entitlements";
 import { creditBalance } from "../billing/credits";
@@ -8,6 +9,7 @@ import { vaultFor } from "../sync/routes";
 import { forbidden, notFound } from "../lib/http";
 
 const DELETION_GRACE_MS = 7 * 24 * 60 * 60 * 1000;
+const RECENT_AUTH_MS = 5 * 60 * 1000;
 
 export async function accountSummary(env: Env, userId: string) {
   const user = await env.DB.prepare('select id, email, name, image, "createdAt" as created_at from "user" where id = ?')
@@ -105,6 +107,10 @@ export const accountApi = new Hono<AppBindings>()
   .post("/account/delete", requireSession(), async (c) => {
     const p = principalOf(c);
     const now = Date.now();
+    // auth-spec §5: deletion needs a sign-in within the last 5 minutes.
+    const session = await getAuth(c.env).api.getSession({ headers: c.req.raw.headers });
+    const signedInAt = session ? new Date(session.session.createdAt).getTime() : 0;
+    if (now - signedInAt > RECENT_AUTH_MS) throw forbidden("please sign in again to delete your account", "REAUTH_REQUIRED");
     await c.env.DB.prepare(
       "insert into account_deletions (user_id, requested_at, execute_after) values (?, ?, ?) on conflict (user_id) do nothing",
     )

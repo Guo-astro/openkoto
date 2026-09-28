@@ -6,6 +6,7 @@ import { LibraryProvider } from "./lib/library";
 import { SessionProvider } from "./lib/session";
 import { AccountPage } from "./pages/AccountPage";
 import { AssistantPage } from "./pages/AssistantPage";
+import { AuthorizeAppPage } from "./pages/AuthorizeAppPage";
 import { DevicePage } from "./pages/DevicePage";
 import { HomePage } from "./pages/HomePage";
 import { LegalPage } from "./pages/LegalPage";
@@ -49,6 +50,7 @@ export function App() {
                   <Route path="/assistant" element={<AssistantPage />} />
                   <Route path="/account" element={<AccountPage />} />
                   <Route path="/device" element={<DevicePage />} />
+                  <Route path="/authorize-app" element={<AuthorizeAppPage />} />
                   <Route path="/oauth/consent" element={<OAuthConsentPage />} />
                 </Route>
               </Route>

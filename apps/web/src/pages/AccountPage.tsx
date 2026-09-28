@@ -190,7 +190,20 @@ export function AccountPage() {
           <div className="space-y-3">
             <p className="text-sm">{t("account.deleteWarning")}</p>
             <div className="flex gap-2">
-              <Button variant="danger" onClick={() => accountApi.requestDeletion().then(refresh)}>
+              <Button
+                variant="danger"
+                onClick={() =>
+                  accountApi
+                    .requestDeletion()
+                    .then(refresh)
+                    .catch(async (err) => {
+                      if (err instanceof HttpError && err.code === "REAUTH_REQUIRED") {
+                        await signOut();
+                        navigate(`/login?next=${encodeURIComponent("/account?delete=1")}`);
+                      }
+                    })
+                }
+              >
                 <Trash2 size={16} /> {t("account.deleteConfirm")}
               </Button>
               <Button variant="outline" onClick={() => setConfirmDelete(false)}>
