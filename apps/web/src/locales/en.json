@@ -285,5 +285,149 @@
     "ios": "the OpenKoto iOS / Mac app",
     "desktop": "OpenKoto for desktop",
     "failed": "Authorization failed. Go back to the app and sign in again."
+  },
+  "public": {
+    "nav": {
+      "label": "Main",
+      "menu": "Menu",
+      "features": "Features",
+      "docs": "Docs",
+      "updates": "Updates",
+      "pricing": "Pricing"
+    },
+    "signIn": "Sign in",
+    "openApp": "Open app",
+    "footer": {
+      "tagline": "Open-source language learning with content you love: words, novels and lyrics, in sync on every device.",
+      "product": "Product",
+      "resources": "Resources",
+      "legal": "Legal",
+      "download": "Download",
+      "releases": "Desktop releases",
+      "feedback": "Feedback",
+      "copyright": "© {{year}} OpenKoto · Apache 2.0"
+    }
+  },
+  "landing": {
+    "hero": {
+      "badge": "Open source on GitHub",
+      "title": "Learn languages through ",
+      "highlight": "content you love",
+      "subtitle": "Review words with FSRS, read novels with AI translation and sing along to lyrics — synced across web, iPhone, Mac and Windows.",
+      "start": "Get started free",
+      "download": "Download apps",
+      "note": "Free to use, no credit card. Works without an account, too."
+    },
+    "preview": {
+      "review": "Review",
+      "word": "word, language",
+      "novel": "Novel",
+      "novelSource": "吾輩は猫である。名前はまだ無い。",
+      "translation": "I am a cat. As yet I have no name.",
+      "lyrics": "Lyrics"
+    },
+    "features": {
+      "eyebrow": "Features",
+      "title": "Everything you need to learn from real content",
+      "subtitle": "No fixed curriculum. Bring the books and songs you care about, and OpenKoto turns them into lessons.",
+      "review": {
+        "title": "Vocabulary review with FSRS",
+        "desc": "Save words as you read and review them with the modern FSRS spaced-repetition algorithm, so each word comes back right before you'd forget it."
+      },
+      "novels": {
+        "title": "Read novels with AI",
+        "desc": "Import EPUB and TXT books, read chapter by chapter, and get sentence-by-sentence AI translation and explanations. Progress and bookmarks sync."
+      },
+      "lyrics": {
+        "title": "Learn with lyrics",
+        "desc": "Import LRC lyrics, study them line by line with translations, and sing along with synced timing."
+      },
+      "sync": {
+        "title": "Sync across every device",
+        "desc": "Your words, reviews, books and lyrics stay in sync across the web, iOS, macOS and Windows."
+      },
+      "agents": {
+        "title": "CLI, MCP and agent skill",
+        "desc": "The koto CLI, a remote MCP server and an agent skill let AI assistants like Claude quiz you, read your library and save lyrics translations."
+      },
+      "open": {
+        "title": "Open source, your AI",
+        "desc": "Apache 2.0 licensed. Bring your own AI key (Gemini, Kimi, any OpenAI-compatible API) or use hosted AI on a paid plan."
+      }
+    },
+    "download": {
+      "eyebrow": "Download",
+      "title": "Use OpenKoto anywhere",
+      "subtitle": "One account, every device. Start on the web and pick up where you left off on your phone or computer.",
+      "web": {
+        "title": "Web",
+        "desc": "Nothing to install. Review, read and study lyrics right in your browser.",
+        "cta": "Open web app"
+      },
+      "ios": {
+        "title": "iPhone & iPad",
+        "desc": "The native iOS app — search “OpenKoto” on the App Store.",
+        "cta": "Get the iOS app"
+      },
+      "desktop": {
+        "title": "macOS · Windows · Linux",
+        "desc": "The native desktop app with local-first storage and a full reader.",
+        "cta": "Download from GitHub"
+      },
+      "cli": {
+        "title": "CLI & agents",
+        "desc": "koto CLI, MCP server and an agent skill for Claude Code and friends.",
+        "cta": "Set up the CLI"
+      },
+      "cliHint": "Install the CLI (Node.js 20+) and sign in:"
+    },
+    "pricing": {
+      "title": "Free to start",
+      "desc": "The free plan includes sync for a starter library. Plus and Pro add unlimited sync, hosted AI credits and CLI access.",
+      "cta": "See pricing"
+    },
+    "faq": {
+      "title": "Frequently asked questions",
+      "what": {
+        "q": "What is OpenKoto?",
+        "a": "OpenKoto is an open-source, AI-powered language-learning app. Instead of a fixed course, you learn from novels, song lyrics and articles you choose, and review the words you collect with spaced repetition."
+      },
+      "free": {
+        "q": "Is it free?",
+        "a": "Yes. All local features are free, and the source code is Apache 2.0 licensed. An optional free account syncs a starter library; paid plans add unlimited sync, hosted AI and CLI access."
+      },
+      "platforms": {
+        "q": "Which platforms are supported?",
+        "a": "The web app at openkoto.com, iPhone and iPad (App Store), and desktop apps for macOS, Windows and Linux (GitHub Releases). There is also a command-line tool and an MCP server."
+      },
+      "privacy": {
+        "q": "What happens to my data?",
+        "a": "Without an account, everything stays on your device. If you sign in, the data you sync is stored on Cloudflare so it can follow you across devices. We don't sell your data or train models on it, and you can export or delete it at any time."
+      },
+      "ai": {
+        "q": "Do I need an AI API key?",
+        "a": "You can bring your own key from Google AI Studio, 302.AI, Kimi or any OpenAI-compatible provider — see the docs for step-by-step guides. Paid plans also include hosted AI, so no key is required."
+      },
+      "agents": {
+        "q": "What are the CLI, MCP and agent skill?",
+        "a": "They let AI agents such as Claude work with your OpenKoto library: run a review session, look up words, read your books or save lyrics translations. Install with npm i -g @openkoto/cli, or connect to https://openkoto.com/mcp."
+      }
+    },
+    "cta": {
+      "title": "Start learning with what you love",
+      "desc": "Create a free account in seconds, or download the app for your device.",
+      "star": "Star on GitHub"
+    }
+  },
+  "docs": {
+    "back": "Back to docs"
+  },
+  "updates": {
+    "title": "Updates",
+    "subtitle": "What's new in OpenKoto."
+  },
+  "notFound": {
+    "message": "This page doesn't exist.",
+    "home": "Back to home"
   }
 }

@@ -285,5 +285,149 @@
     "ios": "OpenKoto iOS / Mac アプリ",
     "desktop": "OpenKoto デスクトップ版",
     "failed": "認証に失敗しました。アプリに戻ってもう一度ログインしてください。"
+  },
+  "public": {
+    "nav": {
+      "label": "メイン",
+      "menu": "メニュー",
+      "features": "機能",
+      "docs": "ドキュメント",
+      "updates": "更新履歴",
+      "pricing": "料金"
+    },
+    "signIn": "サインイン",
+    "openApp": "アプリを開く",
+    "footer": {
+      "tagline": "好きなコンテンツで学ぶオープンソースの言語学習ツール。単語・小説・歌詞をすべてのデバイスで同期。",
+      "product": "製品",
+      "resources": "リソース",
+      "legal": "法的情報",
+      "download": "ダウンロード",
+      "releases": "デスクトップ版",
+      "feedback": "フィードバック",
+      "copyright": "© {{year}} OpenKoto · Apache 2.0"
+    }
+  },
+  "landing": {
+    "hero": {
+      "badge": "GitHub でオープンソース",
+      "title": "好きなコンテンツで",
+      "highlight": "言語を学ぼう",
+      "subtitle": "FSRS で単語復習、AI 翻訳で小説を読み、歌詞に合わせて歌う —— Web・iPhone・Mac・Windows で同期。",
+      "start": "無料ではじめる",
+      "download": "アプリをダウンロード",
+      "note": "無料・クレジットカード不要。アカウントなしでも使えます。"
+    },
+    "preview": {
+      "review": "復習",
+      "word": "言葉、ことば",
+      "novel": "小説",
+      "novelSource": "It was the best of times, it was the worst of times…",
+      "translation": "それはすべての時代のなかで最良の時代であり、最悪の時代でもあった……",
+      "lyrics": "歌詞"
+    },
+    "features": {
+      "eyebrow": "機能",
+      "title": "リアルなコンテンツで学ぶためのすべて",
+      "subtitle": "決まったカリキュラムはありません。好きな本や歌を持ち込めば、OpenKoto が教材に変えます。",
+      "review": {
+        "title": "FSRS で単語復習",
+        "desc": "読みながら単語を保存し、最新の間隔反復アルゴリズム FSRS で復習。忘れかけたタイミングで単語が戻ってきます。"
+      },
+      "novels": {
+        "title": "AI で小説を読む",
+        "desc": "EPUB・TXT の本をインポートし、章ごとに読みながら一文ずつ AI 翻訳と解説。進捗としおりも同期。"
+      },
+      "lyrics": {
+        "title": "歌詞で学ぶ",
+        "desc": "LRC 歌詞をインポートし、訳と照らし合わせて一行ずつ学び、タイミングに合わせて一緒に歌えます。"
+      },
+      "sync": {
+        "title": "すべてのデバイスで同期",
+        "desc": "単語、復習記録、本、歌詞を Web・iOS・macOS・Windows 間で同期します。"
+      },
+      "agents": {
+        "title": "CLI・MCP・エージェントスキル",
+        "desc": "koto CLI、リモート MCP サーバー、エージェントスキルで、Claude などの AI アシスタントが単語テスト、ライブラリの閲覧、歌詞翻訳の保存を行えます。"
+      },
+      "open": {
+        "title": "オープンソース、AI は自由に",
+        "desc": "Apache 2.0 ライセンス。自分の AI キー（Gemini、Kimi、OpenAI 互換 API）を使うことも、有料プランでホスト型 AI を使うこともできます。"
+      }
+    },
+    "download": {
+      "eyebrow": "ダウンロード",
+      "title": "どこでも OpenKoto",
+      "subtitle": "ひとつのアカウントで、すべてのデバイスに。Web ではじめて、スマホやパソコンで続きから。",
+      "web": {
+        "title": "Web",
+        "desc": "インストール不要。ブラウザで復習、読書、歌詞学習ができます。",
+        "cta": "Web アプリを開く"
+      },
+      "ios": {
+        "title": "iPhone・iPad",
+        "desc": "ネイティブ iOS アプリ —— App Store で「OpenKoto」を検索。",
+        "cta": "iOS アプリを入手"
+      },
+      "desktop": {
+        "title": "macOS・Windows・Linux",
+        "desc": "ローカルファーストのネイティブデスクトップアプリ。本格的なリーダー付き。",
+        "cta": "GitHub からダウンロード"
+      },
+      "cli": {
+        "title": "CLI とエージェント",
+        "desc": "koto CLI、MCP サーバー、Claude Code などで使えるエージェントスキル。",
+        "cta": "CLI を設定"
+      },
+      "cliHint": "CLI をインストール（Node.js 20 以上）してサインイン："
+    },
+    "pricing": {
+      "title": "無料ではじめられます",
+      "desc": "無料プランでも入門用ライブラリを同期できます。Plus と Pro では無制限の同期、ホスト型 AI クレジット、CLI が使えます。",
+      "cta": "料金を見る"
+    },
+    "faq": {
+      "title": "よくある質問",
+      "what": {
+        "q": "OpenKoto とは？",
+        "a": "OpenKoto はオープンソースの AI 搭載言語学習アプリです。決められたコースではなく、自分で選んだ小説、歌詞、記事から学び、集めた単語を間隔反復で復習します。"
+      },
+      "free": {
+        "q": "無料ですか？",
+        "a": "はい。ローカル機能はすべて無料で、ソースコードは Apache 2.0 ライセンスです。任意の無料アカウントで入門用ライブラリを同期でき、有料プランでは無制限の同期、ホスト型 AI、CLI が使えます。"
+      },
+      "platforms": {
+        "q": "対応プラットフォームは？",
+        "a": "Web 版 openkoto.com、iPhone と iPad（App Store）、macOS・Windows・Linux のデスクトップ版（GitHub Releases）。コマンドラインツールと MCP サーバーもあります。"
+      },
+      "privacy": {
+        "q": "データはどう扱われますか？",
+        "a": "アカウントなしの場合、すべてのデータはデバイス上にのみ保存されます。サインインすると、同期したデータはデバイス間で使えるよう Cloudflare に保存されます。データの販売やモデルの学習への利用は行わず、いつでもエクスポート・削除できます。"
+      },
+      "ai": {
+        "q": "AI の API キーは必要ですか？",
+        "a": "Google AI Studio、302.AI、Kimi、または OpenAI 互換プロバイダーの自分のキーを使えます —— 手順はドキュメントのガイドをご覧ください。有料プランにはホスト型 AI も含まれ、キーは不要です。"
+      },
+      "agents": {
+        "q": "CLI・MCP・エージェントスキルとは？",
+        "a": "Claude などの AI エージェントが OpenKoto のライブラリを扱えるようにする仕組みです。復習セッション、単語の検索、本の閲覧、歌詞翻訳の保存ができます。npm i -g @openkoto/cli でインストールするか、https://openkoto.com/mcp に接続してください。"
+      }
+    },
+    "cta": {
+      "title": "好きなもので学びはじめよう",
+      "desc": "数秒で無料アカウントを作成、またはお使いのデバイス向けアプリをダウンロード。",
+      "star": "GitHub で Star"
+    }
+  },
+  "docs": {
+    "back": "ドキュメントに戻る"
+  },
+  "updates": {
+    "title": "更新履歴",
+    "subtitle": "OpenKoto の最新情報。"
+  },
+  "notFound": {
+    "message": "ページが見つかりません。",
+    "home": "ホームに戻る"
   }
 }

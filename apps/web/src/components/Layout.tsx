@@ -1,4 +1,5 @@
 import { Bot, BookOpen, Brain, Home, Languages, Library, Music, User } from "lucide-react";
+import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { NavLink, Outlet, useLocation, Navigate } from "react-router";
 import { setLanguage } from "../i18n";
@@ -52,7 +53,8 @@ export function RequireAuth() {
   return <Outlet />;
 }
 
-export function AppLayout() {
+/** Signed-in shell. Renders `children` when given (e.g. the home page at `/`), otherwise the route outlet. */
+export function AppLayout({ children }: { children?: ReactNode }) {
   const { t } = useTranslation();
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
@@ -86,7 +88,7 @@ export function AppLayout() {
         </div>
       </header>
       <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-6 pb-24 md:pb-6">
-        <Outlet />
+        {children ?? <Outlet />}
       </main>
       <nav className="md:hidden fixed bottom-0 inset-x-0 z-20 border-t border-border bg-background/95 backdrop-blur">
         <div className="grid grid-cols-7">

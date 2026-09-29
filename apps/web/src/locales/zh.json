@@ -285,5 +285,149 @@
     "ios": "OpenKoto iOS / Mac 应用",
     "desktop": "OpenKoto 桌面版",
     "failed": "授权失败，请回到应用重新登录。"
+  },
+  "public": {
+    "nav": {
+      "label": "主导航",
+      "menu": "菜单",
+      "features": "功能",
+      "docs": "文档",
+      "updates": "更新日志",
+      "pricing": "价格"
+    },
+    "signIn": "登录",
+    "openApp": "进入应用",
+    "footer": {
+      "tagline": "开源的语言学习工具：用你喜欢的内容背单词、读小说、学歌词，多端同步。",
+      "product": "产品",
+      "resources": "资源",
+      "legal": "法律",
+      "download": "下载",
+      "releases": "桌面端下载",
+      "feedback": "问题反馈",
+      "copyright": "© {{year}} OpenKoto · Apache 2.0"
+    }
+  },
+  "landing": {
+    "hero": {
+      "badge": "在 GitHub 上开源",
+      "title": "用你喜欢的内容",
+      "highlight": "学语言",
+      "subtitle": "FSRS 背单词、AI 翻译读小说、跟着歌词一起唱 —— 在网页、iPhone、Mac 和 Windows 之间同步。",
+      "start": "免费开始",
+      "download": "下载客户端",
+      "note": "免费使用，无需绑卡；不注册账号也能用。"
+    },
+    "preview": {
+      "review": "复习",
+      "word": "词语、语言",
+      "novel": "小说",
+      "novelSource": "It was the best of times, it was the worst of times…",
+      "translation": "那是最美好的时代，那是最糟糕的时代……",
+      "lyrics": "歌词"
+    },
+    "features": {
+      "eyebrow": "功能",
+      "title": "从真实内容中学习所需的一切",
+      "subtitle": "没有固定课程。带上你在意的书和歌，OpenKoto 帮你把它们变成课程。",
+      "review": {
+        "title": "FSRS 背单词",
+        "desc": "阅读时随手收藏生词，用新一代 FSRS 间隔重复算法复习，让每个词在快要忘记时回到你面前。"
+      },
+      "novels": {
+        "title": "AI 辅助读小说",
+        "desc": "导入 EPUB、TXT 书籍，按章节阅读，逐句获得 AI 翻译与讲解。阅读进度和书签自动同步。"
+      },
+      "lyrics": {
+        "title": "通过歌词学习",
+        "desc": "导入 LRC 歌词，逐行对照翻译学习，跟着时间轴一起唱。"
+      },
+      "sync": {
+        "title": "多端同步",
+        "desc": "生词、复习记录、书籍和歌词在网页、iOS、macOS、Windows 之间保持同步。"
+      },
+      "agents": {
+        "title": "CLI、MCP 与 Agent 技能",
+        "desc": "koto 命令行、远程 MCP 服务器和 Agent 技能，让 Claude 等 AI 助手考你单词、读你的书库、保存歌词翻译。"
+      },
+      "open": {
+        "title": "开源，AI 由你选",
+        "desc": "Apache 2.0 开源。可使用自己的 AI Key（Gemini、Kimi 或任何 OpenAI 兼容接口），也可在付费套餐中使用托管 AI。"
+      }
+    },
+    "download": {
+      "eyebrow": "下载",
+      "title": "随时随地使用 OpenKoto",
+      "subtitle": "一个账号，所有设备。在网页上开始，在手机或电脑上接着学。",
+      "web": {
+        "title": "网页版",
+        "desc": "无需安装，直接在浏览器里复习、阅读、学歌词。",
+        "cta": "打开网页版"
+      },
+      "ios": {
+        "title": "iPhone 与 iPad",
+        "desc": "原生 iOS 应用 —— 在 App Store 搜索“OpenKoto”。",
+        "cta": "获取 iOS 应用"
+      },
+      "desktop": {
+        "title": "macOS · Windows · Linux",
+        "desc": "原生桌面应用，本地优先存储，完整阅读器。",
+        "cta": "从 GitHub 下载"
+      },
+      "cli": {
+        "title": "命令行与 Agent",
+        "desc": "koto 命令行、MCP 服务器，以及适用于 Claude Code 等的 Agent 技能。",
+        "cta": "配置命令行"
+      },
+      "cliHint": "安装命令行（需要 Node.js 20+）并登录："
+    },
+    "pricing": {
+      "title": "免费开始",
+      "desc": "免费版即可同步一个入门书库。Plus 和 Pro 提供无限同步、托管 AI 积分和命令行访问。",
+      "cta": "查看价格"
+    },
+    "faq": {
+      "title": "常见问题",
+      "what": {
+        "q": "OpenKoto 是什么？",
+        "a": "OpenKoto 是一款开源的、AI 驱动的语言学习应用。它没有固定课程，而是让你从自己选择的小说、歌词和文章中学习，并用间隔重复复习收集到的生词。"
+      },
+      "free": {
+        "q": "免费吗？",
+        "a": "是的。所有本地功能都免费，源代码采用 Apache 2.0 许可证。可选的免费账号能同步一个入门书库；付费套餐提供无限同步、托管 AI 和命令行访问。"
+      },
+      "platforms": {
+        "q": "支持哪些平台？",
+        "a": "网页版 openkoto.com、iPhone 和 iPad（App Store），以及 macOS、Windows、Linux 桌面端（GitHub Releases）。另外还有命令行工具和 MCP 服务器。"
+      },
+      "privacy": {
+        "q": "我的数据会怎样？",
+        "a": "不登录时，所有数据都只保存在你的设备上。登录后，你同步的数据会存储在 Cloudflare，以便在多台设备间使用。我们不出售你的数据，也不用它训练模型，你可以随时导出或删除。"
+      },
+      "ai": {
+        "q": "需要 AI API Key 吗？",
+        "a": "你可以使用自己在 Google AI Studio、302.AI、Kimi 或任何 OpenAI 兼容服务商申请的 Key —— 文档里有详细图文指南。付费套餐还包含托管 AI，无需自备 Key。"
+      },
+      "agents": {
+        "q": "CLI、MCP 和 Agent 技能是什么？",
+        "a": "它们让 Claude 等 AI 助手可以使用你的 OpenKoto 书库：带你复习、查词、读书或保存歌词翻译。通过 npm i -g @openkoto/cli 安装，或连接 https://openkoto.com/mcp。"
+      }
+    },
+    "cta": {
+      "title": "从你喜欢的内容开始学习",
+      "desc": "几秒钟创建免费账号，或下载适合你设备的客户端。",
+      "star": "在 GitHub 上 Star"
+    }
+  },
+  "docs": {
+    "back": "返回文档"
+  },
+  "updates": {
+    "title": "更新日志",
+    "subtitle": "OpenKoto 的最新变化。"
+  },
+  "notFound": {
+    "message": "页面不存在。",
+    "home": "返回首页"
   }
 }

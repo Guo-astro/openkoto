@@ -19,12 +19,21 @@ function initialLanguage(): string {
   return "en";
 }
 
+const startLanguage = initialLanguage();
+
 void i18n.use(initReactI18next).init({
   resources: { zh: { translation: zh }, en: { translation: en }, ja: { translation: ja } },
-  lng: initialLanguage(),
+  lng: startLanguage,
   fallbackLng: "en",
   interpolation: { escapeValue: false },
 });
+
+// Keep <html lang> in step with the UI language (screen readers, fonts, hyphenation).
+function syncHtmlLang(lang: string): void {
+  if (typeof document !== "undefined") document.documentElement.lang = lang === "zh" ? "zh-CN" : lang;
+}
+syncHtmlLang(startLanguage);
+i18n.on("languageChanged", syncHtmlLang);
 
 export function setLanguage(lang: string): void {
   void i18n.changeLanguage(lang);
