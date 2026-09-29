@@ -13,6 +13,7 @@ import {
 import type { AppBindings, Env } from "../env";
 import { principalOf, requireAuth } from "../auth/middleware";
 import { currentPlan } from "../billing/entitlements";
+import { filesWerePurged } from "../billing/lapsed-cleanup";
 import { ApiError, badRequest, notFound } from "../lib/http";
 import type { UserVault, VaultRecord } from "./vault";
 
@@ -196,6 +197,9 @@ export const syncApi = new Hono<AppBindings>()
   .get("/blob/:key", async (c) => {
     const p = principalOf(c);
     const obj = await c.env.BUCKET.get(blobObjectKey(p.userId, decodeURIComponent(c.req.param("key"))));
-    if (!obj) throw notFound("blob not found");
+    if (!obj) {
+      if (await filesWerePurged(c.env, p.userId)) throw new ApiError(410, "FILE_EXPIRED", "this cloud file was removed after the membership ended; re-upload it from a device that has it");
+      throw notFound("blob not found");
+    }
     return new Response(obj.body, { headers: { "Content-Type": "application/gzip", "Cache-Control": "private, max-age=3600" } });
   });
