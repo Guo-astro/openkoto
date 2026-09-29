@@ -64,7 +64,7 @@ JWT_PRIVATE_KEY="<node scripts/gen-jwt-key.mjs 的输出>"
    - 在开发者后台给 App ID `com.openkoto.ios` 打开 **Sign in with Apple**。
 6. **Apple 网页登录（可选）**：Services ID + 私钥生成的 client secret（有效期最长 6 个月）写入 `APPLE_CLIENT_ID` / `APPLE_CLIENT_SECRET`。
 7. **托管 AI**：`AI_API_KEY`（例如 DeepSeek），可选 `AI_API_BASE` / `AI_MODEL`。
-8. **邮件**：生产 `EMAIL_PROVIDER=resend`，需要 `RESEND_API_KEY`，并在 Resend 中验证发信域名（`openkoto.app`）。
+8. **邮件**：生产 `EMAIL_PROVIDER=cloudflare`，走 Cloudflare Email Service（`send_email` 绑定 `EMAIL`，Workers 付费计划每月含 3000 封，之后 $0.35/千封）。在 Cloudflare 控制台 Compute → Email Service → Email Sending 里接入 `openkoto.app` 并添加它给出的 DNS 记录。备选：把 `EMAIL_PROVIDER` 改成 `resend` 并设置 `RESEND_API_KEY`。
 
 ## 4. 部署命令
 

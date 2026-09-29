@@ -14,8 +14,12 @@ export interface Env {
 
   APP_ORIGIN: string;
   APP_NAME: string;
-  /** "resend" | "console" */
+  /** "cloudflare" | "resend" | "console" */
   EMAIL_PROVIDER: string;
+  /** Cloudflare Email Service binding (EMAIL_PROVIDER=cloudflare). */
+  EMAIL?: {
+    send(message: { to: string; from: string | { email: string; name?: string }; subject: string; text: string; html?: string }): Promise<{ messageId: string }>;
+  };
   EMAIL_FROM: string;
   APPLE_APP_BUNDLE_ID: string;
 

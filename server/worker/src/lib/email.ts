@@ -7,7 +7,18 @@ export interface EmailMessage {
   html?: string;
 }
 
+/** "OpenKoto <noreply@openkoto.app>" → { name, email } */
+export function parseAddress(value: string): { email: string; name?: string } {
+  const m = /^\s*(.*?)\s*<([^>]+)>\s*$/.exec(value);
+  return m?.[2] ? { email: m[2], ...(m[1] ? { name: m[1].replace(/^"|"$/g, "") } : {}) } : { email: value.trim() };
+}
+
 export async function sendEmail(env: Env, message: EmailMessage): Promise<void> {
+  if (env.EMAIL_PROVIDER === "cloudflare") {
+    if (!env.EMAIL) throw new Error("send_email binding EMAIL is not configured");
+    await env.EMAIL.send({ from: parseAddress(env.EMAIL_FROM), to: message.to, subject: message.subject, text: message.text, html: message.html });
+    return;
+  }
   if (env.EMAIL_PROVIDER === "resend") {
     if (!env.RESEND_API_KEY) throw new Error("RESEND_API_KEY is not configured");
     const res = await fetch("https://api.resend.com/emails", {

@@ -11,11 +11,14 @@
   "vars": {
     "APP_ORIGIN": "https://openkoto.app",
     "APP_NAME": "OpenKoto",
-    "EMAIL_PROVIDER": "resend",
+    "EMAIL_PROVIDER": "cloudflare",
     "EMAIL_FROM": "OpenKoto <noreply@openkoto.app>",
     "APPLE_APP_BUNDLE_ID": "com.openkoto.ios",
     "GOOGLE_CLIENT_ID": "506826712750-uubvvapb2v0l976jutqsree5gaavq3jd.apps.googleusercontent.com"
   },
+  // Cloudflare Email Service (Workers Paid: 3,000/month included). openkoto.app must be onboarded
+  // under Compute → Email Service; set EMAIL_PROVIDER=resend to fall back to Resend.
+  "send_email": [{ "name": "EMAIL" }],
   "ratelimits": [
     { "name": "AUTH_LIMITER", "namespace_id": "1001", "simple": { "limit": 30, "period": 60 } },
     { "name": "OTP_LIMITER", "namespace_id": "1002", "simple": { "limit": 5, "period": 60 } }
