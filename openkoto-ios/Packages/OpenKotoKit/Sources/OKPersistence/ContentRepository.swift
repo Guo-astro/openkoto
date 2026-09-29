@@ -709,6 +709,8 @@ public struct ContentRepository: Sendable {
         packId: UUID?,
         dateLocal: String
     ) -> ReviewStats {
+        // 撤销标记与被撤销的复习都不算（同步协议 §6）。
+        let events = ReviewEvent.effective(events)
         let inPack: (FavoriteVocabulary) -> Bool = { favorite in
             packId.map { favorite.packIds.contains($0) } ?? true
         }
@@ -798,6 +800,7 @@ public struct ContentRepository: Sendable {
         rangeDays: Int,
         forecastDays: Int
     ) -> StudyStatistics {
+        let events = ReviewEvent.effective(events)
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = TimeZone(identifier: "UTC")!
 

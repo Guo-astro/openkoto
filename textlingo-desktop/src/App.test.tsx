@@ -6,7 +6,6 @@ import { describe, expect, it, vi } from "vitest";
 import App from "./App";
 
 const invokeMock = vi.fn();
-const getApiClientMock = vi.fn();
 
 vi.stubGlobal("__APP_VERSION__", "test");
 
@@ -101,10 +100,6 @@ vi.mock("./components/features/OnboardingDialog", () => ({
         </button>
       </div>
     ) : null,
-}));
-
-vi.mock("./lib/api", () => ({
-  getApiClient: (...args: unknown[]) => getApiClientMock(...args),
 }));
 
 vi.mock("./lib/hooks/useAgentOpenMaterialListener", () => ({

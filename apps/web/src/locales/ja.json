@@ -1,0 +1,433 @@
+{
+  "common": {
+    "loading": "読み込み中…",
+    "save": "保存",
+    "cancel": "キャンセル",
+    "delete": "削除",
+    "networkError": "ネットワークエラーです。しばらくしてから再試行してください"
+  },
+  "nav": {
+    "home": "ホーム",
+    "review": "復習",
+    "vocab": "単語帳",
+    "library": "本棚",
+    "lyrics": "歌詞",
+    "account": "アカウント",
+    "assistant": "アシスタント"
+  },
+  "plan": {
+    "free": "無料プラン",
+    "plus": "Plus",
+    "pro": "Pro"
+  },
+  "channel": {
+    "creem": "Web",
+    "appstore": "App Store",
+    "code": "アクティベーションコード"
+  },
+  "footer": {
+    "privacy": "プライバシーポリシー",
+    "terms": "利用規約"
+  },
+  "legal": {
+    "updated": "{{date}} 更新"
+  },
+  "sync": {
+    "syncing": "同期中",
+    "ok": "同期済み",
+    "synced": "最終同期 {{time}}",
+    "never": "未同期",
+    "error": "同期に失敗しました：{{message}}",
+    "quota": "無料枠を超えた項目はアップロードされていません。アップグレードするとすべて同期できます。",
+    "quotaShort": "上限超過"
+  },
+  "login": {
+    "title": "OpenKoto にログイン",
+    "subtitle": "単語・本棚・歌詞がスマホ、PC、Web の間で同期されます。",
+    "email": "メールアドレス",
+    "emailPlaceholder": "you@example.com",
+    "sendCode": "コードを送信",
+    "codeSent": "{{email}} にコードを送信しました（10 分間有効）。",
+    "code": "確認コード",
+    "verify": "ログイン",
+    "changeEmail": "別のメールアドレスを使う",
+    "or": "または",
+    "continueWith": "{{provider}} で続ける",
+    "badCode": "コードが間違っているか期限切れです",
+    "tooMany": "試行回数が多すぎます。しばらくお待ちください",
+    "oauthError": "ログインに失敗しました。もう一度試すか、メールでログインしてください。",
+    "terms": "続行すると利用規約とプライバシーポリシーに同意したものとみなされます。"
+  },
+  "device": {
+    "title": "デバイスのログインを確認",
+    "subtitle": "ターミナルや他のデバイスに表示された 8 文字のコードを入力してください。",
+    "codeLabel": "デバイスコード",
+    "continue": "続ける",
+    "confirm": "「{{name}}」（{{platform}}）がアカウントにログインすることを許可しますか？",
+    "warning": "ご自身で今ログインを開始した場合のみ許可してください。",
+    "approve": "許可",
+    "deny": "拒否",
+    "approved": "許可しました。デバイスはログイン済みです。",
+    "denied": "ログインを拒否しました。",
+    "closeTab": "このページは閉じて構いません。",
+    "notFound": "無効または期限切れのコードです"
+  },
+  "home": {
+    "greeting": "こんにちは、{{name}} さん",
+    "subtitle": "毎日少しずつ。",
+    "dueToday": "今日の復習",
+    "totalWords": "全 {{count}} 語",
+    "books": "本棚",
+    "continueReading": "続きを読む",
+    "lyrics": "歌詞",
+    "lyricsHint": "歌で学ぶ",
+    "upgradeHint": "無料プランは単語 200 語・本 5 冊・歌詞 30 曲まで同期できます。Plus で無制限同期と CLI が使えます。"
+  },
+  "review": {
+    "remaining": "残り {{count}} 枚",
+    "undo": "元に戻す",
+    "flip": "めくる",
+    "tapToFlip": "タップまたはスペースキーで答えを表示",
+    "again": "もう一度",
+    "hard": "難しい",
+    "good": "普通",
+    "easy": "簡単",
+    "today": "今日",
+    "days": "{{count}} 日",
+    "months": "{{count}} か月",
+    "years": "{{count}} 年",
+    "shortcuts": "スペースでめくる · 1–4 で評価 · U で元に戻す",
+    "finished": "{{count}} 枚完了！",
+    "nothingDue": "今日の復習はありません",
+    "comeBack": "また明日。",
+    "empty": "まず単語帳に単語を追加しましょう。",
+    "toVocab": "単語帳を開く"
+  },
+  "vocab": {
+    "title": "単語帳",
+    "import": "インポート",
+    "export": "CSV を書き出す",
+    "add": "追加",
+    "word": "単語",
+    "reading": "読み",
+    "meaning": "意味",
+    "example": "例文",
+    "search": "単語や意味で検索",
+    "pack": "単語パック",
+    "allPacks": "すべてのパック",
+    "newPack": "新しいパック名",
+    "createPack": "作成",
+    "removeFromPack": "パックから外す",
+    "suspend": "一時停止",
+    "resume": "再開",
+    "due": "次回 {{date}}",
+    "empty": "まだ単語がありません。読書中に文をタップして保存するか、ここから追加してください。",
+    "noMatch": "一致する単語がありません",
+    "quota": "無料プランで同期できるのは {{limit}} 語までです。それ以外はこの端末にのみ保存されます。",
+    "band": {
+      "new": "新規",
+      "strong": "よく覚えている",
+      "fading": "忘れかけ",
+      "weak": "忘れているかも"
+    }
+  },
+  "library": {
+    "title": "本棚",
+    "importBook": "EPUB / TXT をインポート",
+    "newArticle": "新しい記事",
+    "hint": "本のファイルはあなた専用の領域に保存され、本人以外は閲覧できません。",
+    "books": "本",
+    "articles": "記事",
+    "noBooks": "まだ本がありません。EPUB や TXT の小説をインポートして読み始めましょう。",
+    "progress": "第 {{current}}/{{total}} 章",
+    "syncingChapters": "章を同期中…",
+    "quota": "プランの冊数または容量の上限に達しました。",
+    "tooLarge": "無料プランでは 1 冊 10 MB までです。",
+    "articleTitle": "タイトル（任意）",
+    "articleBody": "本文",
+    "articlePlaceholder": "記事やニュースなど、読みたい文章を貼り付けてください"
+  },
+  "reader": {
+    "chapter": "章",
+    "showTranslation": "訳文を表示",
+    "hideTranslation": "訳文を隠す",
+    "translateChapter": "この章を翻訳",
+    "translateBook": "本全体をバックグラウンド翻訳",
+    "jobStarted": "{{count}} 章をバックグラウンドで翻訳中です。完了するとすべての端末に同期されます。",
+    "preparing": "章を準備中…",
+    "prev": "前の章",
+    "next": "次の章",
+    "notFound": "見つかりません。削除されたか、まだ同期されていない可能性があります。",
+    "pickSentence": "文をタップすると、翻訳・解説の表示や単語の保存ができます。",
+    "explain": "AI 解説",
+    "saveSelection": "選択した語を保存",
+    "saveSelectionHint": "本文で単語を選択してからタップしてください",
+    "saveWord": "単語帳に追加",
+    "saved": "「{{word}}」を保存しました",
+    "noAi": "AI が未設定です。クレジットを購入して OpenKoto AI を使うか、「AI 設定」で自分の API キーを入力してください。"
+  },
+  "lyrics": {
+    "title": "歌詞",
+    "add": "歌詞を追加",
+    "songTitle": "曲名",
+    "artist": "アーティスト",
+    "paste": "LRC またはテキストの歌詞を貼り付け",
+    "openFile": "または .lrc / .txt / .srt ファイルを開く",
+    "empty": "まだ歌詞がありません。好きな曲を貼り付けて一行ずつ学びましょう。",
+    "translate": "曲全体を翻訳",
+    "singAlong": "歌いながら",
+    "pause": "一時停止",
+    "reset": "最初から"
+  },
+  "ai": {
+    "settings": "AI 設定",
+    "target": "翻訳先",
+    "byok": "自分の API キーを使う",
+    "byokHint": "OpenAI 互換 API（DeepSeek、OpenRouter、Kimi など）に対応。キーはこのブラウザにのみ保存され、OpenKoto には送信されません。",
+    "hostedActive": "OpenKoto AI を使用中（残り {{credits}} クレジット）。",
+    "hostedInactive": "クレジットがありません。自分の API キーを使うか、料金ページでクレジット / Pro を購入してください。"
+  },
+  "account": {
+    "memberSince": "{{date}} から利用",
+    "signOut": "ログアウト",
+    "membership": "メンバーシップ",
+    "credits": "{{count}} クレジット",
+    "upgrade": "アップグレード",
+    "manage": "管理",
+    "subscriptionLine": "{{plan}} · {{channel}} · {{date}} まで",
+    "redeem": "引き換え",
+    "redeemPlaceholder": "コード（例：OK-XXXX-XXXX-XXXX）",
+    "redeemed": "引き換え完了：{{plan}}、+{{credits}} クレジット",
+    "redeemFailed": "無効または使用済みのコードです",
+    "devices": "ログイン中のデバイス",
+    "lastSeen": "最終利用 {{date}}",
+    "revoke": "削除",
+    "noDevices": "他のデバイスではまだログインしていません。",
+    "apiKeys": "API キー（CLI / エージェント）",
+    "apiKeysHint": "スクリプト、CI、AI エージェント向け。koto login で CLI に直接ログインすることもできます。",
+    "apiKeysLocked": "API キーと CLI は Plus の機能です。",
+    "keyOnce": "今すぐコピーしてください。このキーは一度しか表示されません：",
+    "keyName": "名前（例：laptop-cli）",
+    "createKey": "作成",
+    "dangerZone": "アカウント削除",
+    "delete": "アカウントを削除",
+    "deleteWarning": "7 日以内なら取り消せます。その後、アカウント・同期データ・アップロードした本は完全に削除されます。端末上のデータは残ります。",
+    "deleteConfirm": "削除する",
+    "deletionScheduled": "アカウントは {{date}} に完全に削除されます。",
+    "cancelDeletion": "削除を取り消す",
+    "data": "データ",
+    "export": "すべてのデータを書き出す（NDJSON）",
+    "exportHint": "同期した単語・復習記録・本の章・歌詞をすべてダウンロードします。"
+  },
+  "pricing": {
+    "title": "プランを選ぶ",
+    "subtitle": "ローカル機能と自分のキーでの AI 利用はずっと無料。メンバーシップで同期・CLI・AI クレジットが使えます。",
+    "tagline": {
+      "free": "ローカル学習 + 少しのクラウド同期",
+      "plus": "無制限同期 + CLI",
+      "pro": "Plus のすべて + 毎月の AI クレジット"
+    },
+    "f": {
+      "local": "すべてのローカル機能、自分のキーで AI",
+      "syncFree": "単語 200 語・本 5 冊・歌詞 30 曲を同期",
+      "byok": "Web で読書と復習",
+      "syncPlus": "単語と歌詞は無制限、本は 2 GB",
+      "syncPro": "無制限同期、本は 10 GB",
+      "cli": "koto CLI、MCP、エージェントスキル",
+      "guide": "AI プロバイダーとモデル選びの完全ガイド",
+      "topup": "AI クレジットをいつでも追加購入",
+      "credits": "毎月 1,500 AI クレジット、追加購入も可能",
+      "agent": "本全体のバックグラウンド翻訳とクラウドエージェント"
+    },
+    "month": "月",
+    "year": "年",
+    "buy": "購入",
+    "current": "現在のプラン",
+    "appStoreOnly": "iPhone で購入",
+    "creditsTitle": "AI クレジットパック",
+    "creditsDesc": "¥{{price}} = {{credits}} クレジット（約 1 万文の翻訳または 2,000 文の解説）。購入から 12 か月有効。",
+    "buyCredits": "クレジットを購入",
+    "checkoutFailed": "決済ページを開けませんでした。しばらくしてから再試行してください",
+    "notes": "Web の決済は Creem で安全に処理されます。更新はいつでも停止できます。",
+    "usd": "Web では米ドルで決済：${{price}}"
+  },
+  "oauth": {
+    "title": "AI アシスタントを接続",
+    "confirm": "「{{name}}」が OpenKoto アカウントへのアクセスを求めています。",
+    "redirect": "完了後、{{host}} に戻ります。",
+    "scopeRead": "単語・歌詞・記事・本の読み取り",
+    "scopeWrite": "単語と歌詞の追加・編集、復習結果の記録",
+    "scopeAi": "クラウド AI 機能の利用（AI クレジットを消費）",
+    "warning": "ご自身で今アシスタントを接続している場合のみ許可してください。「アカウント → デバイス」からいつでも取り消せます。",
+    "approve": "許可",
+    "deny": "拒否",
+    "invalid": "この認可リクエストは無効か期限切れです。"
+  },
+  "assistant": {
+    "title": "学習アシスタント",
+    "subtitle": "自然な言葉で単語帳や本棚を操作できます。やり取りごとにクレジットを消費します（残り {{credits}}）。",
+    "example1": "今日復習すべき単語を、忘れやすい順に教えて",
+    "example2": "最近追加した曲から N2 以上の単語で単語パックを作って",
+    "example3": "今週の復習はどうだった？",
+    "placeholder": "アシスタントに何を頼みますか？",
+    "send": "送信",
+    "thinking": "処理中…",
+    "steps": "{{count}} 件の操作",
+    "cost": "{{credits}} クレジット使用",
+    "noCredits": "クレジットが足りません。料金ページで購入するか Pro にアップグレードしてください。",
+    "needsPlus": "学習アシスタントは Plus / Pro の機能で、AI クレジットを消費します。"
+  },
+  "authorizeApp": {
+    "title": "{{app}}のログインを許可しますか？",
+    "body": "{{app}}は {{email}} としてログインし、単語・本棚・歌詞を同期します。",
+    "warning": "ご自身でアプリからログインを始めた場合のみ許可してください。",
+    "allow": "許可",
+    "ios": "OpenKoto iOS / Mac アプリ",
+    "desktop": "OpenKoto デスクトップ版",
+    "failed": "認証に失敗しました。アプリに戻ってもう一度ログインしてください。"
+  },
+  "public": {
+    "nav": {
+      "label": "メイン",
+      "menu": "メニュー",
+      "features": "機能",
+      "docs": "ドキュメント",
+      "updates": "更新履歴",
+      "pricing": "料金"
+    },
+    "signIn": "サインイン",
+    "openApp": "アプリを開く",
+    "footer": {
+      "tagline": "好きなコンテンツで学ぶオープンソースの言語学習ツール。単語・小説・歌詞をすべてのデバイスで同期。",
+      "product": "製品",
+      "resources": "リソース",
+      "legal": "法的情報",
+      "download": "ダウンロード",
+      "releases": "デスクトップ版",
+      "feedback": "フィードバック",
+      "copyright": "© {{year}} OpenKoto · Apache 2.0"
+    }
+  },
+  "landing": {
+    "hero": {
+      "badge": "GitHub でオープンソース",
+      "title": "好きなコンテンツで",
+      "highlight": "言語を学ぼう",
+      "subtitle": "FSRS で単語復習、AI 翻訳で小説を読み、歌詞に合わせて歌う —— Web・iPhone・Mac・Windows で同期。",
+      "start": "無料ではじめる",
+      "download": "アプリをダウンロード",
+      "note": "無料・クレジットカード不要。アカウントなしでも使えます。"
+    },
+    "preview": {
+      "review": "復習",
+      "word": "言葉、ことば",
+      "novel": "小説",
+      "novelSource": "It was the best of times, it was the worst of times…",
+      "translation": "それはすべての時代のなかで最良の時代であり、最悪の時代でもあった……",
+      "lyrics": "歌詞"
+    },
+    "features": {
+      "eyebrow": "機能",
+      "title": "リアルなコンテンツで学ぶためのすべて",
+      "subtitle": "決まったカリキュラムはありません。好きな本や歌を持ち込めば、OpenKoto が教材に変えます。",
+      "review": {
+        "title": "FSRS で単語復習",
+        "desc": "読みながら単語を保存し、最新の間隔反復アルゴリズム FSRS で復習。忘れかけたタイミングで単語が戻ってきます。"
+      },
+      "novels": {
+        "title": "AI で小説を読む",
+        "desc": "EPUB・TXT の本をインポートし、章ごとに読みながら一文ずつ AI 翻訳と解説。進捗としおりも同期。"
+      },
+      "lyrics": {
+        "title": "歌詞で学ぶ",
+        "desc": "LRC 歌詞をインポートし、訳と照らし合わせて一行ずつ学び、タイミングに合わせて一緒に歌えます。"
+      },
+      "sync": {
+        "title": "すべてのデバイスで同期",
+        "desc": "単語、復習記録、本、歌詞を Web・iOS・macOS・Windows 間で同期します。"
+      },
+      "agents": {
+        "title": "CLI・MCP・エージェントスキル",
+        "desc": "koto CLI、リモート MCP サーバー、エージェントスキルで、Claude などの AI アシスタントが単語テスト、ライブラリの閲覧、歌詞翻訳の保存を行えます。"
+      },
+      "open": {
+        "title": "オープンソース、AI は自由に",
+        "desc": "Apache 2.0 ライセンス。自分の AI キー（Gemini、Kimi、OpenAI 互換 API）を使うことも、有料プランでホスト型 AI を使うこともできます。"
+      }
+    },
+    "download": {
+      "eyebrow": "ダウンロード",
+      "title": "どこでも OpenKoto",
+      "subtitle": "ひとつのアカウントで、すべてのデバイスに。Web ではじめて、スマホやパソコンで続きから。",
+      "web": {
+        "title": "Web",
+        "desc": "インストール不要。ブラウザで復習、読書、歌詞学習ができます。",
+        "cta": "Web アプリを開く"
+      },
+      "ios": {
+        "title": "iPhone・iPad",
+        "desc": "ネイティブ iOS アプリ —— App Store で「OpenKoto」を検索。",
+        "cta": "iOS アプリを入手"
+      },
+      "desktop": {
+        "title": "macOS・Windows・Linux",
+        "desc": "ローカルファーストのネイティブデスクトップアプリ。本格的なリーダー付き。",
+        "cta": "GitHub からダウンロード"
+      },
+      "cli": {
+        "title": "CLI とエージェント",
+        "desc": "koto CLI、MCP サーバー、Claude Code などで使えるエージェントスキル。",
+        "cta": "CLI を設定"
+      },
+      "cliHint": "CLI をインストール（Node.js 20 以上）してサインイン："
+    },
+    "pricing": {
+      "title": "無料ではじめられます",
+      "desc": "無料プランでも入門用ライブラリを同期できます。Plus と Pro では無制限の同期、ホスト型 AI クレジット、CLI が使えます。",
+      "cta": "料金を見る"
+    },
+    "faq": {
+      "title": "よくある質問",
+      "what": {
+        "q": "OpenKoto とは？",
+        "a": "OpenKoto はオープンソースの AI 搭載言語学習アプリです。決められたコースではなく、自分で選んだ小説、歌詞、記事から学び、集めた単語を間隔反復で復習します。"
+      },
+      "free": {
+        "q": "無料ですか？",
+        "a": "はい。ローカル機能はすべて無料で、ソースコードは Apache 2.0 ライセンスです。任意の無料アカウントで入門用ライブラリを同期でき、有料プランでは無制限の同期、ホスト型 AI、CLI が使えます。"
+      },
+      "platforms": {
+        "q": "対応プラットフォームは？",
+        "a": "Web 版 openkoto.com、iPhone と iPad（App Store）、macOS・Windows・Linux のデスクトップ版（GitHub Releases）。コマンドラインツールと MCP サーバーもあります。"
+      },
+      "privacy": {
+        "q": "データはどう扱われますか？",
+        "a": "アカウントなしの場合、すべてのデータはデバイス上にのみ保存されます。サインインすると、同期したデータはデバイス間で使えるよう Cloudflare に保存されます。データの販売やモデルの学習への利用は行わず、いつでもエクスポート・削除できます。"
+      },
+      "ai": {
+        "q": "AI の API キーは必要ですか？",
+        "a": "Google AI Studio、302.AI、Kimi、または OpenAI 互換プロバイダーの自分のキーを使えます —— 手順はドキュメントのガイドをご覧ください。有料プランにはホスト型 AI も含まれ、キーは不要です。"
+      },
+      "agents": {
+        "q": "CLI・MCP・エージェントスキルとは？",
+        "a": "Claude などの AI エージェントが OpenKoto のライブラリを扱えるようにする仕組みです。復習セッション、単語の検索、本の閲覧、歌詞翻訳の保存ができます。npm i -g @openkoto/cli でインストールするか、https://openkoto.com/mcp に接続してください。"
+      }
+    },
+    "cta": {
+      "title": "好きなもので学びはじめよう",
+      "desc": "数秒で無料アカウントを作成、またはお使いのデバイス向けアプリをダウンロード。",
+      "star": "GitHub で Star"
+    }
+  },
+  "docs": {
+    "back": "ドキュメントに戻る"
+  },
+  "updates": {
+    "title": "更新履歴",
+    "subtitle": "OpenKoto の最新情報。"
+  },
+  "notFound": {
+    "message": "ページが見つかりません。",
+    "home": "ホームに戻る"
+  }
+}

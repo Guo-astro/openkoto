@@ -8,11 +8,6 @@ import {
 } from "lucide-react";
 import { useTranslation, Trans } from "react-i18next";
 import { cn } from "../../lib/utils";
-import {
-    getApiClient,
-    NovelSession,
-    QuickAction
-} from "../../lib/api";
 import type { AppConfig } from "../../lib/tauri";
 import { getDefaultChatFeature, getVisibleQuickActions, renderPromptTemplate } from "../../lib/promptFeatures";
 import { MarkdownContent } from "../ui/MarkdownContent";
@@ -28,6 +23,14 @@ const Card = ({ className, children }: { className?: string; children: React.Rea
     </div>
 );
 
+interface QuickAction {
+    action: string;
+    label: string;
+    description: string;
+    prompt_template: string;
+    icon?: string;
+}
+
 interface ArticleChatAssistantProps {
     articleId: string;
     articleTitle: string;
@@ -35,7 +38,6 @@ interface ArticleChatAssistantProps {
     targetLanguage: string; // e.g. "zh-CN"
     selectedText?: string;
     currentSegment?: string;
-    readingProgress?: number;
     onClose?: () => void;
     className?: string;
 }
@@ -77,12 +79,10 @@ export function ArticleChatAssistant({
     targetLanguage,
     selectedText,
     currentSegment,
-    readingProgress,
     onClose,
     className,
 }: ArticleChatAssistantProps) {
     const { t } = useTranslation();
-    const [session, setSession] = useState<NovelSession | null>(null);
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [input, setInput] = useState("");
     const [isLoading, setIsLoading] = useState(false);
@@ -196,26 +196,6 @@ export function ArticleChatAssistant({
 
     const initializeSession = async () => {
         try {
-            const api = getApiClient();
-
-            // Try connection to remote
-            if (api.isBackendConfigured()) {
-                await api.testConnection(); // Verify connectivity
-                try {
-                    const response = await api.createNovelSession({
-                        novel_id: articleId,
-                        user_language: targetLanguage,
-                        novel_language: sourceLanguage,
-                        title: `${articleTitle} - Assistant`
-                    });
-                    setSession(response.session);
-                } catch (e) {
-                    console.warn("Failed to create remote session, falling back to local mode", e);
-                }
-            } else {
-                console.log("Backend not configured, using local mode");
-            }
-
             const welcomeMessage = t(
                 "novelChat.welcome",
                 "Hello! I'm your reading assistant. I can help translate, explain text, analyze grammar, or discuss the article."
@@ -321,8 +301,6 @@ export function ArticleChatAssistant({
         setIsLoading(true);
         startSlowTimer();
 
-        const api = getApiClient();
-        const useRemote = session && !currentAttachment && api.isBackendConfigured();
         const defaultChatFeature = getDefaultChatFeature(appConfig?.prompt_features ?? []);
         const systemPrompt = defaultChatFeature
             ? renderPromptTemplate(defaultChatFeature.prompt_template, buildPromptContext(messageToSend))
@@ -330,159 +308,109 @@ export function ArticleChatAssistant({
 
         // Augment prompt with context if meaningful
         let effectiveMessage = messageToSend;
-        if (!useRemote && selectedText && !actionType) {
+        if (selectedText && !actionType) {
             effectiveMessage = `Context: "${selectedText}"\n\nUser Question: ${messageToSend}`;
         }
 
         try {
-            if (useRemote) {
-                // Remote Streaming Logic
-                abortControllerRef.current = new AbortController();
-                await api.streamNovelChat(
-                    {
-                        session_id: session!.id,
-                        message: systemPrompt
-                            ? `${systemPrompt}\n\nUser message:\n${messageToSend}`
-                            : messageToSend,
-                        selected_text: selectedText,
-                        current_segment: currentSegment,
-                        reading_progress: readingProgress,
-                    },
-                    (chunk) => {
-                        clearSlowTimer(); // Clear timer on first chunk
-                        if (chunk.type === 'message' || (chunk.type as any) === 'content') {
-                            const content = typeof chunk.content === 'string'
-                                ? chunk.content
-                                : (chunk.content?.content || '');
-
-                            if (content) {
-                                setMessages(prev => {
-                                    const newMessages = [...prev];
-                                    const lastMessage = newMessages[newMessages.length - 1];
-                                    if (lastMessage.role === 'assistant') {
-                                        lastMessage.content += content;
-                                    }
-                                    return newMessages;
-                                });
+            // Local Command Logic (Non-streaming for now)
+            try {
+                const history = messages.map(m => ({
+                    role: m.role,
+                    content: m.content
+                }));
+                let content: any = effectiveMessage;
+                if (currentAttachment) {
+                    content = {
+                        parts: [
+                            { type: "text", text: effectiveMessage },
+                            {
+                                type: "file",
+                                file_data: {
+                                    mime_type: currentAttachment.file.type,
+                                    data: currentAttachment.base64
+                                }
                             }
-                        } else if (chunk.type === 'done') {
-                            setMessages(prev => {
-                                const newMessages = [...prev];
-                                const lastMessage = newMessages[newMessages.length - 1];
-                                if (lastMessage.role === 'assistant') {
-                                    lastMessage.isStreaming = false;
-                                }
-                                return newMessages;
-                            });
-                        } else if (chunk.type === 'error') {
-                            throw new Error(chunk.error);
-                        }
-                    },
-                    (error) => {
-                        throw error;
-                    },
-                    abortControllerRef.current.signal
-                );
-            } else {
-                // Local Command Logic (Non-streaming for now)
-                try {
-                    const history = messages.map(m => ({
-                        role: m.role,
-                        content: m.content
-                    }));
-                    let content: any = effectiveMessage;
-                    if (currentAttachment) {
-                        content = {
-                            parts: [
-                                { type: "text", text: effectiveMessage },
-                                {
-                                    type: "file",
-                                    file_data: {
-                                        mime_type: currentAttachment.file.type,
-                                        data: currentAttachment.base64
-                                    }
-                                }
-                            ]
-                        };
-                    }
+                        ]
+                    };
+                }
 
-                    const requestMessages = [...history, {
-                        role: 'user',
-                        content: content
-                    }];
+                const requestMessages = [...history, {
+                    role: 'user',
+                    content: content
+                }];
 
-                    if (systemPrompt) {
-                        requestMessages.unshift({
-                            role: "system",
-                            content: systemPrompt,
-                        } as any);
-                    } else if (history.length === 0) {
-                        requestMessages.unshift({
-                            role: "user",
-                            content: `You are a helpful reading assistant. The user is reading: "${articleTitle}". \nTarget Language: ${targetLanguage}.`
-                        } as any);
-                    }
+                if (systemPrompt) {
+                    requestMessages.unshift({
+                        role: "system",
+                        content: systemPrompt,
+                    } as any);
+                } else if (history.length === 0) {
+                    requestMessages.unshift({
+                        role: "user",
+                        content: `You are a helpful reading assistant. The user is reading: "${articleTitle}". \nTarget Language: ${targetLanguage}.`
+                    } as any);
+                }
 
-                    console.log("Sending local chat request with streaming:", requestMessages);
+                console.log("Sending local chat request with streaming:", requestMessages);
 
-                    const eventId = crypto.randomUUID();
-                    let fullContent = "";
+                const eventId = crypto.randomUUID();
+                let fullContent = "";
 
-                    const unlisten = await listen<string>(`chat-stream://${eventId}`, (event) => {
-                        clearSlowTimer(); // Clear timer on first chunk
-                        const chunk = event.payload;
-                        if (chunk) {
-                            fullContent += chunk;
-                            setMessages(prev => {
-                                const newMessages = [...prev];
-                                const lastMsgIdx = newMessages.length - 1;
-                                if (lastMsgIdx >= 0 && newMessages[lastMsgIdx].role === 'assistant') {
-                                    newMessages[lastMsgIdx] = {
-                                        ...newMessages[lastMsgIdx],
-                                        content: fullContent
-                                    };
-                                }
-                                return newMessages;
-                            });
-                        }
-                    });
-
-                    try {
-                        await invoke("stream_chat_completion", {
-                            request: {
-                                messages: requestMessages,
-                                model: activeModel?.model || "",
-                                temperature: 0.7
-                            },
-                            eventId
-                        });
-                    } finally {
-                        unlisten();
+                const unlisten = await listen<string>(`chat-stream://${eventId}`, (event) => {
+                    clearSlowTimer(); // Clear timer on first chunk
+                    const chunk = event.payload;
+                    if (chunk) {
+                        fullContent += chunk;
                         setMessages(prev => {
                             const newMessages = [...prev];
                             const lastMsgIdx = newMessages.length - 1;
                             if (lastMsgIdx >= 0 && newMessages[lastMsgIdx].role === 'assistant') {
                                 newMessages[lastMsgIdx] = {
                                     ...newMessages[lastMsgIdx],
-                                    isStreaming: false
+                                    content: fullContent
                                 };
                             }
                             return newMessages;
                         });
                     }
+                });
 
-                } catch (error: any) {
-                    console.error('Local chat failed:', error);
+                try {
+                    await invoke("stream_chat_completion", {
+                        request: {
+                            messages: requestMessages,
+                            model: activeModel?.model || "",
+                            temperature: 0.7
+                        },
+                        eventId
+                    });
+                } finally {
+                    unlisten();
                     setMessages(prev => {
                         const newMessages = [...prev];
-                        const lastMessage = newMessages[newMessages.length - 1];
-                        if (lastMessage.role === 'assistant') {
-                            lastMessage.content += `\n[Error: ${error.message || error}]`;
-                            lastMessage.isStreaming = false;
+                        const lastMsgIdx = newMessages.length - 1;
+                        if (lastMsgIdx >= 0 && newMessages[lastMsgIdx].role === 'assistant') {
+                            newMessages[lastMsgIdx] = {
+                                ...newMessages[lastMsgIdx],
+                                isStreaming: false
+                            };
                         }
                         return newMessages;
                     });
                 }
+
+            } catch (error: any) {
+                console.error('Local chat failed:', error);
+                setMessages(prev => {
+                    const newMessages = [...prev];
+                    const lastMessage = newMessages[newMessages.length - 1];
+                    if (lastMessage.role === 'assistant') {
+                        lastMessage.content += `\n[Error: ${error.message || error}]`;
+                        lastMessage.isStreaming = false;
+                    }
+                    return newMessages;
+                });
             }
         } catch (error: any) {
             setMessages(prev => {

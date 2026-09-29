@@ -72,5 +72,11 @@
 	     用户看到的是"同步一直失败"。 -->
 	<key>com.apple.developer.icloud-container-environment</key>
 	<string>$(OK_ICLOUD_ENV)</string>
+	<!-- OpenKoto 云账号：原生 Sign in with Apple（POST /api/v1/auth/apple）。
+	     App Review 4.8：提供第三方登录时必须同时提供 Apple 登录。 -->
+	<key>com.apple.developer.applesignin</key>
+	<array>
+		<string>Default</string>
+	</array>
 </dict>
 </plist>

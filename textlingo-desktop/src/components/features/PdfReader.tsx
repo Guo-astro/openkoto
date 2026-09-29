@@ -5,6 +5,7 @@
  */
 
 import { useState, useRef, useCallback, useEffect } from "react";
+import { bookIdFromPath, getBookProgress, saveBookProgress } from "../../lib/bookProgress";
 import { Document, Page } from "react-pdf";
 import "react-pdf/dist/Page/TextLayer.css";
 import "react-pdf/dist/Page/AnnotationLayer.css";
@@ -90,7 +91,7 @@ export function PdfReader({
         setIsLoading(false);
         setError(null);
 
-        // 恢复上次阅读进度
+        // 恢复上次阅读进度(本地缓存优先,随后用同步的 BookProgress 覆盖)
         if (bookPath) {
             const savedPage = localStorage.getItem(`pdf-page-${bookPath}`);
             if (savedPage) {
@@ -99,6 +100,10 @@ export function PdfReader({
                     setPageNumber(parsed);
                 }
             }
+            void getBookProgress(bookIdFromPath(bookPath)).then((progress) => {
+                const page = progress?.page_number ?? null;
+                if (page && page > 0 && page <= numPages) setPageNumber(page);
+            });
         }
     }, [bookPath]);
 
@@ -228,6 +233,7 @@ export function PdfReader({
     useEffect(() => {
         if (bookPath && pageNumber > 0) {
             localStorage.setItem(`pdf-page-${bookPath}`, pageNumber.toString());
+            saveBookProgress(bookIdFromPath(bookPath), { pageNumber });
         }
     }, [bookPath, pageNumber]);
 

@@ -2,7 +2,9 @@
 pub mod agent_worker;
 mod ai_service;
 mod book_content;
+pub mod cloud;
 pub mod commands;
+pub mod db;
 pub mod ffmpeg;
 pub mod fsrs;
 pub mod ktv_export;
@@ -12,10 +14,12 @@ pub mod pdf_sidecar;
 pub mod storage;
 mod subtitle_extraction;
 pub mod subtitle_import;
+pub mod sync;
 pub mod transfer_export;
 pub mod types;
 mod video_server;
 mod youtube;
+pub mod lyrics;
 
 // Re-exports
 use agent_worker::{mark_running_tasks_interrupted_in_dir, AgentWorkerManager};
@@ -24,7 +28,18 @@ use tauri::Manager;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    tauri::Builder::default()
+    let builder = tauri::Builder::default();
+    // Must be the first plugin: a second launch (e.g. an `openkoto://` link on Windows/Linux)
+    // forwards its arguments here, and the deep-link feature turns them into URL events.
+    #[cfg(any(target_os = "macos", windows, target_os = "linux"))]
+    let builder = builder.plugin(tauri_plugin_single_instance::init(|app, _argv, _cwd| {
+        if let Some(window) = app.get_webview_window("main") {
+            let _ = window.unminimize();
+            let _ = window.set_focus();
+        }
+    }));
+    builder
+        .plugin(tauri_plugin_deep_link::init())
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_dialog::init())
@@ -126,13 +141,44 @@ pub fn run() {
             commands::list_bookmarks_for_book_cmd,
             commands::update_bookmark_cmd,
             commands::delete_bookmark_cmd,
+            // OpenKoto 云账号与同步
+            cloud::commands::cloud_login_start,
+            cloud::commands::cloud_login_cancel,
+            cloud::commands::cloud_logout,
+            cloud::commands::cloud_account,
+            cloud::commands::cloud_sync_now,
+            cloud::commands::cloud_sync_status,
+            cloud::commands::cloud_resolve_account_switch,
+            // 书籍阅读进度(同步为 BookProgress)
+            commands::get_book_progress_cmd,
+            commands::save_book_progress_cmd,
+            commands::migrate_book_progress_cmd,
         ])
         .setup(|app| {
+            // Before anything touches the session (token-file fallback lives in the data dir).
+            if let Ok(dir) = app.path().app_data_dir() {
+                cloud::set_data_dir(dir);
+            }
+            {
+                use tauri_plugin_deep_link::DeepLinkExt;
+                // Dev builds / AppImages are not registered by an installer.
+                #[cfg(any(windows, target_os = "linux"))]
+                let _ = app.deep_link().register_all();
+                app.deep_link().on_open_url(|event| {
+                    for url in event.urls() {
+                        cloud::auth::deliver_deep_link(cloud::state(), url.as_str());
+                    }
+                });
+            }
+
             // Initialize app on startup
             let app_handle = app.handle().clone();
             tauri::async_runtime::spawn(async move {
                 // Ensure app directories exist
                 let _ = commands::init_app(app_handle.clone()).await;
+                // SQLite + legacy import are ready: start cloud sync (no-op until signed in).
+                cloud::scheduler::start(app_handle.clone());
+                cloud::realtime::start(app_handle.clone());
                 if let Ok(app_data_dir) = app_handle.path().app_data_dir() {
                     // Start the persistent log file as early as possible so the
                     // very first PDF translation of a session is captured.

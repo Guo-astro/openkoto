@@ -50,5 +50,5 @@ If App Review needs to test the optional AI flow, provide a temporary, revocable
 - Model:
 - Temporary API key:
 
-Privacy policy: https://www.openkoto.com/privacy-policy
+Privacy policy: https://openkoto.com/privacy
 Support: https://github.com/hikariming/OpenKoto/issues

@@ -39,6 +39,28 @@
 	<array>
 		<string>remote-notification</string>
 	</array>
+	<!--
+	  OpenKoto 云的 API 基址（OKAccount.AccountConfiguration 读取）。
+	  联调本地 worker 时改成 http://127.0.0.1:8787 之类（真机还要配 ATS 例外）。
+	-->
+	<key>OpenKotoAPIBaseURL</key>
+	<string>https://openkoto.com</string>
+	<!--
+	  登录回调 scheme：openkoto://auth/callback（服务端 redirect_uri 白名单，
+	  见 server/worker/src/auth/routes.ts）。ASWebAuthenticationSession 自己会接住回调，
+	  这里注册是为了让系统知道这个 scheme 归我们。
+	-->
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>app.openkoto.auth</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>openkoto</string>
+			</array>
+		</dict>
+	</array>
 	<key>OKAppGroupIdentifier</key>
 	<string>$(OK_APP_GROUP_ID)</string>
 	<key>CFBundleDocumentTypes</key>

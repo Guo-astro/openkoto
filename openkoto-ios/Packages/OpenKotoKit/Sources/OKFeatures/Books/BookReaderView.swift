@@ -317,15 +317,25 @@ struct BookReaderView: View {
 
     // MARK: - 续读位置
 
+    /// 同步来的书（网页导入、或别的设备导入）本机没有原始文件：
+    /// 默认模式 / 进度里记的是"原版"也只能用原生模式读 —— 正文在章节 article 里。
+    private func fallBackToNativeIfNoFile() {
+        if renderMode == .original && !book.originalOnly && !canUseOriginalMode {
+            renderMode = .native
+        }
+    }
+
     private func restoreFromProgress() {
         guard let progress = store.progress(ofBook: book.id) else {
             renderMode = book.originalOnly ? .original : book.defaultMode
+            fallBackToNativeIfNoFile()
             return
         }
         if chapters.indices.contains(progress.chapterIndex) {
             chapterIndex = progress.chapterIndex
         }
         renderMode = book.originalOnly ? .original : progress.mode
+        fallBackToNativeIfNoFile()
         let count = currentChapter.map { store.progress(for: $0.articleId).total } ?? 0
         restoreOrder = progress.resolvedSegmentOrder(segmentCount: max(count, 1))
         visibleOrder = restoreOrder ?? 0

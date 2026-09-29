@@ -1,0 +1,203 @@
+{
+  "identifier" : "4F1C2B8E",
+  "nonRenewingSubscriptions" : [
+
+  ],
+  "products" : [
+    {
+      "displayPrice" : "4.99",
+      "familyShareable" : false,
+      "internalID" : "6740000005",
+      "localizations" : [
+        {
+          "description" : "3,000 credits for OpenKoto hosted AI",
+          "displayName" : "3,000 AI Credits",
+          "locale" : "en_US"
+        },
+        {
+          "description" : "3000 点 OpenKoto 托管 AI 积分",
+          "displayName" : "3000 AI 积分",
+          "locale" : "zh_Hans"
+        },
+        {
+          "description" : "OpenKoto ホスト型 AI 用 3,000 クレジット",
+          "displayName" : "AI クレジット 3,000",
+          "locale" : "ja"
+        }
+      ],
+      "productID" : "com.openkoto.credits.3000",
+      "referenceName" : "AI Credits 3000",
+      "type" : "Consumable"
+    }
+  ],
+  "settings" : {
+    "_applicationInternalID" : "6740000000",
+    "_developerTeamID" : "",
+    "_failTransactionsEnabled" : false,
+    "_lastSynchronizedDate" : 0,
+    "_locale" : "en_US",
+    "_storefront" : "USA",
+    "_storeKitErrors" : [
+
+    ]
+  },
+  "subscriptionGroups" : [
+    {
+      "id" : "21500001",
+      "localizations" : [
+        {
+          "description" : "OpenKoto membership",
+          "displayName" : "OpenKoto",
+          "locale" : "en_US"
+        }
+      ],
+      "name" : "OpenKoto Membership",
+      "subscriptions" : [
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "4.99",
+          "familyShareable" : false,
+          "groupNumber" : 2,
+          "internalID" : "6740000001",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "Unlimited words, books, lyrics and articles",
+              "displayName" : "Plus (Monthly)",
+              "locale" : "en_US"
+            },
+            {
+              "description" : "生词、书籍、歌词与文章不限量",
+              "displayName" : "Plus（月付）",
+              "locale" : "zh_Hans"
+            },
+            {
+              "description" : "単語・書籍・歌詞・記事が無制限",
+              "displayName" : "Plus（月額）",
+              "locale" : "ja"
+            }
+          ],
+          "productID" : "com.openkoto.plus.month",
+          "recurringSubscriptionPeriod" : "P1M",
+          "referenceName" : "Plus Monthly",
+          "subscriptionGroupID" : "21500001",
+          "type" : "RecurringSubscription"
+        },
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "39.99",
+          "familyShareable" : false,
+          "groupNumber" : 2,
+          "internalID" : "6740000002",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "Unlimited words, books, lyrics and articles",
+              "displayName" : "Plus (Yearly)",
+              "locale" : "en_US"
+            },
+            {
+              "description" : "生词、书籍、歌词与文章不限量",
+              "displayName" : "Plus（年付）",
+              "locale" : "zh_Hans"
+            },
+            {
+              "description" : "単語・書籍・歌詞・記事が無制限",
+              "displayName" : "Plus（年額）",
+              "locale" : "ja"
+            }
+          ],
+          "productID" : "com.openkoto.plus.year",
+          "recurringSubscriptionPeriod" : "P1Y",
+          "referenceName" : "Plus Yearly",
+          "subscriptionGroupID" : "21500001",
+          "type" : "RecurringSubscription"
+        },
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "9.99",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "6740000003",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "Everything in Plus, plus hosted AI",
+              "displayName" : "Pro (Monthly)",
+              "locale" : "en_US"
+            },
+            {
+              "description" : "Plus 全部权益，另含托管 AI",
+              "displayName" : "Pro（月付）",
+              "locale" : "zh_Hans"
+            },
+            {
+              "description" : "Plus のすべてに加えてホスト型 AI",
+              "displayName" : "Pro（月額）",
+              "locale" : "ja"
+            }
+          ],
+          "productID" : "com.openkoto.pro.month",
+          "recurringSubscriptionPeriod" : "P1M",
+          "referenceName" : "Pro Monthly",
+          "subscriptionGroupID" : "21500001",
+          "type" : "RecurringSubscription"
+        },
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "79.99",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "6740000004",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "Everything in Plus, plus hosted AI",
+              "displayName" : "Pro (Yearly)",
+              "locale" : "en_US"
+            },
+            {
+              "description" : "Plus 全部权益，另含托管 AI",
+              "displayName" : "Pro（年付）",
+              "locale" : "zh_Hans"
+            },
+            {
+              "description" : "Plus のすべてに加えてホスト型 AI",
+              "displayName" : "Pro（年額）",
+              "locale" : "ja"
+            }
+          ],
+          "productID" : "com.openkoto.pro.year",
+          "recurringSubscriptionPeriod" : "P1Y",
+          "referenceName" : "Pro Yearly",
+          "subscriptionGroupID" : "21500001",
+          "type" : "RecurringSubscription"
+        }
+      ]
+    }
+  ],
+  "version" : {
+    "major" : 3,
+    "minor" : 0
+  }
+}

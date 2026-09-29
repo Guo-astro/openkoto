@@ -1,0 +1,79 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "openkoto-api",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-08-15",
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": { "enabled": true },
+  // Top level = production (https://openkoto.com). Local dev overrides APP_ORIGIN and
+  // EMAIL_PROVIDER in .dev.vars; `wrangler dev` uses local D1/R2/queues.
+  "routes": [
+    { "pattern": "openkoto.com", "custom_domain": true },
+    { "pattern": "www.openkoto.com", "custom_domain": true }
+  ],
+  "vars": {
+    "APP_ORIGIN": "https://openkoto.com",
+    "APP_NAME": "OpenKoto",
+    "EMAIL_PROVIDER": "cloudflare",
+    "EMAIL_FROM": "OpenKoto <noreply@openkoto.com>",
+    "APPLE_APP_BUNDLE_ID": "com.openkoto.ios",
+    "GOOGLE_CLIENT_ID": "506826712750-uubvvapb2v0l976jutqsree5gaavq3jd.apps.googleusercontent.com",
+    "CREEM_PRODUCTS": "{\"prod_6Ymabyy9r3KEDzfWQCRYcB\":\"plus_year\",\"prod_16RrXYuvKqwEsuQsB3Na2R\":\"pro_month\",\"prod_2qwYiPMKYdOJT1OoCcF1eU\":\"pro_year\",\"prod_3DPsHkwaB8S7aAwBqFkiQz\":\"credits_3000\"}"
+  },
+  // Cloudflare Email Service (Workers Paid: 3,000/month included). openkoto.com must be onboarded
+  // under Compute → Email Service; set EMAIL_PROVIDER=resend to fall back to Resend.
+  "send_email": [{ "name": "EMAIL" }],
+  "ratelimits": [
+    { "name": "AUTH_LIMITER", "namespace_id": "1001", "simple": { "limit": 30, "period": 60 } },
+    { "name": "OTP_LIMITER", "namespace_id": "1002", "simple": { "limit": 5, "period": 60 } }
+  ],
+  "d1_databases": [
+    { "binding": "DB", "database_name": "openkoto", "database_id": "d312080d-5121-492a-badb-ca6f02dad81e", "migrations_dir": "migrations" }
+  ],
+  "r2_buckets": [{ "binding": "BUCKET", "bucket_name": "openkoto-files" }],
+  "durable_objects": {
+    "bindings": [{ "name": "VAULT", "class_name": "UserVault" }]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["UserVault"] }],
+  "queues": {
+    "producers": [{ "binding": "JOBS", "queue": "openkoto-jobs" }],
+    "consumers": [{ "queue": "openkoto-jobs", "max_batch_size": 5, "max_retries": 3 }]
+  },
+  "triggers": { "crons": ["17 3 * * *"] },
+  "assets": { "directory": "../../apps/web/dist", "binding": "ASSETS", "not_found_handling": "single-page-application", "run_worker_first": ["/*", "!/assets/*"] }
+,
+  "env": {
+    // Staging on workers.dev: Creem test mode, console email, BYOK/hosted AI via secrets.
+    "staging": {
+      "name": "openkoto-api-staging",
+      "routes": [],
+      "workers_dev": true,
+      "vars": {
+        "APP_ORIGIN": "https://openkoto-api-staging.beiming1201.workers.dev",
+        "APP_NAME": "OpenKoto (staging)",
+        "EMAIL_PROVIDER": "console",
+        "EMAIL_FROM": "OpenKoto <noreply@openkoto.com>",
+        "APPLE_APP_BUNDLE_ID": "com.openkoto.ios",
+        "APPSTORE_ENVIRONMENT": "Sandbox",
+        "GOOGLE_CLIENT_ID": "506826712750-uubvvapb2v0l976jutqsree5gaavq3jd.apps.googleusercontent.com",
+        "CREEM_API_BASE": "https://test-api.creem.io",
+        "CREEM_PRODUCTS": "{\"prod_6v5Z5VzHCJkH2Lw13OaCZN\":\"plus_year\",\"prod_IOVBOniqHPSdkhfecE5Lu\":\"pro_month\",\"prod_6wLJyGLDKYAsMSkMACVVFU\":\"pro_year\",\"prod_1Sq0hHek0znn21NM7qwlo1\":\"credits_3000\"}"
+      },
+      "send_email": [{ "name": "EMAIL" }],
+      "ratelimits": [
+        { "name": "AUTH_LIMITER", "namespace_id": "2001", "simple": { "limit": 30, "period": 60 } },
+        { "name": "OTP_LIMITER", "namespace_id": "2002", "simple": { "limit": 5, "period": 60 } }
+      ],
+      "d1_databases": [
+        { "binding": "DB", "database_name": "openkoto-staging", "database_id": "09957c00-d55f-4bb7-9a21-031ae7f03995", "migrations_dir": "migrations" }
+      ],
+      "r2_buckets": [{ "binding": "BUCKET", "bucket_name": "openkoto-files-staging" }],
+      "durable_objects": { "bindings": [{ "name": "VAULT", "class_name": "UserVault" }] },
+      "queues": {
+        "producers": [{ "binding": "JOBS", "queue": "openkoto-jobs-staging" }],
+        "consumers": [{ "queue": "openkoto-jobs-staging", "max_batch_size": 5, "max_retries": 3 }]
+      },
+      "triggers": { "crons": ["17 3 * * *"] }
+    }
+  }
+}

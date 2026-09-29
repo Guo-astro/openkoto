@@ -5061,6 +5061,305 @@
         }
       }
     },
+    "paywall.credits": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "AI Credits"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "AI クレジット"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "AI 积分"
+          }
+        }
+      }
+    },
+    "paywall.legal": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Subscriptions renew automatically unless cancelled at least 24 hours before the end of the period. Manage or cancel them in your Apple ID settings. Purchases are linked to the OpenKoto account you are signed in with."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "サブスクリプションは、期間終了の 24 時間以上前に解約しない限り自動更新されます。Apple ID の設定で管理・解約できます。購入はサインイン中の OpenKoto アカウントに紐付けられます。"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "订阅会自动续期，除非在当期结束前至少 24 小时取消。可在 Apple ID 设置中管理或取消。购买会关联到当前登录的 OpenKoto 账号。"
+          }
+        }
+      }
+    },
+    "paywall.open": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Upgrade or Buy AI Credits"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "アップグレード / AI クレジット購入"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "升级会员 / 购买 AI 积分"
+          }
+        }
+      }
+    },
+    "paywall.pending": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Purchase is pending approval."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "購入は承認待ちです。"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "购买正在等待批准。"
+          }
+        }
+      }
+    },
+    "paywall.perMonth": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": " / month"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": " / 月"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": " / 月"
+          }
+        }
+      }
+    },
+    "paywall.perYear": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": " / year"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": " / 年"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": " / 年"
+          }
+        }
+      }
+    },
+    "paywall.plus": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Plus"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Plus"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Plus"
+          }
+        }
+      }
+    },
+    "paywall.pro": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pro"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pro"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pro"
+          }
+        }
+      }
+    },
+    "paywall.restore": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restore Purchases"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "購入を復元"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "恢复购买"
+          }
+        }
+      }
+    },
+    "paywall.retry": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Try Again"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "再試行"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "重试"
+          }
+        }
+      }
+    },
+    "paywall.subtitle": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Plus removes the free-plan limits on words, books, lyrics and articles. Pro adds hosted AI. Credits pay for hosted AI requests."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Plus は無料プランの単語・書籍・歌詞・記事の上限を解除します。Pro にはホスト型 AI が含まれます。クレジットはホスト型 AI のリクエストに使います。"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Plus 解除免费版对生词、书籍、歌词与文章数量的限制；Pro 另含托管 AI。积分用于托管 AI 请求。"
+          }
+        }
+      }
+    },
+    "paywall.success": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Thank you! Your account has been updated."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ありがとうございます！アカウントを更新しました。"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "感谢支持！账号已更新。"
+          }
+        }
+      }
+    },
+    "paywall.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "OpenKoto Membership"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "OpenKoto メンバーシップ"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "OpenKoto 会员"
+          }
+        }
+      }
+    },
     "reader.batch.cancel": {
       "extractionState": "stale",
       "localizations": {
@@ -6184,6 +6483,305 @@
           "stringUnit": {
             "state": "translated",
             "value": "关于"
+          }
+        }
+      }
+    },
+    "settings.account": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "OpenKoto Account"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "OpenKoto アカウント"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "OpenKoto 账号"
+          }
+        }
+      }
+    },
+    "settings.account.delete": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete Account…"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "アカウントを削除…"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "删除账号…"
+          }
+        }
+      }
+    },
+    "settings.account.delete.footer": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Account deletion is completed on the OpenKoto website. After a 7-day grace period your cloud data is permanently removed. Data on this device is not affected; App Store subscriptions must be cancelled in system Settings."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "アカウントの削除は OpenKoto の Web サイトで行います。7 日間の猶予期間のあと、クラウド上のデータは完全に削除されます。このデバイスのデータには影響しません。App Store のサブスクリプションはシステム設定から別途解約してください。"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "删除账号在 OpenKoto 网站上完成，7 天冷静期后云端数据会被永久清除。本机数据不受影响；App Store 订阅需要在系统设置中另行取消。"
+          }
+        }
+      }
+    },
+    "settings.account.device.current": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This device"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "このデバイス"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "本机"
+          }
+        }
+      }
+    },
+    "settings.account.device.revoke": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sign Out This Device"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "このデバイスをサインアウト"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "让该设备退出登录"
+          }
+        }
+      }
+    },
+    "settings.account.devices": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Signed-in Devices"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "サインイン中のデバイス"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已登录的设备"
+          }
+        }
+      }
+    },
+    "settings.account.footer": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sign in to sync with OpenKoto Cloud across iPhone, iPad, Mac, the desktop app and the web. Your data on this device stays yours whether or not you sign in."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "サインインすると、OpenKoto クラウドで iPhone・iPad・Mac・デスクトップ版・Web 間を同期できます。サインインの有無にかかわらず、このデバイスのデータはそのまま残ります。"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "登录后可通过 OpenKoto 云在 iPhone、iPad、Mac、桌面端与网页之间同步。无论是否登录，本机数据都完整保留。"
+          }
+        }
+      }
+    },
+    "settings.account.manage": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Manage Account on the Web"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Web でアカウントを管理"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "在网页上管理账号"
+          }
+        }
+      }
+    },
+    "settings.account.pendingDeletion": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Account scheduled for deletion on %@"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "アカウントは %@ に削除されます"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "账号将于 %@ 删除"
+          }
+        }
+      }
+    },
+    "settings.account.plan": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Plan"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "プラン"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "套餐"
+          }
+        }
+      }
+    },
+    "settings.account.signInWeb": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Continue with Email or Google"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "メールまたは Google で続ける"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "使用邮箱或 Google 继续"
+          }
+        }
+      }
+    },
+    "settings.account.signOut": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sign Out"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "サインアウト"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "退出登录"
+          }
+        }
+      }
+    },
+    "settings.account.signOut.confirm": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sign out of OpenKoto? Everything on this device is kept."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "OpenKoto からサインアウトしますか？このデバイスのデータはすべて残ります。"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "退出 OpenKoto 账号？本机数据会完整保留。"
           }
         }
       }
@@ -7367,24 +7965,24 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "iCloud Sync"
+            "value": "Sync"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "iCloud 同期"
+            "value": "同期"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "iCloud 同步"
+            "value": "同步"
           }
         }
       }
     },
-    "settings.sync.footer": {
+    "settings.sync.footer.icloud": {
       "extractionState": "manual",
       "localizations": {
         "en": {
@@ -7403,6 +8001,52 @@
           "stringUnit": {
             "state": "translated",
             "value": "生词、复习进度、精讲、书籍正文、字幕与划线会经你自己的 iCloud 账号在 iPhone、iPad 与 Mac 之间同步。书籍与视频文件留在各自设备上，所以在别的设备上文本能读能学，但打不开原文件。首次同步可能较久。"
+          }
+        }
+      }
+    },
+    "settings.sync.footer.none": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sync is off. Everything stays on this device."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "同期はオフです。すべてのデータはこのデバイスにのみ保存されます。"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "同步已关闭，所有数据只保存在本机。"
+          }
+        }
+      }
+    },
+    "settings.sync.footer.openkoto": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Words, review progress, word packs, articles, book text, highlights and reading progress sync through your OpenKoto account, across iPhone, iPad, Mac, the desktop app and the web. Book and video files stay on each device. The first sync may take a while."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "単語・復習の進捗・単語帳・記事・書籍本文・ハイライト・読書位置を OpenKoto アカウント経由で同期し、iPhone・iPad・Mac・デスクトップ版・Web で共有します。書籍と動画のファイル自体は各デバイスに残ります。初回の同期には時間がかかることがあります。"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "生词、复习进度、词包、文章、书籍正文、划线与阅读进度经你的 OpenKoto 账号同步，iPhone、iPad、Mac、桌面端与网页通用。书籍与视频文件留在各自设备上。首次同步可能较久。"
           }
         }
       }
@@ -7430,6 +8074,75 @@
         }
       }
     },
+    "settings.sync.migrate": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Move from iCloud to OpenKoto Cloud"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iCloud から OpenKoto クラウドへ移行"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "从 iCloud 迁移到 OpenKoto 云"
+          }
+        }
+      }
+    },
+    "settings.sync.migrate.action": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Migrate"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "移行する"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "开始迁移"
+          }
+        }
+      }
+    },
+    "settings.sync.migrate.confirm": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This device will fetch the latest data from iCloud once, then upload everything to OpenKoto Cloud and stop using iCloud sync. Nothing is deleted."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "このデバイスは iCloud から最新データを一度取得したあと、すべてを OpenKoto クラウドにアップロードし、以後 iCloud 同期を使用しません。データは削除されません。"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "本机会先从 iCloud 拉取一次最新数据，再把全部内容上传到 OpenKoto 云，之后不再使用 iCloud 同步。不会删除任何数据。"
+          }
+        }
+      }
+    },
     "settings.sync.now": {
       "extractionState": "manual",
       "localizations": {
@@ -7449,6 +8162,98 @@
           "stringUnit": {
             "state": "translated",
             "value": "立即同步"
+          }
+        }
+      }
+    },
+    "settings.sync.provider": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sync with"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "同期方法"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "同步方式"
+          }
+        }
+      }
+    },
+    "settings.sync.provider.icloud": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iCloud"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iCloud"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iCloud"
+          }
+        }
+      }
+    },
+    "settings.sync.provider.none": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Off"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "オフ"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "关闭"
+          }
+        }
+      }
+    },
+    "settings.sync.provider.openkoto": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "OpenKoto Cloud"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "OpenKoto クラウド"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "OpenKoto 云"
           }
         }
       }
@@ -7522,6 +8327,52 @@
         }
       }
     },
+    "settings.sync.status.quota": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld items were not uploaded because your plan limit was reached. They are still on this device."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "プランの上限に達したため %lld 件をアップロードできませんでした。このデバイスには残っています。"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "有 %lld 条内容因超出套餐额度未能上传，仍完整保留在本机。"
+          }
+        }
+      }
+    },
+    "settings.sync.status.signInRequired": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sign in to your OpenKoto account to sync."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "同期するには OpenKoto アカウントにサインインしてください。"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "登录 OpenKoto 账号后才能同步。"
+          }
+        }
+      }
+    },
     "settings.sync.status.syncing": {
       "extractionState": "manual",
       "localizations": {
@@ -7564,29 +8415,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "登录 iCloud 后才能同步。"
-          }
-        }
-      }
-    },
-    "settings.sync.toggle": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Sync with iCloud"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "iCloud で同期"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "用 iCloud 同步"
           }
         }
       }

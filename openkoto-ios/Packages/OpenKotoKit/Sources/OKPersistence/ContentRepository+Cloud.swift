@@ -10,13 +10,54 @@ public struct CloudPayload: Sendable {
     public let id: String
     public let data: Data
     public let updatedAt: Date
+    /// 云端记录的 HLC（仅 OpenKoto 云；CloudKit 为 nil）。复习事件用它做重放的第二排序键。
+    public let hlc: String?
 
-    public init(type: CloudRecordType, id: String, data: Data, updatedAt: Date) {
+    public init(type: CloudRecordType, id: String, data: Data, updatedAt: Date, hlc: String? = nil) {
         self.type = type
         self.id = id
         self.data = data
         self.updatedAt = updatedAt
+        self.hlc = hlc
     }
+}
+
+/// 推送收集的可选范围。默认值 = CloudKit 的既有行为（不动）。
+///
+/// OpenKoto 云协议（`docs/specs/sync-protocol-spec.md` §2.2）比 CloudKit 版多两类：
+/// 阅读进度与词包成员关系。CloudKit 那边不加 —— 那会改变线上 iCloud 用户的
+/// 记录集合，还要在 CloudKit Dashboard 里部署新的 record type。
+public struct CloudPayloadOptions: Sendable, Equatable {
+    public var includeBookProgress: Bool
+    public var includeMemberships: Bool
+    public var includeLyricsMeta: Bool
+    /// 复习事件除了按 `reviewed_at` 扫水位线，再加上"从没上过 OpenKoto 云"的
+    /// （`review_log.hlc IS NULL`）。同词合并复制出来的事件时间是旧的，只靠水位线推不上去。
+    public var includeUnsyncedReviewEvents: Bool
+
+    public init(
+        includeBookProgress: Bool = false, includeMemberships: Bool = false,
+        includeLyricsMeta: Bool = false, includeUnsyncedReviewEvents: Bool = false
+    ) {
+        self.includeBookProgress = includeBookProgress
+        self.includeMemberships = includeMemberships
+        self.includeLyricsMeta = includeLyricsMeta
+        self.includeUnsyncedReviewEvents = includeUnsyncedReviewEvents
+    }
+
+    public static let cloudKit = CloudPayloadOptions()
+    public static let openKoto = CloudPayloadOptions(
+        includeBookProgress: true, includeMemberships: true, includeLyricsMeta: true,
+        includeUnsyncedReviewEvents: true)
+}
+
+/// 词包成员记录的 payload（协议 §2.2：`vocabularyId, packId`）。
+///
+/// 刻意**不带** `createdAt`：从云端合并进来的成员行 `created_at` 取的是合并时刻，
+/// 带上它的话，每条拉下来的成员都会因为"内容变了"被原样推回去一次。
+struct MembershipPayload: Codable {
+    var vocabularyId: String
+    var packId: String
 }
 
 extension ContentRepository {
@@ -57,7 +98,9 @@ extension ContentRepository {
     /// 这里**不用 `dirty` 列**：那意味着要在所有 Repository 的每个写入点插一句标记，
     /// 几十处改动，且漏一处就是"这类数据永远不同步"的静默 bug。
     /// 水位线扫描的代价只是每次同步多读一遍表（几千行量级），换来写入路径零改动。
-    public func pendingCloudPayloads(since watermark: Date?) async throws -> [CloudPayload] {
+    public func pendingCloudPayloads(
+        since watermark: Date?, options: CloudPayloadOptions = .cloudKit
+    ) async throws -> [CloudPayload] {
         let encoder = CloudRecord.encoder()
         return try await database.writer.read { db in
             var payloads: [CloudPayload] = []
@@ -146,7 +189,10 @@ extension ContentRepository {
             let eventRecords: [ReviewLogRecord]
             if let since = cutoff() {
                 eventRecords = try ReviewLogRecord
-                    .filter(Column("reviewed_at") >= since).fetchAll(db)
+                    .filter(
+                        Column("reviewed_at") >= since
+                            || (options.includeUnsyncedReviewEvents && Column("hlc") == nil)
+                    ).fetchAll(db)
             } else {
                 eventRecords = try ReviewLogRecord.fetchAll(db)
             }
@@ -248,6 +294,71 @@ extension ContentRepository {
                 }
             }
 
+            // 阅读进度（仅 OpenKoto 云）。固定版式书本身不上云，它的进度推过去
+            // 只会在对端永远停放（等一本不会来的书），所以一并排除。
+            if options.includeBookProgress {
+                let syncableProgress = BookProgressRecord.filter(
+                    sql: "book_id IN (SELECT id FROM book WHERE original_only = 0)")
+                let progressRecords: [BookProgressRecord]
+                if let since = cutoff() {
+                    progressRecords = try syncableProgress
+                        .filter(Column("updated_at") >= since).fetchAll(db)
+                } else {
+                    progressRecords = try syncableProgress.fetchAll(db)
+                }
+                for record in progressRecords {
+                    guard let model = try? record.domainModel(),
+                        let data = try? encoder.encode(model)
+                    else { continue }
+                    payloads.append(
+                        CloudPayload(
+                            type: .bookProgress, id: record.bookId, data: data,
+                            updatedAt: record.updatedAt))
+                }
+            }
+
+            // 词包成员（仅 OpenKoto 云）。"未分组"是隐式的，不是真关系。
+            if options.includeMemberships {
+                var sql = "SELECT * FROM word_pack_membership WHERE pack_id != ?"
+                var arguments: StatementArguments = [uuidString(WordPack.systemUngroupedID)]
+                if let since = cutoff() {
+                    sql += " AND created_at >= ?"
+                    arguments += [since]
+                }
+                for record in try WordPackMembershipRecord.fetchAll(
+                    db, sql: sql, arguments: arguments)
+                {
+                    let body = MembershipPayload(
+                        vocabularyId: record.vocabularyId, packId: record.packId)
+                    guard let data = try? encoder.encode(body) else { continue }
+                    payloads.append(
+                        CloudPayload(
+                            type: .wordPackMembership,
+                            id: "\(record.vocabularyId)_\(record.packId)", data: data,
+                            updatedAt: record.createdAt))
+                }
+            }
+
+            // 歌词元数据（仅 OpenKoto 云）。
+            if options.includeLyricsMeta {
+                let lyricsRecords: [LyricsMetaRecord]
+                if let since = cutoff() {
+                    lyricsRecords = try LyricsMetaRecord
+                        .filter(Column("updated_at") >= since).fetchAll(db)
+                } else {
+                    lyricsRecords = try LyricsMetaRecord.fetchAll(db)
+                }
+                for record in lyricsRecords {
+                    guard let model = try? record.domainModel(),
+                        let data = try? encoder.encode(model)
+                    else { continue }
+                    payloads.append(
+                        CloudPayload(
+                            type: .lyricsMeta, id: record.articleId, data: data,
+                            updatedAt: record.updatedAt))
+                }
+            }
+
             return payloads
         }
     }
@@ -255,6 +366,13 @@ extension ContentRepository {
     /// 待推送的删除（来自墓碑表）。
     public func pendingCloudDeletions(since watermark: Date?) async throws -> [(
         type: CloudRecordType, id: String
+    )] {
+        try await pendingCloudDeletionRecords(since: watermark).map { ($0.type, $0.id) }
+    }
+
+    /// 同上，带删除时间（OpenKoto 云要用它合成墓碑的 HLC）。
+    public func pendingCloudDeletionRecords(since watermark: Date?) async throws -> [(
+        type: CloudRecordType, id: String, deletedAt: Date
     )] {
         let cutoff = watermark.map { $0.addingTimeInterval(-Self.watermarkOverlap) }
         return try await database.writer.read { db in
@@ -264,17 +382,19 @@ extension ContentRepository {
             } else {
                 rows = try TombstoneRecord.fetchAll(db)
             }
-            return rows.compactMap { row -> (CloudRecordType, String)? in
+            return rows.compactMap { row -> (CloudRecordType, String, Date)? in
                 guard let table = TombstoneTable(rawValue: row.tableName) else { return nil }
+                let type: CloudRecordType
                 switch table {
-                case .favoriteVocabulary: return (.vocabulary, row.recordId)
-                case .wordPack: return (.wordPack, row.recordId)
-                case .wordPackMembership: return (.wordPackMembership, row.recordId)
-                case .article: return (.article, row.recordId)
-                case .book: return (.book, row.recordId)
-                case .media: return (.media, row.recordId)
-                case .bookMark: return (.bookMark, row.recordId)
+                case .favoriteVocabulary: type = .vocabulary
+                case .wordPack: type = .wordPack
+                case .wordPackMembership: type = .wordPackMembership
+                case .article: type = .article
+                case .book: type = .book
+                case .media: type = .media
+                case .bookMark: type = .bookMark
                 }
+                return (type, row.recordId, row.deletedAt)
             }
         }
     }
@@ -430,6 +550,20 @@ extension ContentRepository {
                 record.sourceArticleId = nil
                 record.sourceSegmentId = nil
             }
+            // 同词同来源的另一张卡已经在本机（两台设备各建了一张）：按协议 §9 合并。
+            if local == nil, let duplicate = try Self.duplicateLocalCard(of: record, db) {
+                if Self.keeps(duplicate, over: record) {
+                    // 本机那张留下；远端这张记成"被合并"，它的事件到了再改指过来。
+                    try Self.mergeVocabulary(
+                        loser: record.id, into: duplicate.id, db, now: now,
+                        touched: &touchedVocabulary)
+                    return .applied
+                }
+                try Self.mergeVocabulary(
+                    loser: duplicate.id, into: record.id, db, now: now,
+                    touched: &touchedVocabulary)
+                // 被合并方的事件已经改指到这张卡上，卡片要先落地（事件表没有外键，顺序无妨）。
+            }
             try record.save(db)
             touchedVocabulary.insert(payload.id)
             return .applied
@@ -499,16 +633,32 @@ extension ContentRepository {
         case .reviewEvent:
             guard let model = try? decoder.decode(ReviewEvent.self, from: payload.data)
             else { return .skipped }
-            // append-only：id 撞了就是同一条
-            guard try ReviewLogRecord.fetchOne(db, key: payload.id) == nil else { return .skipped }
-            try ReviewLogRecord(model).insert(db)
+            // append-only：id 撞了就是同一条（顺手补上本地还没有的 HLC）
+            if try ReviewLogRecord.fetchOne(db, key: payload.id) != nil {
+                if let hlc = payload.hlc {
+                    try db.execute(
+                        sql: "UPDATE review_log SET hlc = ? WHERE id = ? AND hlc IS NULL",
+                        arguments: [hlc, payload.id])
+                }
+                return .skipped
+            }
+            var log = ReviewLogRecord(model)
+            log.hlc = payload.hlc
+            try log.insert(db)
             touchedVocabulary.insert(uuidString(model.vocabularyId))
+            // 这张卡早先被合并掉了：事件照收（只追加），再复制一条指向保留卡。
+            if let keeper = try Self.keeperID(forMerged: log.vocabularyId, db) {
+                try Self.repointEvent(log, to: keeper, db)
+                touchedVocabulary.insert(keeper)
+            }
             return .applied
 
         case .wordPackMembership:
             let parts = payload.id.split(separator: "_", maxSplits: 1)
             guard parts.count == 2 else { return .skipped }
-            let (vocabId, packId) = (String(parts[0]), String(parts[1]))
+            var (vocabId, packId) = (String(parts[0]), String(parts[1]))
+            // 成员关系指向一张被合并掉的卡：挂到保留卡上。
+            if let keeper = try Self.keeperID(forMerged: vocabId, db) { vocabId = keeper }
             // 墓碑命中是**终局**，不能停放等着 —— 等下去等于慢慢复活一条用户删过的关系。
             guard try !isTombstoned(db, .wordPackMembership, payload.id) else { return .skipped }
             guard try FavoriteVocabularyRecord.fetchOne(db, key: vocabId) != nil,
@@ -621,6 +771,41 @@ extension ContentRepository {
             else { return .skipped }
             try MediaPartRecord(model).insert(db)
             return .applied
+
+        case .lyricsMeta:
+            guard let model = try? decoder.decode(LyricsMeta.self, from: payload.data)
+            else { return .skipped }
+            let articleID = uuidString(model.articleId)
+            guard try !isTombstoned(db, .article, articleID) else { return .skipped }
+            guard try ArticleRecord.fetchOne(db, key: articleID) != nil else { return .deferred }
+            // payload 本身没有 updatedAt，比的是记录时间（HLC 的 wall / CloudKit 的修改时间）。
+            if let local = try LyricsMetaRecord.fetchOne(db, key: articleID),
+                local.updatedAt >= payload.updatedAt
+            {
+                return .skipped
+            }
+            try LyricsMetaRecord(model, updatedAt: payload.updatedAt).save(db)
+            return .applied
+
+        case .bookProgress:
+            guard let model = try? decoder.decode(BookProgress.self, from: payload.data)
+            else { return .skipped }
+            let bookID = uuidString(model.bookId)
+            guard try !isTombstoned(db, .book, bookID) else { return .skipped }
+            guard try BookRecord.fetchOne(db, key: bookID) != nil else { return .deferred }
+            let local = try BookProgressRecord.fetchOne(db, key: bookID)
+            // 纯 LWW：谁最后读谁说了算。相等时保留本地，免得两台来回顶。
+            if let local, local.updatedAt >= model.updatedAt { return .skipped }
+            var record = BookProgressRecord(model)
+            // `chapter_article_id` 是 `ON DELETE SET NULL` 的软引用，章节没到就置空，
+            // `chapterIndex` 仍然能把人带回正确的章。
+            if let chapterID = record.chapterArticleId,
+                try ArticleRecord.fetchOne(db, key: chapterID) == nil
+            {
+                record.chapterArticleId = nil
+            }
+            try record.save(db)
+            return .applied
         }
     }
 
@@ -678,8 +863,19 @@ extension ContentRepository {
         case .bookMark:
             _ = try BookMarkRecord.deleteOne(db, key: deletion.id)
             try TombstoneRecord.mark(db, table: .bookMark, recordID: deletion.id, at: now)
-        case .segment, .reviewEvent, .bookChapter, .mediaPart:
-            // 段落与归属行随父级联；复习事件只增不删。都不会收到独立的删除。
+        case .bookProgress:
+            // 进度没有独立墓碑；书删了它随 FK 级联。收到了也照删不误。
+            _ = try BookProgressRecord.deleteOne(db, key: deletion.id)
+        case .lyricsMeta:
+            _ = try LyricsMetaRecord.deleteOne(db, key: deletion.id)
+        case .segment:
+            // 文章被重新切分（协议 §4.3）或被删除时，旧句子会逐条收到墓碑。
+            // 句子没有本地墓碑表：它的"复活"只可能跟着父文章一起，而文章有墓碑。
+            _ = try SegmentRecord.deleteOne(db, key: deletion.id)
+        case .bookChapter:
+            _ = try BookChapterRecord.deleteOne(db, key: deletion.id)
+        case .reviewEvent, .mediaPart:
+            // 复习事件只增不删；媒体本版不同步。
             break
         }
     }
@@ -740,17 +936,57 @@ extension ContentRepository {
     /// 若按快照后写胜，晚同步的那台会整轮覆盖掉另一台——用户复习了两次、
     /// 进度只记了一次，而且毫无提示。事件表只增不删，重放出来的状态与
     /// "在同一台设备上依次复习两次"完全一致。
+    /// 旧事件没记 `desiredRetention` 时的退路：本机设置（与实时复习同一个键）。
+    static var desiredRetentionFallback: Double {
+        let value = UserDefaults.standard.double(forKey: "srs.desiredRetention")
+        return value > 0 && value <= 1 ? value : FSRS.defaultDesiredRetention
+    }
+
+    /// 上传成功的复习事件记下它在云上的 HLC（重放排序要用，各端必须一致）。
+    public func setReviewEventHLCs(_ hlcs: [String: String]) async throws {
+        guard !hlcs.isEmpty else { return }
+        try await database.writer.write { db in
+            for (id, hlc) in hlcs {
+                try db.execute(
+                    sql: "UPDATE review_log SET hlc = ? WHERE id = ? AND hlc IS NULL",
+                    arguments: [hlc, id])
+            }
+        }
+    }
+
     static func recomputeCardStates(_ db: Database, vocabularyIDs: Set<String>) throws {
         for vocabId in vocabularyIDs {
             guard var record = try FavoriteVocabularyRecord.fetchOne(db, key: vocabId) else {
                 continue
             }
-            let events = try ReviewLogRecord
+            let rows = try ReviewLogRecord
                 .filter(Column("vocabulary_id") == vocabId)
                 .order(Column("reviewed_at"))
                 .fetchAll(db)
-                .compactMap { try? $0.domainModel() }
-            guard let state = ReviewReplay.replay(events) else { continue }
+            var hlcs: [UUID: String] = [:]
+            let events = rows.compactMap { row -> ReviewEvent? in
+                guard let event = try? row.domainModel() else { return nil }
+                if let hlc = row.hlc { hlcs[event.id] = hlc }
+                return event
+            }
+            // 撤销标记与被作废的事件都不参与（同步协议 §6），排序用 (reviewedAt, hlc, id)。
+            guard
+                let state = ReviewReplay.replay(
+                    events, desiredRetention: desiredRetentionFallback, hlcs: hlcs)
+            else {
+                // 有事件、却一条有效的都没有：全被撤销了，卡片回到"未学"。
+                // 没有任何撤销标记的（空事件 / 全是非法评分）保持原状。
+                if events.contains(where: { $0.voidsEventId != nil }) {
+                    record.srsState = SRSState.new.rawValue
+                    record.stability = 0
+                    record.difficulty = 0
+                    record.dueDate = FSRS.localDateString(record.createdAt)
+                    record.lastReviewedAt = nil
+                    record.reviewCount = 0
+                    try record.update(db)
+                }
+                continue
+            }
             record.srsState = state.srsState.rawValue
             record.stability = state.stability
             record.difficulty = state.difficulty

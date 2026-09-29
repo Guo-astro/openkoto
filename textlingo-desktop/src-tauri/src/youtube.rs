@@ -20,6 +20,55 @@ struct YtDlpOutput {
 
 /// Import a YouTube video: download, extract subs, create Article
 /// 字幕下载是可选的，如果失败会继续导入视频（后续可用 TTS 识别）
+/// Bilibili serves separate DASH audio/video streams, so it needs FFmpeg to merge them
+/// (YouTube's pre-merged formats 22/18 don't exist there).
+pub fn is_bilibili_url(url: &str) -> bool {
+    let lower = url.to_ascii_lowercase();
+    lower.contains("bilibili.com/") || lower.contains("b23.tv/")
+}
+
+/// Bundled FFmpeg sidecar next to the app executable, for yt-dlp's `--ffmpeg-location`.
+fn sidecar_ffmpeg_path() -> Option<std::path::PathBuf> {
+    let dir = std::env::current_exe().ok()?.parent()?.to_path_buf();
+    let name = if cfg!(windows) { "ffmpeg.exe" } else { "ffmpeg" };
+    let candidate = dir.join(name);
+    candidate.exists().then_some(candidate)
+}
+
+/// yt-dlp arguments for a site; everything except the URL and output template.
+pub fn yt_dlp_site_args(url: &str, ffmpeg: Option<&Path>) -> Vec<String> {
+    let mut args: Vec<String> = vec!["--no-warnings".into(), "--ignore-errors".into(), "--write-auto-sub".into(), "--write-sub".into()];
+    if is_bilibili_url(url) {
+        args.extend([
+            "--sub-lang".into(),
+            "zh-Hans,zh-CN,zh,ai-zh,en".into(),
+            "--convert-subs".into(),
+            "srt".into(),
+            // Prefer H.264 so the merged MP4 plays in the system webview.
+            "-f".into(),
+            "bv*[vcodec^=avc1]+ba/bv*+ba/b".into(),
+            "--merge-output-format".into(),
+            "mp4".into(),
+        ]);
+        if let Some(path) = ffmpeg {
+            args.push("--ffmpeg-location".into());
+            args.push(path.to_string_lossy().into_owned());
+        }
+    } else {
+        args.extend([
+            "--sub-lang".into(),
+            "en,zh-Hans,zh-Hant".into(),
+            "--convert-subs".into(),
+            "srt".into(),
+            "-f".into(),
+            "22/18/best[ext=mp4][vcodec^=avc1]/best[ext=mp4]".into(),
+            "--remux-video".into(),
+            "mp4".into(),
+        ]);
+    }
+    args
+}
+
 pub async fn import_youtube_video(app: AppHandle, url: String) -> Result<Article, String> {
     let app_data_dir = app
         .path()
@@ -45,32 +94,20 @@ pub async fn import_youtube_video(app: AppHandle, url: String) -> Result<Article
     // - best[ext=mp4]: 优先选择已合并的 MP4（无需 FFmpeg）
     // - bestvideo+bestaudio: 如果没有合并格式，下载最佳并尝试合并
     // - best: 最后的回退选项
+    // YouTube: 22/18 are pre-merged H.264 MP4s (no FFmpeg needed); see yt_dlp_site_args.
+    let ffmpeg = sidecar_ffmpeg_path();
+    let mut args = yt_dlp_site_args(&url, ffmpeg.as_deref());
+    args.extend([
+        "-o".to_string(),
+        output_template_str.to_string(),
+        "--print-json".to_string(),
+        "--no-simulate".to_string(),
+        url.clone(),
+    ]);
     let output = shell
         .sidecar("yt-dlp")
         .map_err(|e| format!("Failed to create sidecar command: {}", e))?
-        .args([
-            "--no-warnings",   // 忽略警告（如 JS runtime 警告）
-            "--ignore-errors", // 忽略非致命错误（如字幕下载失败）
-            "--write-auto-sub",
-            "--sub-lang",
-            "en,zh-Hans,zh-Hant", // 首选语言
-            "--convert-subs",
-            "srt",
-            // 格式优化 - 确保下载真正的 MP4 容器：
-            // 1. 22: YouTube 标准 720p MP4 (H.264+AAC) - 预合并，无需 FFmpeg
-            // 2. 18: YouTube 标准 360p MP4 (H.264+AAC) - 预合并，无需 FFmpeg
-            // 3. 回退到任意 mp4 格式
-            // 注意：不再使用 best[ext=mp4] 因为它可能匹配到 MPEG-TS
-            "-f",
-            "22/18/best[ext=mp4][vcodec^=avc1]/best[ext=mp4]",
-            "--remux-video",
-            "mp4", // 如果格式不对，重新封装为 MP4
-            "-o",
-            output_template_str,
-            "--print-json", // 获取元数据
-            "--no-simulate",
-            &url,
-        ])
+        .args(args)
         .output()
         .await
         .map_err(|e| format!("Failed to execute yt-dlp: {}", e))?;
@@ -86,7 +123,9 @@ pub async fn import_youtube_video(app: AppHandle, url: String) -> Result<Article
         Some(line) => line,
         None => {
             // 检查 stderr 中是否有更具体的错误信息
-            if stderr.contains("Video unavailable") {
+            if is_bilibili_url(&url) && stderr.contains("412") {
+                return Err("B 站暂时拒绝了请求（HTTP 412 风控）。请稍后重试，或更新到最新版 OpenKoto（内置更新的 yt-dlp）。".to_string());
+            } else if stderr.contains("Video unavailable") {
                 return Err("视频不可用，可能是私有视频或已被删除".to_string());
             } else if stderr.contains("Sign in") {
                 return Err("此视频需要登录才能观看".to_string());
@@ -355,4 +394,31 @@ fn parse_srt_timestamp(ts: &str) -> Option<f64> {
     let ms: f64 = parts[1].parse().ok()?;
 
     Some(h * 3600.0 + m * 60.0 + s + ms / 1000.0)
+}
+
+#[cfg(test)]
+mod site_arg_tests {
+    use super::*;
+
+    #[test]
+    fn detects_bilibili_urls() {
+        assert!(is_bilibili_url("https://www.bilibili.com/video/BV1xx411c7mD"));
+        assert!(is_bilibili_url("https://b23.tv/abc"));
+        assert!(!is_bilibili_url("https://www.youtube.com/watch?v=x"));
+    }
+
+    #[test]
+    fn bilibili_merges_streams_with_ffmpeg() {
+        let args = yt_dlp_site_args("https://www.bilibili.com/video/BV1xx", Some(Path::new("/app/ffmpeg")));
+        assert!(args.windows(2).any(|w| w[0] == "--merge-output-format" && w[1] == "mp4"));
+        assert!(args.windows(2).any(|w| w[0] == "--ffmpeg-location" && w[1] == "/app/ffmpeg"));
+        assert!(args.iter().any(|a| a.contains("ai-zh")));
+    }
+
+    #[test]
+    fn youtube_keeps_premerged_formats() {
+        let args = yt_dlp_site_args("https://youtu.be/x", None);
+        assert!(args.iter().any(|a| a.starts_with("22/18")));
+        assert!(!args.iter().any(|a| a == "--ffmpeg-location"));
+    }
 }

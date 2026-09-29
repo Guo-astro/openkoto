@@ -17,6 +17,8 @@ let package = Package(
         .library(name: "OKMedia", targets: ["OKMedia"]),
         .library(name: "OKDesignSystem", targets: ["OKDesignSystem"]),
         .library(name: "OKLocalization", targets: ["OKLocalization"]),
+        .library(name: "OKAccount", targets: ["OKAccount"]),
+        .library(name: "OKCommerce", targets: ["OKCommerce"]),
         .library(name: "OKFeatures", targets: ["OKFeatures"]),
     ],
     dependencies: [
@@ -49,6 +51,12 @@ let package = Package(
                 .product(name: "GRDB", package: "GRDB.swift"),
             ]
         ),
+        // OpenKoto 云账号：登录（PKCE 网页授权 / Sign in with Apple）、Keychain 令牌、
+        // API 客户端（协议头 / 刷新 / 退避）、HTTP 同步传输（docs/specs/auth-spec.md、
+        // sync-protocol-spec.md）。同步引擎本身在 OKPersistence（HTTPSyncEngine）。
+        .target(name: "OKAccount", dependencies: ["OKPersistence", "OKModels"]),
+        // StoreKit 2 购买：会员订阅 + AI 积分，交易交服务端核验入账（appAccountToken = 用户 id）。
+        .target(name: "OKCommerce", dependencies: ["OKAccount"]),
         // 主题、颜色 token、通用组件（Generated/ 由 scripts/generate_palettes.py 产出）
         .target(
             name: "OKDesignSystem",
@@ -64,7 +72,8 @@ let package = Package(
             name: "OKFeatures",
             dependencies: [
                 "OKModels", "OKDesignSystem", "OKSegmentation", "OKBooks", "OKMedia",
-                "OKAIClient", "OKPersistence", "OKLocalization", "OKSRS",
+                "OKAIClient", "OKPersistence", "OKLocalization", "OKSRS", "OKAccount",
+                "OKCommerce",
             ],
             // 原版模式注入 WKWebView 的 JS 桥
             resources: [.process("Resources")]
@@ -94,5 +103,8 @@ let package = Package(
         .testTarget(name: "OKAIClientTests", dependencies: ["OKAIClient", "OKModels"]),
         .testTarget(name: "OKPersistenceTests", dependencies: ["OKPersistence", "OKModels"]),
         .testTarget(name: "OKFeaturesTests", dependencies: ["OKFeatures", "OKTestSupport"]),
+        .testTarget(
+            name: "OKAccountTests",
+            dependencies: ["OKAccount", "OKCommerce", "OKPersistence", "OKModels"]),
     ]
 )

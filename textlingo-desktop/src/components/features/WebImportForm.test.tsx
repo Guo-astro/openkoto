@@ -18,10 +18,6 @@ vi.mock("@tauri-apps/api/event", () => ({
   listen: (...args: unknown[]) => listenMock(...args),
 }));
 
-vi.mock("../../lib/api", () => ({
-  getApiClient: () => ({ isBackendConfigured: () => false }),
-}));
-
 const RAW_CONTENT = ["首页 登录 注册", "这是正文第一段，讲述了故事的开端。", "相关推荐：点击查看更多", "这是正文第二段。"].join(
   "\n"
 );

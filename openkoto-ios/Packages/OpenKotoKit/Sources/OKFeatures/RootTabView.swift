@@ -1,5 +1,7 @@
 #if os(iOS)
 import SwiftUI
+import OKAccount
+import OKCommerce
 import OKDesignSystem
 import OKLocalization
 
@@ -11,6 +13,8 @@ public struct RootTabView: View {
     @State private var themeManager = ThemeManager()
     @State private var store = ContentStore.live()
     @State private var appConfig = AppConfigStore()
+    /// OpenKoto 云账号。令牌在 Keychain 里，启动即恢复登录态。
+    @State private var account = AccountSession.live()
     @AppStorage("app.interfaceLanguage") private var interfaceLanguage = "system"
 
     // 首启引导门控。向导状态必须在这里持有（.id 边界之外）：
@@ -131,7 +135,22 @@ public struct RootTabView: View {
                 try await appConfig.gloss(word: word, sentence: sentence)
             }
             store.glossCacheContext = { [appConfig] in appConfig.glossCacheContext }
+            store.accountSession = account
+            // 交易监听越早越好：上次没入账的、续订、家长批准的购买都从这里来。
+            let commerce = StoreManager(session: account)
+            commerce.startObservingTransactions()
+            store.commerce = commerce
+            account.onSignedIn = { [store] in await store.accountDidSignIn() }
+            account.onSignedOut = { [store] in await store.accountDidSignOut() }
             await store.load()
+            // OpenKoto 云没有 CKSyncEngine 那样的系统调度，启动时主动同步一轮。
+            // 不 await：同步失败 / 慢网都不能挡住首屏。
+            if store.syncProvider == .openkoto {
+                Task { await store.syncNow() }
+            }
+            // 写入后 3 秒同步 + 前台每 5 分钟同步（只对 OpenKoto 云生效，内部自己判断）。
+            store.startAutoSync()
+            store.startPeriodicSync()
             // 必须在 load 之后：favorites 还空着时排期会算出「没有任何到期卡」，
             // 把已经排好的提醒全撤掉。
             await ReviewReminder.reschedule(favorites: store.favorites)
@@ -143,6 +162,13 @@ public struct RootTabView: View {
         .onChange(of: scenePhase) {
             if scenePhase == .active {
                 Task { await store.importFromInbox() }
+                // 回到前台拉一轮（协议 §8 的触发时机之一）。
+                if store.syncProvider == .openkoto {
+                    Task { await store.syncNow() }
+                }
+                store.startPeriodicSync()
+            } else if scenePhase == .background {
+                store.stopPeriodicSync()
             }
             // 进出前台各重排一次：退到后台那次收的是这一程的复习成果
             //（做完的卡到期日已经推后，明天不该再被催）；回到前台那次管的是
@@ -163,6 +189,9 @@ public struct RootTabView: View {
         // 所以系统把文件拷进 Documents/Inbox 再交给我们。
         // 必须走 security-scoped 访问，导入完把系统留下的副本删掉。
         .onOpenURL { url in
+            // `openkoto://` 是登录回调的 scheme，由 ASWebAuthenticationSession 自己接走；
+            // 偶尔从外部唤起时也不是文件，别当成导入。
+            guard url.scheme != AccountConfiguration.callbackScheme else { return }
             Task {
                 let scoped = url.startAccessingSecurityScopedResource()
                 defer { if scoped { url.stopAccessingSecurityScopedResource() } }

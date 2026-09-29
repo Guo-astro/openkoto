@@ -7,9 +7,9 @@
 - Primary category: Education
 - Secondary category: Utilities
 - Price: Free
-- Privacy policy: https://www.openkoto.com/privacy-policy
+- Privacy policy: https://openkoto.com/privacy
 - Support URL: https://github.com/hikariming/OpenKoto/issues
-- Marketing URL: https://www.openkoto.com/
+- Marketing URL: https://openkoto.com/
 
 ## Keywords
 

@@ -5,6 +5,7 @@
  */
 
 import { useState, useRef, useCallback, useEffect } from "react";
+import { bookIdFromPath, getBookProgress, saveBookProgress } from "../../lib/bookProgress";
 import { ReactReader } from "react-reader";
 import type { Contents, Rendition, NavItem } from "epubjs";
 import { useTranslation } from "react-i18next";
@@ -108,6 +109,15 @@ export function EpubReader({
         // 可以在这里保存阅读进度到 localStorage
         if (bookPath) {
             localStorage.setItem(`epub-location-${bookPath}`, epubcifi);
+            let chapterIndex: number | null = null;
+            try {
+                // @ts-ignore - epubjs location typing is incomplete
+                const index = renditionRef.current?.currentLocation()?.start?.index;
+                if (typeof index === "number") chapterIndex = index;
+            } catch {
+                // ignore
+            }
+            saveBookProgress(bookIdFromPath(bookPath), { locator: epubcifi, chapterIndex });
         }
     }, [bookPath, locationsReady]);
 
@@ -118,6 +128,25 @@ export function EpubReader({
             if (savedLocation) {
                 setLocation(savedLocation);
             }
+            // 同步的阅读进度(其他设备)优先于本地缓存
+            let cancelled = false;
+            void getBookProgress(bookIdFromPath(bookPath)).then((progress) => {
+                if (cancelled || !progress) return;
+                if (progress.locator && progress.locator !== savedLocation) {
+                    setLocation(progress.locator);
+                } else if (!progress.locator && progress.chapter_index > 0 && !savedLocation) {
+                    try {
+                        // @ts-ignore - epubjs spine typing is incomplete
+                        const href = renditionRef.current?.book?.spine?.get(progress.chapter_index)?.href;
+                        if (href) setLocation(href);
+                    } catch {
+                        // ignore
+                    }
+                }
+            });
+            return () => {
+                cancelled = true;
+            };
         }
     }, [bookPath]);
 

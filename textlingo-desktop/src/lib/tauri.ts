@@ -40,10 +40,6 @@ export interface AppConfig {
   target_language: string;
   interface_language: string;
   batch_translation_concurrency?: number;
-  // Backend API URL for services like webpage fetching
-  backend_url?: string;
-  // Auth token for backend API
-  auth_token?: string;
   // SRS daily limits
   srs_daily_new_limit?: number;
   srs_daily_review_limit?: number;
@@ -54,6 +50,8 @@ export interface AppConfig {
   // Subtitle transcription (ASR) provider configs — separate from model_configs
   asr_configs?: ModelConfig[];
   active_asr_model_id?: string;
+  // OpenKoto cloud API origin override (default https://openkoto.com)
+  cloud_api_base?: string;
 }
 
 import { AgentTask, AgentWorkerStatusSnapshot, Artifact, Article, MindMapResult } from "../types";

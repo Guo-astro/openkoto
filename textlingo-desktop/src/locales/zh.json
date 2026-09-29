@@ -208,7 +208,8 @@
       "advanced": "高级",
       "transcription": "字幕转写",
       "logs": "运行日志",
-      "review": "复习设置"
+      "review": "复习设置",
+      "account": "账号与同步"
     },
     "transcription": {
       "title": "字幕转写",
@@ -422,9 +423,6 @@
     },
     "backendConfig": "后端 API 配置",
     "backendConfigDesc": "配置后端 API 以启用网页内容提取等增强功能。",
-    "backendUrl": "后端 URL",
-    "authToken": "认证令牌",
-    "authTokenPlaceholder": "您的 JWT 令牌",
     "testConnection": "测试连接",
     "backendConnected": "后端连接成功！",
     "backendError": "后端错误",
@@ -454,7 +452,34 @@
     "srsDailyReviewLimit": "每日复习上限",
     "srsDailyReviewLimitHelp": "每天最多复习多少张到期卡片。",
     "srsDesiredRetention": "期望记忆保持率",
-    "srsDesiredRetentionHelp": "FSRS 算法的目标保持率:越高复习越频繁、记得越牢;越低间隔越长、负担越轻。默认 90%。"
+    "srsDesiredRetentionHelp": "FSRS 算法的目标保持率:越高复习越频繁、记得越牢;越低间隔越长、负担越轻。默认 90%。",
+    "account": {
+      "title": "OpenKoto 账号与同步",
+      "desc": "登录后，生词、词包、复习记录、文章和书签会在桌面端、iOS 和网页之间同步。",
+      "signedInAs": "当前账号",
+      "plan": "套餐",
+      "offline": "离线",
+      "signOut": "退出登录",
+      "manage": "管理账号与订阅",
+      "signIn": "登录",
+      "signedOut": "尚未登录，数据只保存在这台电脑上。",
+      "waitingForBrowser": "请在浏览器中完成登录…",
+      "cancel": "取消",
+      "syncTitle": "同步",
+      "syncing": "正在同步…",
+      "lastSync": "上次同步：{{time}}",
+      "neverSynced": "尚未同步",
+      "pending": "待上传的修改：{{count}}",
+      "syncNow": "立即同步",
+      "quotaExceeded": "有 {{count}} 条内容超出当前套餐额度，未能上传。",
+      "autoSyncHint": "启动时、修改后几秒以及每 5 分钟会自动同步。API 密钥永远不会同步。",
+      "lastError": "最近的错误",
+      "switchTitle": "账号已更换",
+      "switchDesc": "你登录的是 {{email}}，但这台电脑上的数据之前同步到 {{previous}}。要把本机数据上传到新账号，还是只保留在本机？在你选择之前不会上传任何数据。",
+      "switchUpload": "上传到这个账号",
+      "switchLocalOnly": "只保留在本机",
+      "tokenFileWarning": "系统钥匙串不可用，登录凭据改为保存在只有当前用户可读的加密文件中。安装 Secret Service（如 GNOME Keyring 或 KWallet）可获得更强的保护。"
+    }
   },
   "favorites": {
     "title": "我的收藏",
@@ -576,7 +601,6 @@
     "fetchPreview": "抓取预览",
     "fetching": "抓取中...",
     "previewSourceLocal": "当前预览来源：本地解析",
-    "previewSourceBackend": "当前预览来源：后端解析",
     "titleLabel": "标题",
     "titlePlaceholder": "留空则使用抓取标题",
     "contentLabel": "正文预览（可编辑）",
@@ -614,16 +638,16 @@
     }
   },
   "youtubeImport": {
-    "title": "导入 YouTube 视频",
+    "title": "导入 YouTube / B 站视频",
     "urlLabel": "视频链接",
-    "urlPlaceholder": "https://www.youtube.com/watch?v=...",
+    "urlPlaceholder": "https://www.youtube.com/watch?v=... 或 https://www.bilibili.com/video/BV...",
     "import": "导入",
     "importing": "正在下载...",
     "processing": "处理中...",
     "cancel": "取消",
     "errors": {
       "urlRequired": "请输入视频链接",
-      "urlInvalid": "无效的 YouTube 链接",
+      "urlInvalid": "无效的视频链接（支持 YouTube 和 B 站）",
       "importFailed": "导入失败",
       "loginRequiredTip": "此视频需要登录才能观看，请在浏览器中登录后重试。"
     },
@@ -691,7 +715,7 @@
     "fileLabel": "字幕文件",
     "filePlaceholder": "选择字幕文件...",
     "selectFileTitle": "选择字幕文件",
-    "description": "将 .srt 字幕文件作为独立素材导入。",
+    "description": "将 .srt 字幕文件或 .lrc 歌词作为独立素材导入。",
     "titleLabel": "标题（可选）",
     "titlePlaceholder": "留空则使用文件名",
     "import": "导入",
@@ -809,7 +833,7 @@
       "lmstudioHint": "LM Studio 通常通过 OpenAI 兼容接口提供服务，请填写当前加载模型对应的模型 ID。",
       "skipButton": "暂不配置",
       "tip": "提示：配置完成后，即可使用一键翻译等功能。",
-      "helpLink": "不会配置？ 访问 https://www.openkoto.com/ 查看配置文档"
+      "helpLink": "不会配置？ 访问 https://openkoto.com/docs 查看配置文档"
     },
     "welcome": {
       "title": "恭喜！",

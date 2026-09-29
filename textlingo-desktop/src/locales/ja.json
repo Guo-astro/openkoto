@@ -198,7 +198,8 @@
       "advanced": "詳細設定",
       "transcription": "字幕の文字起こし",
       "logs": "実行ログ",
-      "review": "復習設定"
+      "review": "復習設定",
+      "account": "アカウントと同期"
     },
     "transcription": {
       "title": "字幕の文字起こし",
@@ -412,9 +413,6 @@
     },
     "backendConfig": "バックエンドAPI設定",
     "backendConfigDesc": "Webページコンテンツ抽出などの拡張機能を有効にするには、バックエンドAPIを設定してください。",
-    "backendUrl": "バックエンドURL",
-    "authToken": "認証トークン",
-    "authTokenPlaceholder": "JWTトークン",
     "testConnection": "接続テスト",
     "backendConnected": "バックエンド接続成功！",
     "backendError": "バックエンドエラー",
@@ -444,7 +442,34 @@
     "srsDailyReviewLimit": "1日の復習上限",
     "srsDailyReviewLimitHelp": "1日に復習する期限到来カードの上限。",
     "srsDesiredRetention": "目標記憶保持率",
-    "srsDesiredRetentionHelp": "FSRS スケジューラの目標保持率。高いほど復習頻度が上がり記憶が定着し、低いほど間隔が長く負担が軽くなります。既定値は 90% です。"
+    "srsDesiredRetentionHelp": "FSRS スケジューラの目標保持率。高いほど復習頻度が上がり記憶が定着し、低いほど間隔が長く負担が軽くなります。既定値は 90% です。",
+    "account": {
+      "title": "OpenKoto アカウントと同期",
+      "desc": "サインインすると、単語・単語帳・復習履歴・記事・ブックマークがデスクトップ、iOS、Web の間で同期されます。",
+      "signedInAs": "サインイン中のアカウント",
+      "plan": "プラン",
+      "offline": "オフライン",
+      "signOut": "サインアウト",
+      "manage": "アカウントとサブスクリプションを管理",
+      "signIn": "サインイン",
+      "signedOut": "サインインしていません。データはこのコンピューターにのみ保存されます。",
+      "waitingForBrowser": "ブラウザでサインインを完了してください…",
+      "cancel": "キャンセル",
+      "syncTitle": "同期",
+      "syncing": "同期中…",
+      "lastSync": "最終同期：{{time}}",
+      "neverSynced": "まだ同期されていません",
+      "pending": "未送信の変更：{{count}}",
+      "syncNow": "今すぐ同期",
+      "quotaExceeded": "プランの上限に達したため、{{count}} 件をアップロードできませんでした。",
+      "autoSyncHint": "起動時、変更の数秒後、5 分ごとに自動で同期します。API キーは同期されません。",
+      "lastError": "直近のエラー",
+      "switchTitle": "別のアカウント",
+      "switchDesc": "{{email}} でサインインしましたが、このコンピューターのデータは以前 {{previous}} と同期されていました。新しいアカウントにアップロードしますか？それともこのコンピューターだけに残しますか？選択するまで何もアップロードされません。",
+      "switchUpload": "このアカウントにアップロード",
+      "switchLocalOnly": "このコンピューターだけに残す",
+      "tokenFileWarning": "システムのキーチェーンが使えないため、サインイン情報は現在のユーザーだけが読める暗号化ファイルに保存されています。より強力に保護するには Secret Service（GNOME Keyring や KWallet など）をインストールしてください。"
+    }
   },
   "favorites": {
     "title": "お気に入り",
@@ -566,7 +591,6 @@
     "fetchPreview": "プレビュー取得",
     "fetching": "取得中...",
     "previewSourceLocal": "プレビュー元: ローカル解析",
-    "previewSourceBackend": "プレビュー元: バックエンド解析",
     "titleLabel": "タイトル",
     "titlePlaceholder": "空欄の場合は抽出タイトルを使用",
     "contentLabel": "本文プレビュー（編集可）",
@@ -604,16 +628,16 @@
     }
   },
   "youtubeImport": {
-    "title": "YouTube動画をインポート",
+    "title": "YouTube / bilibili の動画をインポート",
     "urlLabel": "ビデオURL",
-    "urlPlaceholder": "https://www.youtube.com/watch?v=...",
+    "urlPlaceholder": "https://www.youtube.com/watch?v=... または https://www.bilibili.com/video/BV...",
     "import": "インポート",
     "importing": "ダウンロード中...",
     "processing": "処理中...",
     "cancel": "キャンセル",
     "errors": {
       "urlRequired": "ビデオURLを入力してください",
-      "urlInvalid": "無効なYouTube URL",
+      "urlInvalid": "無効な動画 URL（YouTube と bilibili に対応）",
       "importFailed": "インポートに失敗しました",
       "loginRequiredTip": "このビデオを視聴するにはログインが必要です。ブラウザでログインしてから再試行してください。"
     },
@@ -681,7 +705,7 @@
     "fileLabel": "字幕ファイル",
     "filePlaceholder": "字幕ファイルを選択...",
     "selectFileTitle": "字幕ファイルを選択",
-    "description": ".srt 字幕ファイルを単独の教材として取り込みます。",
+    "description": ".srt 字幕ファイルまたは .lrc 歌詞を単独の教材として取り込みます。",
     "titleLabel": "タイトル（任意）",
     "titlePlaceholder": "空欄ならファイル名を使用",
     "import": "インポート",
@@ -798,7 +822,7 @@
       "lmstudioHint": "LM Studio は通常 OpenAI 互換エンドポイントを提供します。現在ロード中のモデル ID を入力してください。",
       "skipButton": "設定をスキップ",
       "tip": "ヒント：設定完了後、字幕の一括翻訳などの機能が利用可能になります。",
-      "helpLink": "設定方法が不明な場合、https://www.openkoto.com/ にアクセスして設定ドキュメントを確認してください"
+      "helpLink": "設定方法が不明な場合、https://openkoto.com/docs にアクセスして設定ドキュメントを確認してください"
     },
     "welcome": {
       "title": "おめでとうございます！",

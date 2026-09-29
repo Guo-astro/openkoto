@@ -307,10 +307,28 @@ private struct ArticleCard: View {
         let progress = store.progress(for: article.id)
         ThemedCard {
             VStack(alignment: .leading, spacing: 6) {
-                Text(article.title)
+                if article.sourceType == .lyrics {
+                    Label {
+                        Text(article.title)
+                    } icon: {
+                        Image(systemName: "music.note")
+                            .foregroundStyle(theme.primary)
+                    }
                     .font(.headline)
                     .foregroundStyle(theme.cardForeground)
                     .lineLimit(2)
+                    if let artist = store.lyricsMeta[article.id]?.artist, !artist.isEmpty {
+                        Text(verbatim: artist)
+                            .font(.subheadline)
+                            .foregroundStyle(theme.mutedForeground)
+                            .lineLimit(1)
+                    }
+                } else {
+                    Text(article.title)
+                        .font(.headline)
+                        .foregroundStyle(theme.cardForeground)
+                        .lineLimit(2)
+                }
                 HStack(spacing: 12) {
                     Text(article.createdAt, style: .date)
                     Label("\(progress.total)", systemImage: "text.alignleft")

@@ -454,6 +454,70 @@ public struct AppDatabase: Sendable {
                 t.column("updated_at", .datetime).notNull()
             }
         }
+        // OpenKoto 云（HTTP 同步协议 v1，`docs/specs/sync-protocol-spec.md`）。
+        //
+        // 与 CloudKit 的 `cloud_record_meta` **分表存**：两套引擎永远不同时启用，
+        // 但用户会在两者之间切换（iCloud → OpenKoto 云迁移），混在一张表里的话
+        // 一边的 change tag / rev 会被另一边当成自己的。
+        //
+        // - `rev`：服务端最后一次告诉我们的该记录 rev，推送时作为 `baseRev`；
+        // - `hlc`：该 rev 对应的 HLC；
+        // - `payload_hash`：上次同步成功时 payload 的规范化 SHA-256，掐回声用；
+        // - `deleted`：云上那份是不是墓碑（墓碑已推过就不用再推）。
+        //
+        // `sync_state` 追加 HTTP 引擎自己的游标 / 水位线 / 时钟，
+        // 同样不与 CloudKit 的 `engine_state` / `last_synced_at` 共用。
+        migrator.registerMigration("v12") { db in
+            try db.create(table: "http_sync_meta") { t in
+                t.primaryKey("record_name", .text)
+                t.column("rev", .integer).notNull().defaults(to: 0)
+                t.column("hlc", .text)
+                t.column("payload_hash", .text)
+                t.column("deleted", .boolean).notNull().defaults(to: false)
+                t.column("synced_at", .datetime).notNull()
+            }
+            try db.alter(table: "sync_state") { t in
+                // 服务端游标（不透明字符串，`c_<rev>`）。nil = 从头拉。
+                t.add(column: "http_cursor", .text)
+                // 推送水位线：`updated_at` 晚于它的行才需要推。
+                t.add(column: "http_watermark", .datetime)
+                // 本机 HLC 的最后值（重启后时钟不能倒退）。
+                t.add(column: "http_clock", .text)
+                // 游标 / 元数据属于哪个账号。换账号时据此整体作废。
+                t.add(column: "http_account", .text)
+            }
+            // 复习事件的撤销标记与云端 HLC（同步协议 §6）：
+            // 重放时跳过标记与被它作废的事件，并按 (reviewedAt, hlc, id) 定序。
+            try db.alter(table: "review_log") { t in
+                t.add(column: "voids_event_id", .text)
+                t.add(column: "hlc", .text)
+            }
+        }
+        // 歌词元数据（同步协议 §2.2 `LyricsMeta`）。歌词本体是 `source_type = 'lyrics'`
+        // 的 article + 逐行 segment（`start_time` 即时间戳），这里只放歌手 / 专辑之类。
+        // `updated_at` 给推送水位线用（协议里的 payload 本身没有这个字段）。
+        migrator.registerMigration("v13") { db in
+            try db.create(table: "lyrics_meta") { t in
+                t.primaryKey("article_id", .text).references("article", onDelete: .cascade)
+                t.column("artist", .text)
+                t.column("album", .text)
+                t.column("language", .text)
+                t.column("lrc_offset_ms", .integer)
+                t.column("source_format", .text)
+                t.column("cover_url", .text)
+                t.column("music_links", .text)
+                t.column("updated_at", .datetime).notNull()
+            }
+            try db.alter(table: "http_sync_meta") { t in
+                t.add(column: "parent_id", .text)
+            }
+            // 同词卡片合并的映射（同步协议 §9，见 ContentRepository+Dedupe）。
+            try db.create(table: "merged_vocabulary") { t in
+                t.primaryKey("loser_id", .text)
+                t.column("keeper_id", .text).notNull()
+                t.column("merged_at", .datetime).notNull()
+            }
+        }
         return migrator
     }
 }

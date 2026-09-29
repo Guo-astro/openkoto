@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useCloudDataChanged } from "../../lib/hooks/useCloudDataChanged";
 import { invoke } from "@tauri-apps/api/core";
 import { useTranslation } from "react-i18next";
 import type { FavoriteVocabulary, ReviewStats } from "../../types";
@@ -43,6 +44,16 @@ export function WordRecitePanel({
 
   const current = useMemo(() => queue[currentIndex], [queue, currentIndex]);
   const retention = useMemo(() => (current ? currentRetention(current) : null), [current]);
+
+  // 云同步带来其他设备的复习:刷新统计;队列已做完时重新取到期卡(不打断进行中的复习)
+  useCloudDataChanged(() => {
+    if (!open) return;
+    void loadStats();
+    if (currentIndex >= queue.length) {
+      setCurrentIndex(0);
+      void loadQueue();
+    }
+  });
 
   useEffect(() => {
     if (!open) return;

@@ -1,0 +1,1332 @@
+{
+  "version": 1,
+  "spec": "docs/specs/sync-protocol-spec.md §4, §6",
+  "cases": [
+    {
+      "name": "insert-when-absent",
+      "description": "No local copy: store the remote record as-is (not dirty).",
+      "local": null,
+      "remote": {
+        "type": "Vocabulary",
+        "id": "3f0c2a4e-1d2b-4c5d-9e8f-0a1b2c3d4e5f",
+        "rev": 1,
+        "hlc": "1727500001000-0000-bbbbbbbb",
+        "deviceId": "d-remote",
+        "deleted": false,
+        "payload": {
+          "id": "3f0c2a4e-1d2b-4c5d-9e8f-0a1b2c3d4e5f",
+          "word": "懐かしい",
+          "meaning": "m",
+          "srsState": "new",
+          "stability": 0,
+          "difficulty": 0,
+          "dueDate": "2026-09-28",
+          "reviewCount": 0,
+          "createdAt": "2026-09-28T00:00:00Z",
+          "updatedAt": "2026-09-28T00:00:00Z"
+        }
+      },
+      "expected": {
+        "outcome": "remote",
+        "record": {
+          "type": "Vocabulary",
+          "id": "3f0c2a4e-1d2b-4c5d-9e8f-0a1b2c3d4e5f",
+          "rev": 1,
+          "hlc": "1727500001000-0000-bbbbbbbb",
+          "deleted": false,
+          "payload": {
+            "id": "3f0c2a4e-1d2b-4c5d-9e8f-0a1b2c3d4e5f",
+            "word": "懐かしい",
+            "meaning": "m",
+            "srsState": "new",
+            "stability": 0,
+            "difficulty": 0,
+            "dueDate": "2026-09-28",
+            "reviewCount": 0,
+            "createdAt": "2026-09-28T00:00:00Z",
+            "updatedAt": "2026-09-28T00:00:00Z"
+          },
+          "dirty": false
+        },
+        "retick": false
+      }
+    },
+    {
+      "name": "remote-id-canonicalised",
+      "description": "Ids are compared and stored lowercase (iOS sends uppercase UUIDs).",
+      "local": null,
+      "remote": {
+        "type": "WordPack",
+        "id": "5A5B5C5D-0000-4000-8000-00000000ABCD",
+        "rev": 2,
+        "hlc": "1727500001000-0000-bbbbbbbb",
+        "deviceId": "d-remote",
+        "deleted": false,
+        "payload": {
+          "name": "N3",
+          "tags": [],
+          "isSystem": false,
+          "createdAt": "2026-09-28T00:00:00Z",
+          "updatedAt": "2026-09-28T00:00:00Z"
+        }
+      },
+      "expected": {
+        "outcome": "remote",
+        "record": {
+          "type": "WordPack",
+          "id": "5a5b5c5d-0000-4000-8000-00000000abcd",
+          "rev": 2,
+          "hlc": "1727500001000-0000-bbbbbbbb",
+          "deleted": false,
+          "payload": {
+            "name": "N3",
+            "tags": [],
+            "isSystem": false,
+            "createdAt": "2026-09-28T00:00:00Z",
+            "updatedAt": "2026-09-28T00:00:00Z"
+          },
+          "dirty": false
+        },
+        "retick": false
+      }
+    },
+    {
+      "name": "lww-remote-newer",
+      "description": "Remote HLC is larger: remote replaces local. Unknown payload fields are preserved verbatim.",
+      "local": {
+        "type": "Vocabulary",
+        "id": "3f0c2a4e-1d2b-4c5d-9e8f-0a1b2c3d4e5f",
+        "rev": 3,
+        "hlc": "1727500001000-0000-aaaaaaaa",
+        "deleted": false,
+        "payload": {
+          "id": "3f0c2a4e-1d2b-4c5d-9e8f-0a1b2c3d4e5f",
+          "word": "懐かしい",
+          "meaning": "m",
+          "srsState": "new",
+          "stability": 0,
+          "difficulty": 0,
+          "dueDate": "2026-09-28",
+          "reviewCount": 0,
+          "createdAt": "2026-09-28T00:00:00Z",
+          "updatedAt": "2026-09-28T00:00:00Z"
+        },
+        "dirty": false
+      },
+      "remote": {
+        "type": "Vocabulary",
+        "id": "3f0c2a4e-1d2b-4c5d-9e8f-0a1b2c3d4e5f",
+        "rev": 5,
+        "hlc": "1727500002000-0000-bbbbbbbb",
+        "deviceId": "d-remote",
+        "deleted": false,
+        "payload": {
+          "id": "3f0c2a4e-1d2b-4c5d-9e8f-0a1b2c3d4e5f",
+          "word": "懐かしい",
+          "meaning": "nostalgic",
+          "srsState": "new",
+          "stability": 0,
+          "difficulty": 0,
+          "dueDate": "2026-09-28",
+          "reviewCount": 0,
+          "createdAt": "2026-09-28T00:00:00Z",
+          "updatedAt": "2026-09-28T02:00:00Z",
+          "futureField": {
+            "kept": true
+          }
+        }
+      },
+      "expected": {
+        "outcome": "remote",
+        "record": {
+          "type": "Vocabulary",
+          "id": "3f0c2a4e-1d2b-4c5d-9e8f-0a1b2c3d4e5f",
+          "rev": 5,
+          "hlc": "1727500002000-0000-bbbbbbbb",
+          "deleted": false,
+          "payload": {
+            "id": "3f0c2a4e-1d2b-4c5d-9e8f-0a1b2c3d4e5f",
+            "word": "懐かしい",
+            "meaning": "nostalgic",
+            "srsState": "new",
+            "stability": 0,
+            "difficulty": 0,
+            "dueDate": "2026-09-28",
+            "reviewCount": 0,
+            "createdAt": "2026-09-28T00:00:00Z",
+            "updatedAt": "2026-09-28T02:00:00Z",
+            "futureField": {
+              "kept": true
+            }
+          },
+          "dirty": false
+        },
+        "retick": false
+      }
+    },
+    {
+      "name": "lww-remote-newer-over-dirty-local",
+      "description": "An unpushed local edit with an older HLC loses; dirty is cleared.",
+      "local": {
+        "type": "Vocabulary",
+        "id": "3f0c2a4e-1d2b-4c5d-9e8f-0a1b2c3d4e5f",
+        "rev": 3,
+        "hlc": "1727500001000-0000-aaaaaaaa",
+        "deleted": false,
+        "payload": {
+          "id": "3f0c2a4e-1d2b-4c5d-9e8f-0a1b2c3d4e5f",
+          "word": "懐かしい",
+          "meaning": "local edit",
+          "srsState": "new",
+          "stability": 0,
+          "difficulty": 0,
+          "dueDate": "2026-09-28",
+          "reviewCount": 0,
+          "createdAt": "2026-09-28T00:00:00Z",
+          "updatedAt": "2026-09-28T00:00:00Z"
+        },
+        "dirty": true
+      },
+      "remote": {
+        "type": "Vocabulary",
+        "id": "3f0c2a4e-1d2b-4c5d-9e8f-0a1b2c3d4e5f",
+        "rev": 5,
+        "hlc": "1727500002000-0000-bbbbbbbb",
+        "deviceId": "d-remote",
+        "deleted": false,
+        "payload": {
+          "id": "3f0c2a4e-1d2b-4c5d-9e8f-0a1b2c3d4e5f",
+          "word": "懐かしい",
+          "meaning": "remote edit",
+          "srsState": "new",
+          "stability": 0,
+          "difficulty": 0,
+          "dueDate": "2026-09-28",
+          "reviewCount": 0,
+          "createdAt": "2026-09-28T00:00:00Z",
+          "updatedAt": "2026-09-28T00:00:00Z"
+        }
+      },
+      "expected": {
+        "outcome": "remote",
+        "record": {
+          "type": "Vocabulary",
+          "id": "3f0c2a4e-1d2b-4c5d-9e8f-0a1b2c3d4e5f",
+          "rev": 5,
+          "hlc": "1727500002000-0000-bbbbbbbb",
+          "deleted": false,
+          "payload": {
+            "id": "3f0c2a4e-1d2b-4c5d-9e8f-0a1b2c3d4e5f",
+            "word": "懐かしい",
+            "meaning": "remote edit",
+            "srsState": "new",
+            "stability": 0,
+            "difficulty": 0,
+            "dueDate": "2026-09-28",
+            "reviewCount": 0,
+            "createdAt": "2026-09-28T00:00:00Z",
+            "updatedAt": "2026-09-28T00:00:00Z"
+          },
+          "dirty": false
+        },
+        "retick": false
+      }
+    },
+    {
+      "name": "lww-local-newer",
+      "description": "Local HLC is larger: keep local, stay dirty and re-push with baseRev = remote.rev.",
+      "local": {
+        "type": "Vocabulary",
+        "id": "3f0c2a4e-1d2b-4c5d-9e8f-0a1b2c3d4e5f",
+        "rev": 3,
+        "hlc": "1727500003000-0000-aaaaaaaa",
+        "deleted": false,
+        "payload": {
+          "id": "3f0c2a4e-1d2b-4c5d-9e8f-0a1b2c3d4e5f",
+          "word": "懐かしい",
+          "meaning": "local edit",
+          "srsState": "new",
+          "stability": 0,
+          "difficulty": 0,
+          "dueDate": "2026-09-28",
+          "reviewCount": 0,
+          "createdAt": "2026-09-28T00:00:00Z",
+          "updatedAt": "2026-09-28T00:00:00Z"
+        },
+        "dirty": true
+      },
+      "remote": {
+        "type": "Vocabulary",
+        "id": "3f0c2a4e-1d2b-4c5d-9e8f-0a1b2c3d4e5f",
+        "rev": 5,
+        "hlc": "1727500002000-0000-bbbbbbbb",
+        "deviceId": "d-remote",
+        "deleted": false,
+        "payload": {
+          "id": "3f0c2a4e-1d2b-4c5d-9e8f-0a1b2c3d4e5f",
+          "word": "懐かしい",
+          "meaning": "remote edit",
+          "srsState": "new",
+          "stability": 0,
+          "difficulty": 0,
+          "dueDate": "2026-09-28",
+          "reviewCount": 0,
+          "createdAt": "2026-09-28T00:00:00Z",
+          "updatedAt": "2026-09-28T00:00:00Z"
+        }
+      },
+      "expected": {
+        "outcome": "local",
+        "record": {
+          "type": "Vocabulary",
+          "id": "3f0c2a4e-1d2b-4c5d-9e8f-0a1b2c3d4e5f",
+          "rev": 5,
+          "hlc": "1727500003000-0000-aaaaaaaa",
+          "deleted": false,
+          "payload": {
+            "id": "3f0c2a4e-1d2b-4c5d-9e8f-0a1b2c3d4e5f",
+            "word": "懐かしい",
+            "meaning": "local edit",
+            "srsState": "new",
+            "stability": 0,
+            "difficulty": 0,
+            "dueDate": "2026-09-28",
+            "reviewCount": 0,
+            "createdAt": "2026-09-28T00:00:00Z",
+            "updatedAt": "2026-09-28T00:00:00Z"
+          },
+          "dirty": true
+        },
+        "retick": false
+      }
+    },
+    {
+      "name": "lww-counter-breaks-tie",
+      "description": "Same wall time: the counter decides (string comparison of the whole HLC).",
+      "local": {
+        "type": "BookProgress",
+        "id": "0b8e2c1a-5d4f-4e3a-9b2c-1d0e9f8a7b6c",
+        "rev": 4,
+        "hlc": "1727500002000-0001-aaaaaaaa",
+        "deleted": false,
+        "payload": {
+          "bookId": "0b8e2c1a-5d4f-4e3a-9b2c-1d0e9f8a7b6c",
+          "chapterIndex": 1,
+          "mode": "native",
+          "updatedAt": "2026-09-28T01:00:00Z"
+        },
+        "dirty": true
+      },
+      "remote": {
+        "type": "BookProgress",
+        "id": "0b8e2c1a-5d4f-4e3a-9b2c-1d0e9f8a7b6c",
+        "rev": 6,
+        "hlc": "1727500002000-0002-bbbbbbbb",
+        "deviceId": "d-remote",
+        "deleted": false,
+        "payload": {
+          "bookId": "0b8e2c1a-5d4f-4e3a-9b2c-1d0e9f8a7b6c",
+          "chapterIndex": 7,
+          "mode": "native",
+          "updatedAt": "2026-09-28T01:00:00Z"
+        }
+      },
+      "expected": {
+        "outcome": "remote",
+        "record": {
+          "type": "BookProgress",
+          "id": "0b8e2c1a-5d4f-4e3a-9b2c-1d0e9f8a7b6c",
+          "rev": 6,
+          "hlc": "1727500002000-0002-bbbbbbbb",
+          "deleted": false,
+          "payload": {
+            "bookId": "0b8e2c1a-5d4f-4e3a-9b2c-1d0e9f8a7b6c",
+            "chapterIndex": 7,
+            "mode": "native",
+            "updatedAt": "2026-09-28T01:00:00Z"
+          },
+          "dirty": false
+        },
+        "retick": false
+      }
+    },
+    {
+      "name": "lww-node-breaks-tie",
+      "description": "Same wall time and counter: the node id decides.",
+      "local": {
+        "type": "BookProgress",
+        "id": "0b8e2c1a-5d4f-4e3a-9b2c-1d0e9f8a7b6c",
+        "rev": 4,
+        "hlc": "1727500002000-0001-cccccccc",
+        "deleted": false,
+        "payload": {
+          "bookId": "0b8e2c1a-5d4f-4e3a-9b2c-1d0e9f8a7b6c",
+          "chapterIndex": 1,
+          "mode": "native",
+          "updatedAt": "2026-09-28T01:00:00Z"
+        },
+        "dirty": true
+      },
+      "remote": {
+        "type": "BookProgress",
+        "id": "0b8e2c1a-5d4f-4e3a-9b2c-1d0e9f8a7b6c",
+        "rev": 6,
+        "hlc": "1727500002000-0001-bbbbbbbb",
+        "deviceId": "d-remote",
+        "deleted": false,
+        "payload": {
+          "bookId": "0b8e2c1a-5d4f-4e3a-9b2c-1d0e9f8a7b6c",
+          "chapterIndex": 7,
+          "mode": "native",
+          "updatedAt": "2026-09-28T01:00:00Z"
+        }
+      },
+      "expected": {
+        "outcome": "local",
+        "record": {
+          "type": "BookProgress",
+          "id": "0b8e2c1a-5d4f-4e3a-9b2c-1d0e9f8a7b6c",
+          "rev": 6,
+          "hlc": "1727500002000-0001-cccccccc",
+          "deleted": false,
+          "payload": {
+            "bookId": "0b8e2c1a-5d4f-4e3a-9b2c-1d0e9f8a7b6c",
+            "chapterIndex": 1,
+            "mode": "native",
+            "updatedAt": "2026-09-28T01:00:00Z"
+          },
+          "dirty": true
+        },
+        "retick": false
+      }
+    },
+    {
+      "name": "tombstone-newer-deletes",
+      "description": "A newer remote tombstone deletes the local record.",
+      "local": {
+        "type": "Vocabulary",
+        "id": "3f0c2a4e-1d2b-4c5d-9e8f-0a1b2c3d4e5f",
+        "rev": 3,
+        "hlc": "1727500001000-0000-aaaaaaaa",
+        "deleted": false,
+        "payload": {
+          "id": "3f0c2a4e-1d2b-4c5d-9e8f-0a1b2c3d4e5f",
+          "word": "懐かしい",
+          "meaning": "m",
+          "srsState": "new",
+          "stability": 0,
+          "difficulty": 0,
+          "dueDate": "2026-09-28",
+          "reviewCount": 0,
+          "createdAt": "2026-09-28T00:00:00Z",
+          "updatedAt": "2026-09-28T00:00:00Z"
+        },
+        "dirty": false
+      },
+      "remote": {
+        "type": "Vocabulary",
+        "id": "3f0c2a4e-1d2b-4c5d-9e8f-0a1b2c3d4e5f",
+        "rev": 5,
+        "hlc": "1727500002000-0000-bbbbbbbb",
+        "deviceId": "d-remote",
+        "deleted": true,
+        "payload": null
+      },
+      "expected": {
+        "outcome": "remote",
+        "record": {
+          "type": "Vocabulary",
+          "id": "3f0c2a4e-1d2b-4c5d-9e8f-0a1b2c3d4e5f",
+          "rev": 5,
+          "hlc": "1727500002000-0000-bbbbbbbb",
+          "deleted": true,
+          "payload": null,
+          "dirty": false
+        },
+        "retick": false
+      }
+    },
+    {
+      "name": "edit-newer-than-local-tombstone-resurrects",
+      "description": "Deleted locally, but the remote edit is newer: the record comes back.",
+      "local": {
+        "type": "Vocabulary",
+        "id": "3f0c2a4e-1d2b-4c5d-9e8f-0a1b2c3d4e5f",
+        "rev": 3,
+        "hlc": "1727500001000-0000-aaaaaaaa",
+        "deleted": true,
+        "payload": null,
+        "dirty": true
+      },
+      "remote": {
+        "type": "Vocabulary",
+        "id": "3f0c2a4e-1d2b-4c5d-9e8f-0a1b2c3d4e5f",
+        "rev": 5,
+        "hlc": "1727500002000-0000-bbbbbbbb",
+        "deviceId": "d-remote",
+        "deleted": false,
+        "payload": {
+          "id": "3f0c2a4e-1d2b-4c5d-9e8f-0a1b2c3d4e5f",
+          "word": "懐かしい",
+          "meaning": "edited offline",
+          "srsState": "new",
+          "stability": 0,
+          "difficulty": 0,
+          "dueDate": "2026-09-28",
+          "reviewCount": 0,
+          "createdAt": "2026-09-28T00:00:00Z",
+          "updatedAt": "2026-09-28T00:00:00Z"
+        }
+      },
+      "expected": {
+        "outcome": "remote",
+        "record": {
+          "type": "Vocabulary",
+          "id": "3f0c2a4e-1d2b-4c5d-9e8f-0a1b2c3d4e5f",
+          "rev": 5,
+          "hlc": "1727500002000-0000-bbbbbbbb",
+          "deleted": false,
+          "payload": {
+            "id": "3f0c2a4e-1d2b-4c5d-9e8f-0a1b2c3d4e5f",
+            "word": "懐かしい",
+            "meaning": "edited offline",
+            "srsState": "new",
+            "stability": 0,
+            "difficulty": 0,
+            "dueDate": "2026-09-28",
+            "reviewCount": 0,
+            "createdAt": "2026-09-28T00:00:00Z",
+            "updatedAt": "2026-09-28T00:00:00Z"
+          },
+          "dirty": false
+        },
+        "retick": false
+      }
+    },
+    {
+      "name": "local-edit-newer-than-remote-tombstone",
+      "description": "Local edit is newer than the remote delete: keep the edit and re-push (resurrects on the server).",
+      "local": {
+        "type": "Vocabulary",
+        "id": "3f0c2a4e-1d2b-4c5d-9e8f-0a1b2c3d4e5f",
+        "rev": 3,
+        "hlc": "1727500003000-0000-aaaaaaaa",
+        "deleted": false,
+        "payload": {
+          "id": "3f0c2a4e-1d2b-4c5d-9e8f-0a1b2c3d4e5f",
+          "word": "懐かしい",
+          "meaning": "edited offline",
+          "srsState": "new",
+          "stability": 0,
+          "difficulty": 0,
+          "dueDate": "2026-09-28",
+          "reviewCount": 0,
+          "createdAt": "2026-09-28T00:00:00Z",
+          "updatedAt": "2026-09-28T00:00:00Z"
+        },
+        "dirty": true
+      },
+      "remote": {
+        "type": "Vocabulary",
+        "id": "3f0c2a4e-1d2b-4c5d-9e8f-0a1b2c3d4e5f",
+        "rev": 5,
+        "hlc": "1727500002000-0000-bbbbbbbb",
+        "deviceId": "d-remote",
+        "deleted": true,
+        "payload": null
+      },
+      "expected": {
+        "outcome": "local",
+        "record": {
+          "type": "Vocabulary",
+          "id": "3f0c2a4e-1d2b-4c5d-9e8f-0a1b2c3d4e5f",
+          "rev": 5,
+          "hlc": "1727500003000-0000-aaaaaaaa",
+          "deleted": false,
+          "payload": {
+            "id": "3f0c2a4e-1d2b-4c5d-9e8f-0a1b2c3d4e5f",
+            "word": "懐かしい",
+            "meaning": "edited offline",
+            "srsState": "new",
+            "stability": 0,
+            "difficulty": 0,
+            "dueDate": "2026-09-28",
+            "reviewCount": 0,
+            "createdAt": "2026-09-28T00:00:00Z",
+            "updatedAt": "2026-09-28T00:00:00Z"
+          },
+          "dirty": true
+        },
+        "retick": false
+      }
+    },
+    {
+      "name": "local-tombstone-newer-than-remote-edit",
+      "description": "Local delete is newer: keep the tombstone and re-push it.",
+      "local": {
+        "type": "Vocabulary",
+        "id": "3f0c2a4e-1d2b-4c5d-9e8f-0a1b2c3d4e5f",
+        "rev": 3,
+        "hlc": "1727500003000-0000-aaaaaaaa",
+        "deleted": true,
+        "payload": null,
+        "dirty": true
+      },
+      "remote": {
+        "type": "Vocabulary",
+        "id": "3f0c2a4e-1d2b-4c5d-9e8f-0a1b2c3d4e5f",
+        "rev": 5,
+        "hlc": "1727500002000-0000-bbbbbbbb",
+        "deviceId": "d-remote",
+        "deleted": false,
+        "payload": {
+          "id": "3f0c2a4e-1d2b-4c5d-9e8f-0a1b2c3d4e5f",
+          "word": "懐かしい",
+          "meaning": "edited",
+          "srsState": "new",
+          "stability": 0,
+          "difficulty": 0,
+          "dueDate": "2026-09-28",
+          "reviewCount": 0,
+          "createdAt": "2026-09-28T00:00:00Z",
+          "updatedAt": "2026-09-28T00:00:00Z"
+        }
+      },
+      "expected": {
+        "outcome": "local",
+        "record": {
+          "type": "Vocabulary",
+          "id": "3f0c2a4e-1d2b-4c5d-9e8f-0a1b2c3d4e5f",
+          "rev": 5,
+          "hlc": "1727500003000-0000-aaaaaaaa",
+          "deleted": true,
+          "payload": null,
+          "dirty": true
+        },
+        "retick": false
+      }
+    },
+    {
+      "name": "equal-hlc-acknowledge",
+      "description": "Equal HLC means the same write (our own push echoed back): keep the local payload, adopt the rev, clear dirty.",
+      "local": {
+        "type": "Vocabulary",
+        "id": "3f0c2a4e-1d2b-4c5d-9e8f-0a1b2c3d4e5f",
+        "rev": 0,
+        "hlc": "1727500002000-0000-aaaaaaaa",
+        "deleted": false,
+        "payload": {
+          "id": "3f0c2a4e-1d2b-4c5d-9e8f-0a1b2c3d4e5f",
+          "word": "懐かしい",
+          "meaning": "mine",
+          "srsState": "new",
+          "stability": 2.3065,
+          "difficulty": 0,
+          "dueDate": "2026-09-28",
+          "reviewCount": 1,
+          "createdAt": "2026-09-28T00:00:00Z",
+          "updatedAt": "2026-09-28T00:00:00Z"
+        },
+        "dirty": true
+      },
+      "remote": {
+        "type": "Vocabulary",
+        "id": "3f0c2a4e-1d2b-4c5d-9e8f-0a1b2c3d4e5f",
+        "rev": 7,
+        "hlc": "1727500002000-0000-aaaaaaaa",
+        "deviceId": "d-local",
+        "deleted": false,
+        "payload": {
+          "id": "3f0c2a4e-1d2b-4c5d-9e8f-0a1b2c3d4e5f",
+          "word": "懐かしい",
+          "meaning": "mine",
+          "srsState": "new",
+          "stability": 0,
+          "difficulty": 0,
+          "dueDate": "2026-09-28",
+          "reviewCount": 0,
+          "createdAt": "2026-09-28T00:00:00Z",
+          "updatedAt": "2026-09-28T00:00:00Z"
+        }
+      },
+      "expected": {
+        "outcome": "acknowledge",
+        "record": {
+          "type": "Vocabulary",
+          "id": "3f0c2a4e-1d2b-4c5d-9e8f-0a1b2c3d4e5f",
+          "rev": 7,
+          "hlc": "1727500002000-0000-aaaaaaaa",
+          "deleted": false,
+          "payload": {
+            "id": "3f0c2a4e-1d2b-4c5d-9e8f-0a1b2c3d4e5f",
+            "word": "懐かしい",
+            "meaning": "mine",
+            "srsState": "new",
+            "stability": 2.3065,
+            "difficulty": 0,
+            "dueDate": "2026-09-28",
+            "reviewCount": 1,
+            "createdAt": "2026-09-28T00:00:00Z",
+            "updatedAt": "2026-09-28T00:00:00Z"
+          },
+          "dirty": false
+        },
+        "retick": false
+      }
+    },
+    {
+      "name": "stale-rev-ignored",
+      "description": "A remote rev lower than the rev already known locally is stale and ignored.",
+      "local": {
+        "type": "Vocabulary",
+        "id": "3f0c2a4e-1d2b-4c5d-9e8f-0a1b2c3d4e5f",
+        "rev": 9,
+        "hlc": "1727500001000-0000-aaaaaaaa",
+        "deleted": false,
+        "payload": {
+          "id": "3f0c2a4e-1d2b-4c5d-9e8f-0a1b2c3d4e5f",
+          "word": "懐かしい",
+          "meaning": "m",
+          "srsState": "new",
+          "stability": 0,
+          "difficulty": 0,
+          "dueDate": "2026-09-28",
+          "reviewCount": 0,
+          "createdAt": "2026-09-28T00:00:00Z",
+          "updatedAt": "2026-09-28T00:00:00Z"
+        },
+        "dirty": false
+      },
+      "remote": {
+        "type": "Vocabulary",
+        "id": "3f0c2a4e-1d2b-4c5d-9e8f-0a1b2c3d4e5f",
+        "rev": 4,
+        "hlc": "1727500005000-0000-bbbbbbbb",
+        "deviceId": "d-remote",
+        "deleted": false,
+        "payload": {
+          "id": "3f0c2a4e-1d2b-4c5d-9e8f-0a1b2c3d4e5f",
+          "word": "懐かしい",
+          "meaning": "old",
+          "srsState": "new",
+          "stability": 0,
+          "difficulty": 0,
+          "dueDate": "2026-09-28",
+          "reviewCount": 0,
+          "createdAt": "2026-09-28T00:00:00Z",
+          "updatedAt": "2026-09-28T00:00:00Z"
+        }
+      },
+      "expected": {
+        "outcome": "ignore",
+        "record": null,
+        "retick": false
+      }
+    },
+    {
+      "name": "review-event-insert",
+      "description": "A new ReviewEvent is stored.",
+      "local": null,
+      "remote": {
+        "type": "ReviewEvent",
+        "id": "e1e1e1e1-0000-4000-8000-000000000001",
+        "rev": 12,
+        "hlc": "1727500001000-0000-bbbbbbbb",
+        "deviceId": "d-remote",
+        "deleted": false,
+        "payload": {
+          "id": "e1e1e1e1-0000-4000-8000-000000000001",
+          "vocabularyId": "3f0c2a4e-1d2b-4c5d-9e8f-0a1b2c3d4e5f",
+          "reviewedAt": "2026-09-28T10:00:00Z",
+          "dateLocal": "2026-09-28",
+          "grade": 3,
+          "elapsedDays": 0,
+          "previousState": "new",
+          "schedulerVersion": "fsrs6",
+          "desiredRetention": 0.9,
+          "resultStability": 2.3065,
+          "resultDifficulty": 2.118,
+          "resultIntervalDays": 2,
+          "resultState": "review"
+        }
+      },
+      "expected": {
+        "outcome": "remote",
+        "record": {
+          "type": "ReviewEvent",
+          "id": "e1e1e1e1-0000-4000-8000-000000000001",
+          "rev": 12,
+          "hlc": "1727500001000-0000-bbbbbbbb",
+          "deleted": false,
+          "payload": {
+            "id": "e1e1e1e1-0000-4000-8000-000000000001",
+            "vocabularyId": "3f0c2a4e-1d2b-4c5d-9e8f-0a1b2c3d4e5f",
+            "reviewedAt": "2026-09-28T10:00:00Z",
+            "dateLocal": "2026-09-28",
+            "grade": 3,
+            "elapsedDays": 0,
+            "previousState": "new",
+            "schedulerVersion": "fsrs6",
+            "desiredRetention": 0.9,
+            "resultStability": 2.3065,
+            "resultDifficulty": 2.118,
+            "resultIntervalDays": 2,
+            "resultState": "review"
+          },
+          "dirty": false
+        },
+        "retick": false
+      }
+    },
+    {
+      "name": "review-event-immutable",
+      "description": "An existing ReviewEvent is never modified, even by a newer HLC: keep the local payload, adopt the rev.",
+      "local": {
+        "type": "ReviewEvent",
+        "id": "e1e1e1e1-0000-4000-8000-000000000001",
+        "rev": 0,
+        "hlc": "1727500001000-0000-aaaaaaaa",
+        "deleted": false,
+        "payload": {
+          "id": "e1e1e1e1-0000-4000-8000-000000000001",
+          "vocabularyId": "3f0c2a4e-1d2b-4c5d-9e8f-0a1b2c3d4e5f",
+          "reviewedAt": "2026-09-28T10:00:00Z",
+          "dateLocal": "2026-09-28",
+          "grade": 3,
+          "elapsedDays": 0,
+          "previousState": "new",
+          "schedulerVersion": "fsrs6",
+          "desiredRetention": 0.9,
+          "resultStability": 2.3065,
+          "resultDifficulty": 2.118,
+          "resultIntervalDays": 2,
+          "resultState": "review"
+        },
+        "dirty": true
+      },
+      "remote": {
+        "type": "ReviewEvent",
+        "id": "e1e1e1e1-0000-4000-8000-000000000001",
+        "rev": 12,
+        "hlc": "1727500009000-0000-bbbbbbbb",
+        "deviceId": "d-remote",
+        "deleted": false,
+        "payload": {
+          "id": "e1e1e1e1-0000-4000-8000-000000000001",
+          "vocabularyId": "3f0c2a4e-1d2b-4c5d-9e8f-0a1b2c3d4e5f",
+          "reviewedAt": "2026-09-28T10:00:00Z",
+          "dateLocal": "2026-09-28",
+          "grade": 1,
+          "elapsedDays": 0,
+          "previousState": "new",
+          "schedulerVersion": "fsrs6",
+          "desiredRetention": 0.9,
+          "resultStability": 2.3065,
+          "resultDifficulty": 2.118,
+          "resultIntervalDays": 2,
+          "resultState": "review"
+        }
+      },
+      "expected": {
+        "outcome": "acknowledge",
+        "record": {
+          "type": "ReviewEvent",
+          "id": "e1e1e1e1-0000-4000-8000-000000000001",
+          "rev": 12,
+          "hlc": "1727500001000-0000-aaaaaaaa",
+          "deleted": false,
+          "payload": {
+            "id": "e1e1e1e1-0000-4000-8000-000000000001",
+            "vocabularyId": "3f0c2a4e-1d2b-4c5d-9e8f-0a1b2c3d4e5f",
+            "reviewedAt": "2026-09-28T10:00:00Z",
+            "dateLocal": "2026-09-28",
+            "grade": 3,
+            "elapsedDays": 0,
+            "previousState": "new",
+            "schedulerVersion": "fsrs6",
+            "desiredRetention": 0.9,
+            "resultStability": 2.3065,
+            "resultDifficulty": 2.118,
+            "resultIntervalDays": 2,
+            "resultState": "review"
+          },
+          "dirty": false
+        },
+        "retick": false
+      }
+    },
+    {
+      "name": "review-event-tombstone-ignored",
+      "description": "ReviewEvents cannot be deleted; a remote tombstone is ignored.",
+      "local": {
+        "type": "ReviewEvent",
+        "id": "e1e1e1e1-0000-4000-8000-000000000001",
+        "rev": 12,
+        "hlc": "1727500001000-0000-aaaaaaaa",
+        "deleted": false,
+        "payload": {
+          "id": "e1e1e1e1-0000-4000-8000-000000000001",
+          "vocabularyId": "3f0c2a4e-1d2b-4c5d-9e8f-0a1b2c3d4e5f",
+          "reviewedAt": "2026-09-28T10:00:00Z",
+          "dateLocal": "2026-09-28",
+          "grade": 3,
+          "elapsedDays": 0,
+          "previousState": "new",
+          "schedulerVersion": "fsrs6",
+          "desiredRetention": 0.9,
+          "resultStability": 2.3065,
+          "resultDifficulty": 2.118,
+          "resultIntervalDays": 2,
+          "resultState": "review"
+        },
+        "dirty": false
+      },
+      "remote": {
+        "type": "ReviewEvent",
+        "id": "e1e1e1e1-0000-4000-8000-000000000001",
+        "rev": 13,
+        "hlc": "1727500009000-0000-bbbbbbbb",
+        "deviceId": "d-remote",
+        "deleted": true,
+        "payload": null
+      },
+      "expected": {
+        "outcome": "ignore",
+        "record": null,
+        "retick": false
+      }
+    },
+    {
+      "name": "segment-revision-greater",
+      "description": "Remote segmentationRevision > local: remote wins regardless of HLC and replaces all local segments of the article.",
+      "local": {
+        "type": "Segment",
+        "id": "7c6d5e4f-3a2b-4c1d-8e9f-0a1b2c3d4e5f",
+        "rev": 3,
+        "hlc": "1727500005000-0000-aaaaaaaa",
+        "deleted": false,
+        "payload": {
+          "id": "7c6d5e4f-3a2b-4c1d-8e9f-0a1b2c3d4e5f",
+          "articleId": "0b8e2c1a-5d4f-4e3a-9b2c-1d0e9f8a7b6c",
+          "order": 0,
+          "text": "猫が好きです。",
+          "isNewParagraph": true,
+          "createdAt": "2026-09-28T00:00:00Z",
+          "segmentationRevision": 0,
+          "translation": "I like cats."
+        },
+        "dirty": false
+      },
+      "remote": {
+        "type": "Segment",
+        "id": "7c6d5e4f-3a2b-4c1d-8e9f-0a1b2c3d4e5f",
+        "rev": 8,
+        "hlc": "1727500001000-0000-bbbbbbbb",
+        "deviceId": "d-remote",
+        "deleted": false,
+        "payload": {
+          "id": "7c6d5e4f-3a2b-4c1d-8e9f-0a1b2c3d4e5f",
+          "articleId": "0b8e2c1a-5d4f-4e3a-9b2c-1d0e9f8a7b6c",
+          "order": 0,
+          "text": "猫が好きです。",
+          "isNewParagraph": true,
+          "createdAt": "2026-09-28T00:00:00Z",
+          "segmentationRevision": 1
+        }
+      },
+      "expected": {
+        "outcome": "remote",
+        "record": {
+          "type": "Segment",
+          "id": "7c6d5e4f-3a2b-4c1d-8e9f-0a1b2c3d4e5f",
+          "rev": 8,
+          "hlc": "1727500001000-0000-bbbbbbbb",
+          "deleted": false,
+          "payload": {
+            "id": "7c6d5e4f-3a2b-4c1d-8e9f-0a1b2c3d4e5f",
+            "articleId": "0b8e2c1a-5d4f-4e3a-9b2c-1d0e9f8a7b6c",
+            "order": 0,
+            "text": "猫が好きです。",
+            "isNewParagraph": true,
+            "createdAt": "2026-09-28T00:00:00Z",
+            "segmentationRevision": 1
+          },
+          "dirty": false
+        },
+        "retick": false,
+        "purgeSegmentsBelow": {
+          "articleId": "0b8e2c1a-5d4f-4e3a-9b2c-1d0e9f8a7b6c",
+          "revision": 1
+        }
+      }
+    },
+    {
+      "name": "segment-revision-greater-article-context",
+      "description": "The comparison is per article: context.localSegmentRevision is the max revision of the article's live local segments.",
+      "local": null,
+      "remote": {
+        "type": "Segment",
+        "id": "7c6d5e4f-3a2b-4c1d-8e9f-0a1b2c3d4e5f",
+        "rev": 8,
+        "hlc": "1727500001000-0000-bbbbbbbb",
+        "deviceId": "d-remote",
+        "deleted": false,
+        "payload": {
+          "id": "7c6d5e4f-3a2b-4c1d-8e9f-0a1b2c3d4e5f",
+          "articleId": "0b8e2c1a-5d4f-4e3a-9b2c-1d0e9f8a7b6c",
+          "order": 0,
+          "text": "猫が好きです。",
+          "isNewParagraph": true,
+          "createdAt": "2026-09-28T00:00:00Z",
+          "segmentationRevision": 2
+        }
+      },
+      "context": {
+        "localSegmentRevision": 1
+      },
+      "expected": {
+        "outcome": "remote",
+        "record": {
+          "type": "Segment",
+          "id": "7c6d5e4f-3a2b-4c1d-8e9f-0a1b2c3d4e5f",
+          "rev": 8,
+          "hlc": "1727500001000-0000-bbbbbbbb",
+          "deleted": false,
+          "payload": {
+            "id": "7c6d5e4f-3a2b-4c1d-8e9f-0a1b2c3d4e5f",
+            "articleId": "0b8e2c1a-5d4f-4e3a-9b2c-1d0e9f8a7b6c",
+            "order": 0,
+            "text": "猫が好きです。",
+            "isNewParagraph": true,
+            "createdAt": "2026-09-28T00:00:00Z",
+            "segmentationRevision": 2
+          },
+          "dirty": false
+        },
+        "retick": false,
+        "purgeSegmentsBelow": {
+          "articleId": "0b8e2c1a-5d4f-4e3a-9b2c-1d0e9f8a7b6c",
+          "revision": 2
+        }
+      }
+    },
+    {
+      "name": "segment-revision-lower",
+      "description": "Remote segmentationRevision < local: dropped even with a newer HLC.",
+      "local": null,
+      "remote": {
+        "type": "Segment",
+        "id": "7c6d5e4f-3a2b-4c1d-8e9f-0a1b2c3d4e5f",
+        "rev": 8,
+        "hlc": "1727500009000-0000-bbbbbbbb",
+        "deviceId": "d-remote",
+        "deleted": false,
+        "payload": {
+          "id": "7c6d5e4f-3a2b-4c1d-8e9f-0a1b2c3d4e5f",
+          "articleId": "0b8e2c1a-5d4f-4e3a-9b2c-1d0e9f8a7b6c",
+          "order": 0,
+          "text": "猫が好きです。",
+          "isNewParagraph": true,
+          "createdAt": "2026-09-28T00:00:00Z",
+          "segmentationRevision": 1,
+          "translation": "x"
+        }
+      },
+      "context": {
+        "localSegmentRevision": 2
+      },
+      "expected": {
+        "outcome": "ignore",
+        "record": null,
+        "retick": false
+      }
+    },
+    {
+      "name": "segment-revision-missing-means-zero",
+      "description": "A payload without segmentationRevision counts as 0.",
+      "local": {
+        "type": "Segment",
+        "id": "7c6d5e4f-3a2b-4c1d-8e9f-0a1b2c3d4e5f",
+        "rev": 3,
+        "hlc": "1727500001000-0000-aaaaaaaa",
+        "deleted": false,
+        "payload": {
+          "id": "7c6d5e4f-3a2b-4c1d-8e9f-0a1b2c3d4e5f",
+          "articleId": "0b8e2c1a-5d4f-4e3a-9b2c-1d0e9f8a7b6c",
+          "order": 0,
+          "text": "猫が好きです。",
+          "isNewParagraph": true,
+          "createdAt": "2026-09-28T00:00:00Z",
+          "segmentationRevision": 1
+        },
+        "dirty": false
+      },
+      "remote": {
+        "type": "Segment",
+        "id": "7c6d5e4f-3a2b-4c1d-8e9f-0a1b2c3d4e5f",
+        "rev": 8,
+        "hlc": "1727500009000-0000-bbbbbbbb",
+        "deviceId": "d-remote",
+        "deleted": false,
+        "payload": {
+          "id": "7c6d5e4f-3a2b-4c1d-8e9f-0a1b2c3d4e5f",
+          "articleId": "0b8e2c1a-5d4f-4e3a-9b2c-1d0e9f8a7b6c",
+          "order": 0,
+          "text": "猫が好きです。",
+          "isNewParagraph": true,
+          "createdAt": "2026-09-28T00:00:00Z"
+        }
+      },
+      "expected": {
+        "outcome": "ignore",
+        "record": null,
+        "retick": false
+      }
+    },
+    {
+      "name": "segment-equal-fill-remote-wins",
+      "description": "Equal revision, remote HLC newer: LWW picks remote, then empty translation/readingText/explanation are filled from local. The result is a new write (dirty, fresh HLC).",
+      "local": {
+        "type": "Segment",
+        "id": "7c6d5e4f-3a2b-4c1d-8e9f-0a1b2c3d4e5f",
+        "rev": 3,
+        "hlc": "1727500001000-0000-aaaaaaaa",
+        "deleted": false,
+        "payload": {
+          "id": "7c6d5e4f-3a2b-4c1d-8e9f-0a1b2c3d4e5f",
+          "articleId": "0b8e2c1a-5d4f-4e3a-9b2c-1d0e9f8a7b6c",
+          "order": 0,
+          "text": "猫が好きです。",
+          "isNewParagraph": true,
+          "createdAt": "2026-09-28T00:00:00Z",
+          "segmentationRevision": 1,
+          "translation": "I like cats.",
+          "explanation": {
+            "translation": "I like cats.",
+            "explanation": "が marks the object of 好き",
+            "vocabulary": [],
+            "grammarPoints": []
+          }
+        },
+        "dirty": false
+      },
+      "remote": {
+        "type": "Segment",
+        "id": "7c6d5e4f-3a2b-4c1d-8e9f-0a1b2c3d4e5f",
+        "rev": 8,
+        "hlc": "1727500002000-0000-bbbbbbbb",
+        "deviceId": "d-remote",
+        "deleted": false,
+        "payload": {
+          "id": "7c6d5e4f-3a2b-4c1d-8e9f-0a1b2c3d4e5f",
+          "articleId": "0b8e2c1a-5d4f-4e3a-9b2c-1d0e9f8a7b6c",
+          "order": 0,
+          "text": "猫が好きです。",
+          "isNewParagraph": true,
+          "createdAt": "2026-09-28T00:00:00Z",
+          "segmentationRevision": 1,
+          "readingText": "ねこがすきです。",
+          "translation": ""
+        }
+      },
+      "expected": {
+        "outcome": "merged",
+        "record": {
+          "type": "Segment",
+          "id": "7c6d5e4f-3a2b-4c1d-8e9f-0a1b2c3d4e5f",
+          "rev": 8,
+          "hlc": "1727500002000-0000-bbbbbbbb",
+          "deleted": false,
+          "payload": {
+            "id": "7c6d5e4f-3a2b-4c1d-8e9f-0a1b2c3d4e5f",
+            "articleId": "0b8e2c1a-5d4f-4e3a-9b2c-1d0e9f8a7b6c",
+            "order": 0,
+            "text": "猫が好きです。",
+            "isNewParagraph": true,
+            "createdAt": "2026-09-28T00:00:00Z",
+            "segmentationRevision": 1,
+            "readingText": "ねこがすきです。",
+            "translation": "I like cats.",
+            "explanation": {
+              "translation": "I like cats.",
+              "explanation": "が marks the object of 好き",
+              "vocabulary": [],
+              "grammarPoints": []
+            }
+          },
+          "dirty": true
+        },
+        "retick": true
+      }
+    },
+    {
+      "name": "segment-equal-fill-local-wins",
+      "description": "Equal revision, local HLC newer: keep local, fill its empty fields from remote, re-push.",
+      "local": {
+        "type": "Segment",
+        "id": "7c6d5e4f-3a2b-4c1d-8e9f-0a1b2c3d4e5f",
+        "rev": 3,
+        "hlc": "1727500003000-0000-aaaaaaaa",
+        "deleted": false,
+        "payload": {
+          "id": "7c6d5e4f-3a2b-4c1d-8e9f-0a1b2c3d4e5f",
+          "articleId": "0b8e2c1a-5d4f-4e3a-9b2c-1d0e9f8a7b6c",
+          "order": 0,
+          "text": "猫が大好きです。",
+          "isNewParagraph": true,
+          "createdAt": "2026-09-28T00:00:00Z",
+          "segmentationRevision": 1,
+          "translation": "I love cats."
+        },
+        "dirty": true
+      },
+      "remote": {
+        "type": "Segment",
+        "id": "7c6d5e4f-3a2b-4c1d-8e9f-0a1b2c3d4e5f",
+        "rev": 8,
+        "hlc": "1727500002000-0000-bbbbbbbb",
+        "deviceId": "d-remote",
+        "deleted": false,
+        "payload": {
+          "id": "7c6d5e4f-3a2b-4c1d-8e9f-0a1b2c3d4e5f",
+          "articleId": "0b8e2c1a-5d4f-4e3a-9b2c-1d0e9f8a7b6c",
+          "order": 0,
+          "text": "猫が好きです。",
+          "isNewParagraph": true,
+          "createdAt": "2026-09-28T00:00:00Z",
+          "segmentationRevision": 1,
+          "translation": "I like cats.",
+          "readingText": "ねこがすきです。"
+        }
+      },
+      "expected": {
+        "outcome": "local",
+        "record": {
+          "type": "Segment",
+          "id": "7c6d5e4f-3a2b-4c1d-8e9f-0a1b2c3d4e5f",
+          "rev": 8,
+          "hlc": "1727500003000-0000-aaaaaaaa",
+          "deleted": false,
+          "payload": {
+            "id": "7c6d5e4f-3a2b-4c1d-8e9f-0a1b2c3d4e5f",
+            "articleId": "0b8e2c1a-5d4f-4e3a-9b2c-1d0e9f8a7b6c",
+            "order": 0,
+            "text": "猫が大好きです。",
+            "isNewParagraph": true,
+            "createdAt": "2026-09-28T00:00:00Z",
+            "segmentationRevision": 1,
+            "translation": "I love cats.",
+            "readingText": "ねこがすきです。"
+          },
+          "dirty": true
+        },
+        "retick": false
+      }
+    },
+    {
+      "name": "segment-equal-no-fill-needed",
+      "description": "Equal revision, remote newer and nothing to fill: plain remote win.",
+      "local": {
+        "type": "Segment",
+        "id": "7c6d5e4f-3a2b-4c1d-8e9f-0a1b2c3d4e5f",
+        "rev": 3,
+        "hlc": "1727500001000-0000-aaaaaaaa",
+        "deleted": false,
+        "payload": {
+          "id": "7c6d5e4f-3a2b-4c1d-8e9f-0a1b2c3d4e5f",
+          "articleId": "0b8e2c1a-5d4f-4e3a-9b2c-1d0e9f8a7b6c",
+          "order": 0,
+          "text": "猫が好きです。",
+          "isNewParagraph": true,
+          "createdAt": "2026-09-28T00:00:00Z",
+          "segmentationRevision": 1,
+          "translation": "I like cats."
+        },
+        "dirty": false
+      },
+      "remote": {
+        "type": "Segment",
+        "id": "7c6d5e4f-3a2b-4c1d-8e9f-0a1b2c3d4e5f",
+        "rev": 8,
+        "hlc": "1727500002000-0000-bbbbbbbb",
+        "deviceId": "d-remote",
+        "deleted": false,
+        "payload": {
+          "id": "7c6d5e4f-3a2b-4c1d-8e9f-0a1b2c3d4e5f",
+          "articleId": "0b8e2c1a-5d4f-4e3a-9b2c-1d0e9f8a7b6c",
+          "order": 0,
+          "text": "猫が好きです。",
+          "isNewParagraph": true,
+          "createdAt": "2026-09-28T00:00:00Z",
+          "segmentationRevision": 1,
+          "translation": "I really like cats."
+        }
+      },
+      "expected": {
+        "outcome": "remote",
+        "record": {
+          "type": "Segment",
+          "id": "7c6d5e4f-3a2b-4c1d-8e9f-0a1b2c3d4e5f",
+          "rev": 8,
+          "hlc": "1727500002000-0000-bbbbbbbb",
+          "deleted": false,
+          "payload": {
+            "id": "7c6d5e4f-3a2b-4c1d-8e9f-0a1b2c3d4e5f",
+            "articleId": "0b8e2c1a-5d4f-4e3a-9b2c-1d0e9f8a7b6c",
+            "order": 0,
+            "text": "猫が好きです。",
+            "isNewParagraph": true,
+            "createdAt": "2026-09-28T00:00:00Z",
+            "segmentationRevision": 1,
+            "translation": "I really like cats."
+          },
+          "dirty": false
+        },
+        "retick": false
+      }
+    },
+    {
+      "name": "segment-tombstone-plain-lww",
+      "description": "Segment tombstones skip the revision gate and use plain LWW.",
+      "local": {
+        "type": "Segment",
+        "id": "7c6d5e4f-3a2b-4c1d-8e9f-0a1b2c3d4e5f",
+        "rev": 3,
+        "hlc": "1727500001000-0000-aaaaaaaa",
+        "deleted": false,
+        "payload": {
+          "id": "7c6d5e4f-3a2b-4c1d-8e9f-0a1b2c3d4e5f",
+          "articleId": "0b8e2c1a-5d4f-4e3a-9b2c-1d0e9f8a7b6c",
+          "order": 0,
+          "text": "猫が好きです。",
+          "isNewParagraph": true,
+          "createdAt": "2026-09-28T00:00:00Z",
+          "segmentationRevision": 2
+        },
+        "dirty": false
+      },
+      "remote": {
+        "type": "Segment",
+        "id": "7c6d5e4f-3a2b-4c1d-8e9f-0a1b2c3d4e5f",
+        "rev": 8,
+        "hlc": "1727500002000-0000-bbbbbbbb",
+        "deviceId": "d-remote",
+        "deleted": true,
+        "payload": null
+      },
+      "expected": {
+        "outcome": "remote",
+        "record": {
+          "type": "Segment",
+          "id": "7c6d5e4f-3a2b-4c1d-8e9f-0a1b2c3d4e5f",
+          "rev": 8,
+          "hlc": "1727500002000-0000-bbbbbbbb",
+          "deleted": true,
+          "payload": null,
+          "dirty": false
+        },
+        "retick": false
+      }
+    }
+  ]
+}

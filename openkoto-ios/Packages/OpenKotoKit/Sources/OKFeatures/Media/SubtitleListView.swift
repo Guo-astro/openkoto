@@ -28,6 +28,8 @@ struct SubtitleListView: View {
     let onTap: (ArticleSegment) -> Void
     let onExplain: (ArticleSegment) -> Void
     let onToggleLoop: (ArticleSegment) -> Void
+    /// 没有音频可循环时（歌词）把"单句循环"菜单项藏起来。
+    var showsLoop = true
 
     @State private var isFollowing = true
 
@@ -49,7 +51,8 @@ struct SubtitleListView: View {
                                 isMasked: isBlind && segment.id != revealedID,
                                 onTap: { onTap(segment) },
                                 onExplain: { onExplain(segment) },
-                                onToggleLoop: { onToggleLoop(segment) }
+                                onToggleLoop: { onToggleLoop(segment) },
+                                showsLoop: showsLoop
                             )
                             .id(segment.id)
                         }
@@ -131,6 +134,7 @@ struct SubtitleRow: View {
     let onTap: () -> Void
     let onExplain: () -> Void
     let onToggleLoop: () -> Void
+    var showsLoop = true
 
     /// 这一行主体显示什么文本。
     ///
@@ -179,12 +183,14 @@ struct SubtitleRow: View {
             } label: {
                 Label(L("explanation.explanation"), systemImage: "sparkles")
             }
-            Button {
-                onToggleLoop()
-            } label: {
-                Label(
-                    isLooping ? L("media.loop.stop") : L("media.loop.start"),
-                    systemImage: "repeat.1")
+            if showsLoop {
+                Button {
+                    onToggleLoop()
+                } label: {
+                    Label(
+                        isLooping ? L("media.loop.stop") : L("media.loop.start"),
+                        systemImage: "repeat.1")
+                }
             }
         }
     }

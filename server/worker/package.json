@@ -1,0 +1,32 @@
+{
+  "name": "@openkoto/worker",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "cf-typegen": "wrangler types --env-interface CloudflareBindings",
+    "db:migrate:local": "wrangler d1 migrations apply openkoto --local"
+  },
+  "dependencies": {
+    "@cfworker/json-schema": "^4.1.1",
+    "@modelcontextprotocol/sdk": "^1.30.1",
+    "@openkoto/client": "workspace:*",
+    "@openkoto/core": "workspace:*",
+    "@openkoto/mcp-tools": "workspace:*",
+    "better-auth": "^1.7.6",
+    "hono": "^4.13.9",
+    "jose": "^6.2.12",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@cloudflare/vitest-pool-workers": "^0.22.0",
+    "@cloudflare/workers-types": "^5.20260927.1",
+    "typescript": "5.9.3",
+    "vitest": "^4.1.11",
+    "wrangler": "^4.141.0"
+  }
+}

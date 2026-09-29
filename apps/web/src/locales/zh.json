@@ -1,0 +1,433 @@
+{
+  "common": {
+    "loading": "加载中…",
+    "save": "保存",
+    "cancel": "取消",
+    "delete": "删除",
+    "networkError": "网络错误，请稍后重试"
+  },
+  "nav": {
+    "home": "首页",
+    "review": "复习",
+    "vocab": "生词本",
+    "library": "书架",
+    "lyrics": "歌词",
+    "account": "账户",
+    "assistant": "助手"
+  },
+  "plan": {
+    "free": "免费版",
+    "plus": "Plus 会员",
+    "pro": "Pro 会员"
+  },
+  "channel": {
+    "creem": "网页购买",
+    "appstore": "App Store",
+    "code": "激活码"
+  },
+  "footer": {
+    "privacy": "隐私政策",
+    "terms": "服务条款"
+  },
+  "legal": {
+    "updated": "更新于 {{date}}"
+  },
+  "sync": {
+    "syncing": "同步中",
+    "ok": "已同步",
+    "synced": "上次同步 {{time}}",
+    "never": "尚未同步",
+    "error": "同步失败：{{message}}",
+    "quota": "部分内容超出免费额度，未能上传。升级会员即可同步全部内容。",
+    "quotaShort": "超出额度"
+  },
+  "login": {
+    "title": "登录 OpenKoto",
+    "subtitle": "登录后，你的生词、书架和歌词会在手机、电脑和网页之间同步。",
+    "email": "邮箱",
+    "emailPlaceholder": "you@example.com",
+    "sendCode": "发送验证码",
+    "codeSent": "验证码已发送到 {{email}}，10 分钟内有效。",
+    "code": "验证码",
+    "verify": "登录",
+    "changeEmail": "换一个邮箱",
+    "or": "或",
+    "continueWith": "使用 {{provider}} 继续",
+    "badCode": "验证码错误或已过期",
+    "tooMany": "请求过于频繁，请稍后再试",
+    "oauthError": "第三方登录失败，请重试或改用邮箱登录",
+    "terms": "继续即表示你同意服务条款与隐私政策。"
+  },
+  "device": {
+    "title": "确认设备登录",
+    "subtitle": "输入命令行或其他设备上显示的 8 位代码。",
+    "codeLabel": "设备代码",
+    "continue": "继续",
+    "confirm": "是否允许「{{name}}」（{{platform}}）登录你的账号？",
+    "warning": "只有在你本人刚刚发起登录时才点允许。",
+    "approve": "允许",
+    "deny": "拒绝",
+    "approved": "已允许，设备已登录。",
+    "denied": "已拒绝这次登录。",
+    "closeTab": "现在可以关闭此页面。",
+    "notFound": "代码无效或已过期"
+  },
+  "home": {
+    "greeting": "你好，{{name}}",
+    "subtitle": "今天也从一点点开始。",
+    "dueToday": "今日待复习",
+    "totalWords": "共 {{count}} 个生词",
+    "books": "书架",
+    "continueReading": "继续阅读",
+    "lyrics": "歌词",
+    "lyricsHint": "边听边学",
+    "upgradeHint": "免费版可同步 200 个生词、5 本书和 30 首歌词。升级 Plus 解锁无限同步与命令行工具。"
+  },
+  "review": {
+    "remaining": "还剩 {{count}} 张",
+    "undo": "撤销",
+    "flip": "翻面",
+    "tapToFlip": "点击或按空格查看答案",
+    "again": "重来",
+    "hard": "困难",
+    "good": "良好",
+    "easy": "简单",
+    "today": "今天",
+    "days": "{{count}} 天",
+    "months": "{{count}} 个月",
+    "years": "{{count}} 年",
+    "shortcuts": "空格翻面 · 1–4 评分 · U 撤销",
+    "finished": "完成了 {{count}} 张！",
+    "nothingDue": "今天没有要复习的卡片",
+    "comeBack": "明天再来吧。",
+    "empty": "先去生词本添加一些单词。",
+    "toVocab": "打开生词本"
+  },
+  "vocab": {
+    "title": "生词本",
+    "import": "导入",
+    "export": "导出 CSV",
+    "add": "添加",
+    "word": "单词",
+    "reading": "读音",
+    "meaning": "释义",
+    "example": "例句",
+    "search": "搜索单词或释义",
+    "pack": "词包",
+    "allPacks": "全部词包",
+    "newPack": "新词包名称",
+    "createPack": "新建",
+    "removeFromPack": "移出词包",
+    "suspend": "暂停复习",
+    "resume": "恢复复习",
+    "due": "下次复习 {{date}}",
+    "empty": "还没有生词。阅读时点句子即可收藏，或点「添加」手动录入。",
+    "noMatch": "没有匹配的单词",
+    "quota": "免费版最多同步 {{limit}} 个生词，超出部分只保存在本机。升级会员即可同步全部。",
+    "band": {
+      "new": "新卡片",
+      "strong": "记得很牢",
+      "fading": "正在淡忘",
+      "weak": "可能忘了"
+    }
+  },
+  "library": {
+    "title": "书架",
+    "importBook": "导入 EPUB / TXT",
+    "newArticle": "新建文章",
+    "hint": "书籍原文件会加密存储在你的私人空间，仅你自己可见。",
+    "books": "书籍",
+    "articles": "文章",
+    "noBooks": "还没有书。导入一本 EPUB 或 TXT 小说开始阅读吧。",
+    "progress": "读到第 {{current}}/{{total}} 章",
+    "syncingChapters": "章节同步中…",
+    "quota": "已达到当前套餐的书籍数量或容量上限。",
+    "tooLarge": "免费版单本书不能超过 10 MB。",
+    "articleTitle": "标题（可选）",
+    "articleBody": "正文",
+    "articlePlaceholder": "粘贴一篇文章、新闻或任何你想读的文字"
+  },
+  "reader": {
+    "chapter": "章节",
+    "showTranslation": "显示译文",
+    "hideTranslation": "隐藏译文",
+    "translateChapter": "翻译本章",
+    "translateBook": "整本后台翻译",
+    "jobStarted": "已开始后台翻译 {{count}} 章，完成后会自动同步到所有设备。",
+    "preparing": "正在准备章节…",
+    "prev": "上一章",
+    "next": "下一章",
+    "notFound": "找不到这项内容，可能已被删除或尚未同步。",
+    "pickSentence": "点击任意句子，查看翻译、精讲或收藏生词。",
+    "explain": "AI 精讲",
+    "saveSelection": "收藏选中词",
+    "saveSelectionHint": "先在正文中选中一个词，再点这里",
+    "saveWord": "加入生词本",
+    "saved": "已收藏「{{word}}」",
+    "noAi": "尚未配置 AI：可购买积分使用 OpenKoto AI，或在「AI 设置」中填入你自己的 API Key。"
+  },
+  "lyrics": {
+    "title": "歌词",
+    "add": "添加歌词",
+    "songTitle": "歌名",
+    "artist": "歌手",
+    "paste": "粘贴 LRC 或纯文本歌词",
+    "openFile": "或打开 .lrc / .txt / .srt 文件",
+    "empty": "还没有歌词。粘贴一首喜欢的歌，逐行翻译并学习。",
+    "translate": "整首翻译",
+    "singAlong": "跟唱模式",
+    "pause": "暂停",
+    "reset": "从头开始"
+  },
+  "ai": {
+    "settings": "AI 设置",
+    "target": "翻译成",
+    "byok": "使用自己的 API Key",
+    "byokHint": "支持 OpenAI 兼容接口（DeepSeek、OpenRouter、Kimi 等）。Key 只保存在当前浏览器，不会上传到 OpenKoto。",
+    "hostedActive": "正在使用 OpenKoto AI，剩余 {{credits}} 积分。",
+    "hostedInactive": "你还没有积分，可以使用自己的 API Key，或在定价页购买积分 / Pro 会员。"
+  },
+  "account": {
+    "memberSince": "注册于 {{date}}",
+    "signOut": "退出登录",
+    "membership": "会员",
+    "credits": "{{count}} 积分",
+    "upgrade": "升级会员",
+    "manage": "管理会员",
+    "subscriptionLine": "{{plan}} · {{channel}} · 有效期至 {{date}}",
+    "redeem": "兑换",
+    "redeemPlaceholder": "输入激活码，例如 OK-XXXX-XXXX-XXXX",
+    "redeemed": "兑换成功：{{plan}}，积分 +{{credits}}",
+    "redeemFailed": "激活码无效或已被使用",
+    "devices": "已登录设备",
+    "lastSeen": "最近活跃 {{date}}",
+    "revoke": "移除",
+    "noDevices": "还没有在其他设备上登录。",
+    "apiKeys": "API Key（命令行 / Agent）",
+    "apiKeysHint": "给脚本、CI 或 AI Agent 使用。也可以直接运行 koto login 登录命令行。",
+    "apiKeysLocked": "API Key 与命令行工具是 Plus 会员功能。",
+    "keyOnce": "请立即复制，此 Key 只显示一次：",
+    "keyName": "名称，例如 laptop-cli",
+    "createKey": "创建",
+    "dangerZone": "删除账号",
+    "delete": "删除我的账号",
+    "deleteWarning": "删除后 7 天内可以撤销；之后账号、同步数据和上传的书籍都会被永久删除。本机数据不受影响。",
+    "deleteConfirm": "确认删除",
+    "deletionScheduled": "账号将于 {{date}} 永久删除。",
+    "cancelDeletion": "撤销删除",
+    "data": "我的数据",
+    "export": "导出全部数据（NDJSON）",
+    "exportHint": "下载你同步到云端的全部生词、复习记录、书籍章节与歌词。"
+  },
+  "pricing": {
+    "title": "选择适合你的方案",
+    "subtitle": "本地功能与自带 Key 永久免费。会员帮你多端同步、解锁命令行和 AI 积分。",
+    "tagline": {
+      "free": "本地学习 + 少量云同步",
+      "plus": "多端无限同步 + 命令行",
+      "pro": "Plus 全部功能 + 每月 AI 积分"
+    },
+    "f": {
+      "local": "全部本地功能，自带 API Key 使用 AI",
+      "syncFree": "云同步 200 个生词、5 本书、30 首歌词",
+      "byok": "网页版阅读与复习",
+      "syncPlus": "无限生词与歌词同步，2 GB 书籍空间",
+      "syncPro": "无限同步，10 GB 书籍空间",
+      "cli": "koto 命令行、MCP 与 Agent Skill",
+      "guide": "完整的 AI 接入与模型选择指引",
+      "topup": "可单独充值 AI 积分",
+      "credits": "每月赠送 1500 AI 积分，可继续充值",
+      "agent": "整本书后台翻译与云端 Agent"
+    },
+    "month": "月",
+    "year": "年",
+    "buy": "购买",
+    "current": "当前方案",
+    "appStoreOnly": "在 iPhone 上购买",
+    "creditsTitle": "AI 积分包",
+    "creditsDesc": "¥{{price}} = {{credits}} 积分，约可翻译 1 万句或精讲 2000 句。购买后 12 个月内有效。",
+    "buyCredits": "购买积分",
+    "checkoutFailed": "无法打开支付页面，请稍后重试",
+    "notes": "网页端通过 Creem 安全支付，支持随时取消续订。",
+    "usd": "网页端以美元结算：${{price}}"
+  },
+  "oauth": {
+    "title": "连接 AI 助手",
+    "confirm": "「{{name}}」请求访问你的 OpenKoto 账号。",
+    "redirect": "完成后将返回 {{host}}。",
+    "scopeRead": "读取你的生词、歌词、文章和书籍",
+    "scopeWrite": "添加和编辑生词与歌词，并记录复习结果",
+    "scopeAi": "使用云端 AI 功能（消耗你的 AI 点数）",
+    "warning": "只有在你本人正在连接助手时才点允许。之后可随时在「账号 → 设备」中撤销。",
+    "approve": "允许",
+    "deny": "拒绝",
+    "invalid": "授权请求无效或已过期。"
+  },
+  "assistant": {
+    "title": "学习助手",
+    "subtitle": "用一句话操作你的词库和书架。每次对话按实际用量扣积分（当前 {{credits}} 积分）。",
+    "example1": "帮我看看今天该复习哪些词，按遗忘风险排序",
+    "example2": "把我最近导入的那首歌里 N2 以上的生词做成一个词包",
+    "example3": "我这周的复习情况怎么样？",
+    "placeholder": "想让助手做什么？",
+    "send": "发送",
+    "thinking": "正在处理…",
+    "steps": "执行了 {{count}} 个操作",
+    "cost": "本次消耗 {{credits}} 积分",
+    "noCredits": "积分不足，请在定价页购买积分或升级 Pro。",
+    "needsPlus": "学习助手是 Plus / Pro 会员功能，并按用量消耗 AI 积分。"
+  },
+  "authorizeApp": {
+    "title": "允许{{app}}登录？",
+    "body": "{{app}}将以 {{email}} 的身份登录，并同步你的生词、书架和歌词。",
+    "warning": "只有在你本人刚刚在应用里点了登录时才允许。",
+    "allow": "允许",
+    "ios": "OpenKoto iOS / Mac 应用",
+    "desktop": "OpenKoto 桌面版",
+    "failed": "授权失败，请回到应用重新登录。"
+  },
+  "public": {
+    "nav": {
+      "label": "主导航",
+      "menu": "菜单",
+      "features": "功能",
+      "docs": "文档",
+      "updates": "更新日志",
+      "pricing": "价格"
+    },
+    "signIn": "登录",
+    "openApp": "进入应用",
+    "footer": {
+      "tagline": "开源的语言学习工具：用你喜欢的内容背单词、读小说、学歌词，多端同步。",
+      "product": "产品",
+      "resources": "资源",
+      "legal": "法律",
+      "download": "下载",
+      "releases": "桌面端下载",
+      "feedback": "问题反馈",
+      "copyright": "© {{year}} OpenKoto · Apache 2.0"
+    }
+  },
+  "landing": {
+    "hero": {
+      "badge": "在 GitHub 上开源",
+      "title": "用你喜欢的内容",
+      "highlight": "学语言",
+      "subtitle": "FSRS 背单词、AI 翻译读小说、跟着歌词一起唱 —— 在网页、iPhone、Mac 和 Windows 之间同步。",
+      "start": "免费开始",
+      "download": "下载客户端",
+      "note": "免费使用，无需绑卡；不注册账号也能用。"
+    },
+    "preview": {
+      "review": "复习",
+      "word": "词语、语言",
+      "novel": "小说",
+      "novelSource": "It was the best of times, it was the worst of times…",
+      "translation": "那是最美好的时代，那是最糟糕的时代……",
+      "lyrics": "歌词"
+    },
+    "features": {
+      "eyebrow": "功能",
+      "title": "从真实内容中学习所需的一切",
+      "subtitle": "没有固定课程。带上你在意的书和歌，OpenKoto 帮你把它们变成课程。",
+      "review": {
+        "title": "FSRS 背单词",
+        "desc": "阅读时随手收藏生词，用新一代 FSRS 间隔重复算法复习，让每个词在快要忘记时回到你面前。"
+      },
+      "novels": {
+        "title": "AI 辅助读小说",
+        "desc": "导入 EPUB、TXT 书籍，按章节阅读，逐句获得 AI 翻译与讲解。阅读进度和书签自动同步。"
+      },
+      "lyrics": {
+        "title": "通过歌词学习",
+        "desc": "导入 LRC 歌词，逐行对照翻译学习，跟着时间轴一起唱。"
+      },
+      "sync": {
+        "title": "多端同步",
+        "desc": "生词、复习记录、书籍和歌词在网页、iOS、macOS、Windows 之间保持同步。"
+      },
+      "agents": {
+        "title": "CLI、MCP 与 Agent 技能",
+        "desc": "koto 命令行、远程 MCP 服务器和 Agent 技能，让 Claude 等 AI 助手考你单词、读你的书库、保存歌词翻译。"
+      },
+      "open": {
+        "title": "开源，AI 由你选",
+        "desc": "Apache 2.0 开源。可使用自己的 AI Key（Gemini、Kimi 或任何 OpenAI 兼容接口），也可在付费套餐中使用托管 AI。"
+      }
+    },
+    "download": {
+      "eyebrow": "下载",
+      "title": "随时随地使用 OpenKoto",
+      "subtitle": "一个账号，所有设备。在网页上开始，在手机或电脑上接着学。",
+      "web": {
+        "title": "网页版",
+        "desc": "无需安装，直接在浏览器里复习、阅读、学歌词。",
+        "cta": "打开网页版"
+      },
+      "ios": {
+        "title": "iPhone 与 iPad",
+        "desc": "原生 iOS 应用 —— 在 App Store 搜索“OpenKoto”。",
+        "cta": "获取 iOS 应用"
+      },
+      "desktop": {
+        "title": "macOS · Windows · Linux",
+        "desc": "原生桌面应用，本地优先存储，完整阅读器。",
+        "cta": "从 GitHub 下载"
+      },
+      "cli": {
+        "title": "命令行与 Agent",
+        "desc": "koto 命令行、MCP 服务器，以及适用于 Claude Code 等的 Agent 技能。",
+        "cta": "配置命令行"
+      },
+      "cliHint": "安装命令行（需要 Node.js 20+）并登录："
+    },
+    "pricing": {
+      "title": "免费开始",
+      "desc": "免费版即可同步一个入门书库。Plus 和 Pro 提供无限同步、托管 AI 积分和命令行访问。",
+      "cta": "查看价格"
+    },
+    "faq": {
+      "title": "常见问题",
+      "what": {
+        "q": "OpenKoto 是什么？",
+        "a": "OpenKoto 是一款开源的、AI 驱动的语言学习应用。它没有固定课程，而是让你从自己选择的小说、歌词和文章中学习，并用间隔重复复习收集到的生词。"
+      },
+      "free": {
+        "q": "免费吗？",
+        "a": "是的。所有本地功能都免费，源代码采用 Apache 2.0 许可证。可选的免费账号能同步一个入门书库；付费套餐提供无限同步、托管 AI 和命令行访问。"
+      },
+      "platforms": {
+        "q": "支持哪些平台？",
+        "a": "网页版 openkoto.com、iPhone 和 iPad（App Store），以及 macOS、Windows、Linux 桌面端（GitHub Releases）。另外还有命令行工具和 MCP 服务器。"
+      },
+      "privacy": {
+        "q": "我的数据会怎样？",
+        "a": "不登录时，所有数据都只保存在你的设备上。登录后，你同步的数据会存储在 Cloudflare，以便在多台设备间使用。我们不出售你的数据，也不用它训练模型，你可以随时导出或删除。"
+      },
+      "ai": {
+        "q": "需要 AI API Key 吗？",
+        "a": "你可以使用自己在 Google AI Studio、302.AI、Kimi 或任何 OpenAI 兼容服务商申请的 Key —— 文档里有详细图文指南。付费套餐还包含托管 AI，无需自备 Key。"
+      },
+      "agents": {
+        "q": "CLI、MCP 和 Agent 技能是什么？",
+        "a": "它们让 Claude 等 AI 助手可以使用你的 OpenKoto 书库：带你复习、查词、读书或保存歌词翻译。通过 npm i -g @openkoto/cli 安装，或连接 https://openkoto.com/mcp。"
+      }
+    },
+    "cta": {
+      "title": "从你喜欢的内容开始学习",
+      "desc": "几秒钟创建免费账号，或下载适合你设备的客户端。",
+      "star": "在 GitHub 上 Star"
+    }
+  },
+  "docs": {
+    "back": "返回文档"
+  },
+  "updates": {
+    "title": "更新日志",
+    "subtitle": "OpenKoto 的最新变化。"
+  },
+  "notFound": {
+    "message": "页面不存在。",
+    "home": "返回首页"
+  }
+}

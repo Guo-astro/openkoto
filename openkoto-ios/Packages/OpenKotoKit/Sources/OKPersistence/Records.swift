@@ -98,13 +98,9 @@ struct ArticleRecord: Codable, FetchableRecord, PersistableRecord {
     }
 
     func domainModel() throws -> Article {
-        let resolvedSourceType: SourceType? = try sourceType.map {
-            guard let value = SourceType(rawValue: $0) else {
-                throw PersistenceError.corruptRow(
-                    table: Self.databaseTableName, id: id, reason: "unknown source_type \($0)")
-            }
-            return value
-        }
+        // 不认识的来源按普通文章读：`loadAll()` 是全表 map，一行抛错就是整个书库加载失败，
+        // 而别的客户端同步来的新来源类型（将来新增的）完全可能落到这里。
+        let resolvedSourceType: SourceType? = sourceType.map { SourceType(rawValue: $0) ?? .article }
         return Article(
             id: try parseUUID(id, table: Self.databaseTableName),
             title: title,
@@ -402,9 +398,14 @@ struct ReviewLogRecord: Codable, FetchableRecord, PersistableRecord {
     var resultDifficulty: Double
     var resultIntervalDays: Int
     var resultState: String
+    /// 撤销标记指向的事件（migration v12）。
+    var voidsEventId: String?
+    /// 该事件在 OpenKoto 云上的 HLC（重放的第二排序键；未同步过的为 nil，按空串排）。
+    var hlc: String?
 
     enum CodingKeys: String, CodingKey {
-        case id, grade
+        case id, grade, hlc
+        case voidsEventId = "voids_event_id"
         case vocabularyId = "vocabulary_id"
         case reviewedAt = "reviewed_at"
         case dateLocal = "date_local"
@@ -432,6 +433,8 @@ struct ReviewLogRecord: Codable, FetchableRecord, PersistableRecord {
         resultDifficulty = event.resultDifficulty
         resultIntervalDays = event.resultIntervalDays
         resultState = event.resultState.rawValue
+        voidsEventId = event.voidsEventId.map(uuidString)
+        hlc = nil
     }
 
     func domainModel() throws -> ReviewEvent {
@@ -454,7 +457,8 @@ struct ReviewLogRecord: Codable, FetchableRecord, PersistableRecord {
             resultStability: resultStability,
             resultDifficulty: resultDifficulty,
             resultIntervalDays: resultIntervalDays,
-            resultState: result
+            resultState: result,
+            voidsEventId: try voidsEventId.map { try parseUUID($0, table: Self.databaseTableName) }
         )
     }
 }

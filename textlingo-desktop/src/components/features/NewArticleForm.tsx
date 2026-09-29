@@ -1,11 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { useTranslation } from "react-i18next";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Textarea } from "../ui/textarea";
-import { FileText, Loader2, Link, Clipboard, Cloud, Info, Sparkles } from "lucide-react";
-import { getApiClient } from "../../lib/api";
+import { FileText, Loader2, Link, Clipboard, Info, Sparkles } from "lucide-react";
 import { Article } from "../../types";
 import { useAiClean, CLEAN_MIN_CHARS } from "../../lib/hooks";
 import { AiCleanPanel } from "./AiCleanPanel";
@@ -24,7 +23,6 @@ export function NewArticleForm({ onSave, onCancel, initialArticle }: NewArticleF
     const [isSaving, setIsSaving] = useState(false);
     const [isFetching, setIsFetching] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [useBackend, setUseBackend] = useState(false);
     const {
         aiReady,
         isCleaning,
@@ -58,20 +56,6 @@ export function NewArticleForm({ onSave, onCancel, initialArticle }: NewArticleF
 
     // 「重新清洗」从清洗前那一版重来，否则会在已删过的正文上再删一轮
     const handleRetryClean = () => runClean(cleanRaw() ?? { title, content });
-
-    // Load config and check if backend is available
-    useEffect(() => {
-        const checkBackend = async () => {
-            try {
-                const config = await invoke("get_config") as any;
-                const apiClient = getApiClient(config);
-                setUseBackend(apiClient.isBackendConfigured());
-            } catch {
-                setUseBackend(false);
-            }
-        };
-        checkBackend();
-    }, []);
 
     const handleSave = async () => {
         if (!content.trim()) {
@@ -117,25 +101,7 @@ export function NewArticleForm({ onSave, onCancel, initialArticle }: NewArticleF
         }
     };
 
-    /**
-     * Fetch content from URL - tries backend API first, falls back to local
-     * Matches Flutter behavior using Dify workflow when available
-     */
     const fetchFromUrl = async (url: string): Promise<{ title: string; content: string }> => {
-        const config = await invoke("get_config") as any;
-        const apiClient = getApiClient(config);
-
-        // Try backend API first (like Flutter does)
-        if (apiClient.isBackendConfigured()) {
-            try {
-                return await apiClient.fetchUrlContent(url);
-            } catch (backendError) {
-                console.warn("Backend fetch failed, falling back to local:", backendError);
-                // Fall through to local fetch
-            }
-        }
-
-        // Fallback to local Tauri command
         return await invoke("fetch_url_content", { url }) as { title: string; content: string };
     };
 
@@ -254,12 +220,9 @@ export function NewArticleForm({ onSave, onCancel, initialArticle }: NewArticleF
                             onClick={handleFetchFromUrl}
                             disabled={isFetching || !sourceUrl.trim()}
                             className="gap-1"
-                            title={useBackend ? "Fetch using backend API" : "Fetch using local parser"}
                         >
                             {isFetching ? (
                                 <Loader2 size={16} className="animate-spin" />
-                            ) : useBackend ? (
-                                <Cloud size={16} />
                             ) : (
                                 <Link size={16} />
                             )}
@@ -276,11 +239,6 @@ export function NewArticleForm({ onSave, onCancel, initialArticle }: NewArticleF
                             <Clipboard size={16} />
                         </Button>
                     </div>
-                    {useBackend && (
-                        <p className="text-xs text-muted-foreground mt-1">
-                            Using backend API for better content extraction
-                        </p>
-                    )}
                 </div>
 
                 <AiCleanPanel

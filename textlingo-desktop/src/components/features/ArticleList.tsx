@@ -167,6 +167,8 @@ export function ArticleList({
           return "AUDIO";
         case "book":
           return article.book_type?.toUpperCase() || "BOOK";
+        case "lyrics":
+          return "LYRICS";
         case "article":
         default:
           return "ARTICLE";
@@ -198,6 +200,7 @@ export function ArticleList({
       case "VIDEO":
         return <Video className="text-primary" size={size} />;
       case "AUDIO":
+      case "LYRICS":
         return <Music className="text-primary" size={size} />;
       case "WEB":
         return <Globe className="text-primary" size={size} />;

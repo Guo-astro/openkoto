@@ -1,0 +1,49 @@
+name: cloud-ci
+
+# TypeScript monorepo: shared packages, Cloudflare Worker, web app, CLI and MCP server.
+on:
+  push:
+    branches:
+      - main
+      - "feat/**"
+    paths:
+      - "packages/**"
+      - "apps/**"
+      - "server/**"
+      - "docs/specs/**"
+      - "pnpm-lock.yaml"
+      - ".github/workflows/cloud-ci.yml"
+  pull_request:
+    paths:
+      - "packages/**"
+      - "apps/**"
+      - "server/**"
+      - "docs/specs/**"
+      - "pnpm-lock.yaml"
+      - ".github/workflows/cloud-ci.yml"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Typecheck
+        run: pnpm -r --filter "./packages/**" --filter "./apps/**" --filter "./server/**" run typecheck
+      - name: Test packages
+        run: |
+          pnpm --filter @openkoto/core test
+          pnpm --filter @openkoto/client test
+          pnpm --filter @openkoto/mcp-tools test
+          pnpm --filter @openkoto/cli test
+          pnpm --filter @openkoto/mcp test
+          pnpm --filter @openkoto/web test
+      - name: Test worker (workerd)
+        run: pnpm --filter @openkoto/worker test
+      - name: Build web
+        run: pnpm --filter @openkoto/web build

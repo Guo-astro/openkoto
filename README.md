@@ -16,7 +16,7 @@
 
 </div>
 
-🌐 **Official Website & Documentation**: [openkoto.com](https://www.openkoto.com/)
+🌐 **Official Website & Documentation**: [openkoto.com](https://openkoto.com/)
 
 > 🎉 **New**: The **OpenKoto iOS app is now live on the App Store!** Read articles and books, study videos with subtitles, and review vocabulary with spaced repetition — right on your iPhone or iPad. Search for **“OpenKoto”** on the App Store to download it. <!-- TODO: replace with direct App Store link -->
 
@@ -49,7 +49,8 @@ Built with **Tauri + React + Rust**, it runs locally on your machine for **fast 
 |---------|-------------|------|
 | **iOS** | **New!** 📱 Native app for iPhone & iPad — reading, on-device furigana/pinyin, video subtitles, SRS review, privacy-first | Search **“OpenKoto”** on the App Store <!-- TODO: replace with direct App Store link --> |
 | **Desktop** | **Recommended** 🖥️ Native performance, local data, Mac/Windows/Linux | [Download Latest Release](https://github.com/hikariming/OpenKoto/releases) |
-| Web | Convenient online access, no installation required | [https://openkoto.app](https://openkoto.app) |
+| Web | **Being rebuilt**: vocabulary review, novels and lyrics, synced with iOS and desktop (launching at openkoto.com) | — |
+| CLI / Agents | `koto` CLI, MCP server and agent skill so AI agents can work with your library (Plus) | [skills/openkoto](skills/openkoto) |
 | Source Code | 🆓 Fully open source, Apache 2.0 License | [GitHub Repository](https://github.com/hikariming/OpenKoto) |
 
 
@@ -174,7 +175,7 @@ We welcome contributions! Please feel free to submit PRs or open issues.
 [usedify](https://usedify.app/) is a specialized platform dedicated to the usage and learning of Dify. On this site, you can access a wealth of valuable content, including Dify usage tips, hands-on experience sharing, and practical case studies. Whether you're a beginner getting started with Dify or an experienced user aiming to master advanced features, usedify provides the knowledge and insights to help you make the most of the Dify tool.
 
 ### Foreign Language Learning Site Based on Personalized Texts
-[openkoto](https://openkoto.app/) is a platform that enables foreign language learning based on texts that interest you. Instead of traditional language learning materials, it allows you to leverage your personal interests, such as favorite novels, articles, or blogs, as study resources. This unique approach makes language learning more engaging and effective, helping you improve your language proficiency while exploring topics you love.
+[openkoto](https://openkoto.com/) is a platform that enables foreign language learning based on texts that interest you. Instead of traditional language learning materials, it allows you to leverage your personal interests, such as favorite novels, articles, or blogs, as study resources. This unique approach makes language learning more engaging and effective, helping you improve your language proficiency while exploring topics you love.
 
 ## License
 

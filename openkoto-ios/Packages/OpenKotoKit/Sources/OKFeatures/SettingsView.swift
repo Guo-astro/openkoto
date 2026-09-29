@@ -109,6 +109,8 @@ struct SettingsView: View {
 
                 reminderSection
 
+                AccountSection()
+
                 SyncSection()
 
                 DataTransferSection()
@@ -136,7 +138,7 @@ struct SettingsView: View {
                     }
                     Link(
                         "Privacy Policy",
-                        destination: URL(string: "https://www.openkoto.com/privacy-policy")!
+                        destination: URL(string: "https://openkoto.com/privacy")!
                     )
                     Link(
                         "Support",

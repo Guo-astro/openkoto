@@ -54,15 +54,44 @@ struct ReaderView: View {
     /// 这篇文章有没有可显示的读音。没有时把开关灰掉并说明，好过让用户点了没反应。
     private var hasReadings: Bool { !store.readingRuns(for: article.id).isEmpty }
 
+    /// 歌词且带时间轴：按行列出、左侧显示时间（复用媒体页的字幕列表）。
+    /// 没有时间轴的歌词（纯文本）照普通文章排版。
+    private var isTimedLyrics: Bool {
+        article.sourceType == .lyrics && segments.contains { $0.startTime != nil }
+    }
+
+    @ViewBuilder
+    private var content: some View {
+        if isTimedLyrics {
+            SubtitleListView(
+                segments: segments,
+                activeID: nil,
+                isInGap: false,
+                selectedID: selectedSegmentID,
+                loopingID: nil,
+                readingRuns: readingRuns,
+                fontSize: fontSize,
+                viewMode: viewMode,
+                isBlind: false,
+                revealedID: nil,
+                onTap: { selectedSegmentID = $0.id },
+                onExplain: { selectedSegmentID = $0.id },
+                onToggleLoop: { _ in },
+                showsLoop: false)
+        } else {
+            NativeChapterView(
+                segments: segments,
+                selectedSegmentID: $selectedSegmentID,
+                fontSize: fontSize,
+                viewMode: viewMode,
+                restoreOrder: initialSegmentOrder,
+                readingRuns: readingRuns
+            )
+        }
+    }
+
     var body: some View {
-        NativeChapterView(
-            segments: segments,
-            selectedSegmentID: $selectedSegmentID,
-            fontSize: fontSize,
-            viewMode: viewMode,
-            restoreOrder: initialSegmentOrder,
-            readingRuns: readingRuns
-        )
+        content
         .background(theme.background)
         .safeAreaInset(edge: .bottom) { batchBar }
         // 句子按需加载：启动时只查计数，进阅读器才把这篇的句子读进内存。

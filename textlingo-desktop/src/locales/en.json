@@ -208,7 +208,8 @@
       "advanced": "Advanced",
       "transcription": "Subtitle Transcription",
       "logs": "Runtime Logs",
-      "review": "Review"
+      "review": "Review",
+      "account": "Account & Sync"
     },
     "transcription": {
       "title": "Subtitle Transcription",
@@ -422,9 +423,6 @@
     },
     "backendConfig": "Backend API Configuration",
     "backendConfigDesc": "Configure backend API for enhanced features like webpage content extraction.",
-    "backendUrl": "Backend URL",
-    "authToken": "Auth Token",
-    "authTokenPlaceholder": "Your JWT token",
     "testConnection": "Test Connection",
     "backendConnected": "Backend connection successful!",
     "backendError": "Backend error",
@@ -454,7 +452,34 @@
     "srsDailyReviewLimit": "Daily review limit",
     "srsDailyReviewLimitHelp": "Maximum number of due cards to review per day.",
     "srsDesiredRetention": "Desired retention",
-    "srsDesiredRetentionHelp": "Target retention for the FSRS scheduler: higher means more frequent reviews and stronger memory; lower means longer intervals and less workload. Default 90%."
+    "srsDesiredRetentionHelp": "Target retention for the FSRS scheduler: higher means more frequent reviews and stronger memory; lower means longer intervals and less workload. Default 90%.",
+    "account": {
+      "title": "OpenKoto Account & Sync",
+      "desc": "Sign in to sync your vocabulary, word packs, review history, articles and bookmarks across desktop, iOS and web.",
+      "signedInAs": "Signed in as",
+      "plan": "Plan",
+      "offline": "offline",
+      "signOut": "Sign out",
+      "manage": "Manage account & subscription",
+      "signIn": "Sign in",
+      "signedOut": "You are not signed in. Your data stays on this computer.",
+      "waitingForBrowser": "Finish signing in in your browser…",
+      "cancel": "Cancel",
+      "syncTitle": "Sync",
+      "syncing": "Syncing…",
+      "lastSync": "Last synced: {{time}}",
+      "neverSynced": "Not synced yet",
+      "pending": "Pending changes: {{count}}",
+      "syncNow": "Sync now",
+      "quotaExceeded": "{{count}} items were not uploaded because your plan limit was reached.",
+      "autoSyncHint": "Sync runs automatically on start, a few seconds after changes and every 5 minutes. API keys are never synced.",
+      "lastError": "Last error",
+      "switchTitle": "Different account",
+      "switchDesc": "You signed in as {{email}}, but the data on this computer was synced with {{previous}}. Upload it to the new account, or keep it on this computer only? Nothing is uploaded until you choose.",
+      "switchUpload": "Upload to this account",
+      "switchLocalOnly": "Keep local only",
+      "tokenFileWarning": "No system keychain is available, so your sign-in is stored in an encrypted file readable only by your user account. Install a Secret Service (e.g. GNOME Keyring or KWallet) for stronger protection."
+    }
   },
   "favorites": {
     "title": "My Favorites",
@@ -571,7 +596,6 @@
     "fetchPreview": "Fetch Preview",
     "fetching": "Fetching...",
     "previewSourceLocal": "Preview source: local parser",
-    "previewSourceBackend": "Preview source: backend parser",
     "titleLabel": "Title",
     "titlePlaceholder": "Leave empty to use extracted title",
     "contentLabel": "Content Preview (Editable)",
@@ -609,16 +633,16 @@
     }
   },
   "youtubeImport": {
-    "title": "Import YouTube Video",
+    "title": "Import a YouTube / Bilibili video",
     "urlLabel": "Video URL",
-    "urlPlaceholder": "https://www.youtube.com/watch?v=...",
+    "urlPlaceholder": "https://www.youtube.com/watch?v=... or https://www.bilibili.com/video/BV...",
     "import": "Import",
     "importing": "Downloading...",
     "processing": "Processing...",
     "cancel": "Cancel",
     "errors": {
       "urlRequired": "Please enter a video URL",
-      "urlInvalid": "Invalid YouTube URL",
+      "urlInvalid": "Invalid video URL (YouTube and Bilibili are supported)",
       "importFailed": "Import failed",
       "loginRequiredTip": "This video requires login to watch. Please log in in your browser and try again."
     },
@@ -686,7 +710,7 @@
     "fileLabel": "Subtitle File",
     "filePlaceholder": "Select a subtitle file...",
     "selectFileTitle": "Select subtitle file",
-    "description": "Import an .srt subtitle file as a standalone reading material.",
+    "description": "Import an .srt subtitle file or .lrc lyrics as a standalone reading material.",
     "titleLabel": "Title (Optional)",
     "titlePlaceholder": "Leave empty to use the file name",
     "import": "Import",
@@ -804,7 +828,7 @@
       "lmstudioHint": "LM Studio usually exposes an OpenAI-compatible endpoint. Enter the model ID for the model currently loaded there.",
       "skipButton": "Skip for Now",
       "tip": "Tip: Once configured, features like one-click translation will be available.",
-      "helpLink": "Don't know how to configure? Visit https://www.openkoto.com/ for documentation"
+      "helpLink": "Don't know how to configure? Visit https://openkoto.com/docs for documentation"
     },
     "welcome": {
       "title": "Congratulations!",

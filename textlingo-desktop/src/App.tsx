@@ -17,8 +17,9 @@ import { UpdateChecker } from "./components/features/UpdateChecker";
 import { DropImportOverlay, type DropImportStatus } from "./components/features/DropImportOverlay";
 import { importDroppedPath, isSupportedDropPath, getFileName } from "./lib/dropImport";
 import type { Article, AppConfig } from "./lib/tauri";
-import { getApiClient } from "./lib/api";
 import { useAgentOpenMaterialListener } from "./lib/hooks/useAgentOpenMaterialListener";
+import { useCloudDataChanged } from "./lib/hooks/useCloudDataChanged";
+import { migrateLegacyBookProgress } from "./lib/bookProgress";
 
 function App() {
   const { t } = useTranslation();
@@ -54,7 +55,14 @@ function App() {
   // Load config and articles on mount
   useEffect(() => {
     loadData();
+    // 一次性把旧的 localStorage 阅读进度迁入 book_progress(随后同步为 BookProgress)
+    void migrateLegacyBookProgress();
   }, []);
+
+  // 云同步应用了远端修改:刷新素材列表
+  useCloudDataChanged(() => {
+    void loadData();
+  });
 
   // 全局拖放导入：把 PDF/EPUB/视频/音频/字幕 拖到窗口即导入（Tauri 原生事件）
   useEffect(() => {
@@ -176,9 +184,6 @@ function App() {
         !onboardingDismissedRef.current &&
         (!configResult || (!configResult.onboarding_completed && !hasSavedModelConfigs));
 
-      if (configResult) {
-        getApiClient(configResult); // Initialize API client
-      }
       setShowOnboarding(shouldShowOnboarding);
       setArticles(articlesResult);
       return articlesResult;

@@ -1,0 +1,433 @@
+{
+  "common": {
+    "loading": "Loading…",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "networkError": "Network error, please try again"
+  },
+  "nav": {
+    "home": "Home",
+    "review": "Review",
+    "vocab": "Words",
+    "library": "Library",
+    "lyrics": "Lyrics",
+    "account": "Account",
+    "assistant": "Assistant"
+  },
+  "plan": {
+    "free": "Free",
+    "plus": "Plus",
+    "pro": "Pro"
+  },
+  "channel": {
+    "creem": "Web",
+    "appstore": "App Store",
+    "code": "Activation code"
+  },
+  "footer": {
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Service"
+  },
+  "legal": {
+    "updated": "Updated {{date}}"
+  },
+  "sync": {
+    "syncing": "Syncing",
+    "ok": "Synced",
+    "synced": "Last synced {{time}}",
+    "never": "Not synced yet",
+    "error": "Sync failed: {{message}}",
+    "quota": "Some items exceed the free quota and weren't uploaded. Upgrade to sync everything.",
+    "quotaShort": "Over quota"
+  },
+  "login": {
+    "title": "Sign in to OpenKoto",
+    "subtitle": "Your words, books and lyrics stay in sync across phone, computer and web.",
+    "email": "Email",
+    "emailPlaceholder": "you@example.com",
+    "sendCode": "Send code",
+    "codeSent": "We sent a code to {{email}}. It expires in 10 minutes.",
+    "code": "Code",
+    "verify": "Sign in",
+    "changeEmail": "Use a different email",
+    "or": "or",
+    "continueWith": "Continue with {{provider}}",
+    "badCode": "The code is wrong or expired",
+    "tooMany": "Too many attempts, please wait a moment",
+    "oauthError": "Sign-in failed. Try again or use email.",
+    "terms": "By continuing you agree to the Terms of Service and Privacy Policy."
+  },
+  "device": {
+    "title": "Confirm device sign-in",
+    "subtitle": "Enter the 8-character code shown in your terminal or other device.",
+    "codeLabel": "Device code",
+    "continue": "Continue",
+    "confirm": "Allow “{{name}}” ({{platform}}) to sign in to your account?",
+    "warning": "Only approve if you just started this sign-in yourself.",
+    "approve": "Allow",
+    "deny": "Deny",
+    "approved": "Approved. The device is signed in.",
+    "denied": "Sign-in denied.",
+    "closeTab": "You can close this tab now.",
+    "notFound": "Invalid or expired code"
+  },
+  "home": {
+    "greeting": "Hi, {{name}}",
+    "subtitle": "A little every day adds up.",
+    "dueToday": "Due today",
+    "totalWords": "{{count}} words in total",
+    "books": "Books",
+    "continueReading": "Continue reading",
+    "lyrics": "Lyrics",
+    "lyricsHint": "Learn with songs",
+    "upgradeHint": "Free syncs 200 words, 5 books and 30 songs. Plus unlocks unlimited sync and the CLI."
+  },
+  "review": {
+    "remaining": "{{count}} left",
+    "undo": "Undo",
+    "flip": "Flip",
+    "tapToFlip": "Tap or press Space to reveal",
+    "again": "Again",
+    "hard": "Hard",
+    "good": "Good",
+    "easy": "Easy",
+    "today": "today",
+    "days": "{{count}} d",
+    "months": "{{count}} mo",
+    "years": "{{count}} y",
+    "shortcuts": "Space flip · 1–4 grade · U undo",
+    "finished": "{{count}} cards done!",
+    "nothingDue": "Nothing due today",
+    "comeBack": "Come back tomorrow.",
+    "empty": "Add some words to get started.",
+    "toVocab": "Open words"
+  },
+  "vocab": {
+    "title": "Words",
+    "import": "Import",
+    "export": "Export CSV",
+    "add": "Add",
+    "word": "Word",
+    "reading": "Reading",
+    "meaning": "Meaning",
+    "example": "Example",
+    "search": "Search words or meanings",
+    "pack": "Pack",
+    "allPacks": "All packs",
+    "newPack": "New pack name",
+    "createPack": "Create",
+    "removeFromPack": "Remove from pack",
+    "suspend": "Suspend",
+    "resume": "Resume",
+    "due": "Next review {{date}}",
+    "empty": "No words yet. Tap a sentence while reading to save words, or add one here.",
+    "noMatch": "No matching words",
+    "quota": "Free syncs up to {{limit}} words; the rest stay on this device. Upgrade to sync everything.",
+    "band": {
+      "new": "New",
+      "strong": "Well remembered",
+      "fading": "Fading",
+      "weak": "Probably forgotten"
+    }
+  },
+  "library": {
+    "title": "Library",
+    "importBook": "Import EPUB / TXT",
+    "newArticle": "New article",
+    "hint": "Book files are stored privately in your own space; only you can see them.",
+    "books": "Books",
+    "articles": "Articles",
+    "noBooks": "No books yet. Import an EPUB or TXT novel to start reading.",
+    "progress": "Chapter {{current}} of {{total}}",
+    "syncingChapters": "Syncing chapters…",
+    "quota": "You've reached your plan's book or storage limit.",
+    "tooLarge": "On the free plan each book must be under 10 MB.",
+    "articleTitle": "Title (optional)",
+    "articleBody": "Text",
+    "articlePlaceholder": "Paste an article, news story or anything you want to read"
+  },
+  "reader": {
+    "chapter": "Chapter",
+    "showTranslation": "Show translation",
+    "hideTranslation": "Hide translation",
+    "translateChapter": "Translate chapter",
+    "translateBook": "Translate whole book",
+    "jobStarted": "Translating {{count}} chapters in the background; results sync to all your devices.",
+    "preparing": "Preparing chapter…",
+    "prev": "Previous",
+    "next": "Next",
+    "notFound": "Not found. It may have been deleted or not synced yet.",
+    "pickSentence": "Tap any sentence to see its translation, get an explanation or save words.",
+    "explain": "Explain",
+    "saveSelection": "Save selection",
+    "saveSelectionHint": "Select a word in the text first, then tap here",
+    "saveWord": "Save word",
+    "saved": "Saved “{{word}}”",
+    "noAi": "AI isn't set up: buy credits for OpenKoto AI, or add your own API key in AI settings."
+  },
+  "lyrics": {
+    "title": "Lyrics",
+    "add": "Add lyrics",
+    "songTitle": "Song title",
+    "artist": "Artist",
+    "paste": "Paste LRC or plain-text lyrics",
+    "openFile": "or open a .lrc / .txt / .srt file",
+    "empty": "No lyrics yet. Paste a song you love and learn it line by line.",
+    "translate": "Translate song",
+    "singAlong": "Sing along",
+    "pause": "Pause",
+    "reset": "Restart"
+  },
+  "ai": {
+    "settings": "AI settings",
+    "target": "Translate into",
+    "byok": "Use your own API key",
+    "byokHint": "Works with OpenAI-compatible APIs (DeepSeek, OpenRouter, Kimi…). The key stays in this browser and is never sent to OpenKoto.",
+    "hostedActive": "Using OpenKoto AI — {{credits}} credits left.",
+    "hostedInactive": "You have no credits. Use your own API key, or buy credits / Pro on the pricing page."
+  },
+  "account": {
+    "memberSince": "Member since {{date}}",
+    "signOut": "Sign out",
+    "membership": "Membership",
+    "credits": "{{count}} credits",
+    "upgrade": "Upgrade",
+    "manage": "Manage",
+    "subscriptionLine": "{{plan}} · {{channel}} · until {{date}}",
+    "redeem": "Redeem",
+    "redeemPlaceholder": "Activation code, e.g. OK-XXXX-XXXX-XXXX",
+    "redeemed": "Redeemed: {{plan}}, +{{credits}} credits",
+    "redeemFailed": "Invalid or already used code",
+    "devices": "Signed-in devices",
+    "lastSeen": "active {{date}}",
+    "revoke": "Remove",
+    "noDevices": "Not signed in on other devices yet.",
+    "apiKeys": "API keys (CLI / agents)",
+    "apiKeysHint": "For scripts, CI or AI agents. You can also just run koto login.",
+    "apiKeysLocked": "API keys and the CLI are Plus features.",
+    "keyOnce": "Copy it now — this key is shown only once:",
+    "keyName": "Name, e.g. laptop-cli",
+    "createKey": "Create",
+    "dangerZone": "Delete account",
+    "delete": "Delete my account",
+    "deleteWarning": "You can cancel within 7 days; after that your account, synced data and uploaded books are permanently erased. Data on your devices is kept.",
+    "deleteConfirm": "Delete",
+    "deletionScheduled": "Your account will be permanently deleted on {{date}}.",
+    "cancelDeletion": "Cancel deletion",
+    "data": "Your data",
+    "export": "Export all data (NDJSON)",
+    "exportHint": "Download everything you've synced: words, reviews, book chapters and lyrics."
+  },
+  "pricing": {
+    "title": "Choose your plan",
+    "subtitle": "Local features and bring-your-own-key AI are free forever. Membership adds sync, the CLI and AI credits.",
+    "tagline": {
+      "free": "Local learning + a little cloud sync",
+      "plus": "Unlimited sync + CLI",
+      "pro": "Everything in Plus + monthly AI credits"
+    },
+    "f": {
+      "local": "All local features, AI with your own key",
+      "syncFree": "Sync 200 words, 5 books, 30 songs",
+      "byok": "Read and review on the web",
+      "syncPlus": "Unlimited words & lyrics, 2 GB for books",
+      "syncPro": "Unlimited sync, 10 GB for books",
+      "cli": "koto CLI, MCP and agent skill",
+      "guide": "Full guide to AI providers and models",
+      "topup": "Top up AI credits any time",
+      "credits": "1,500 AI credits every month, top-ups available",
+      "agent": "Whole-book background translation and cloud agent"
+    },
+    "month": "month",
+    "year": "year",
+    "buy": "Buy",
+    "current": "Current plan",
+    "appStoreOnly": "Buy on iPhone",
+    "creditsTitle": "AI credit pack",
+    "creditsDesc": "¥{{price}} = {{credits}} credits — about 10,000 sentence translations or 2,000 explanations. Valid for 12 months.",
+    "buyCredits": "Buy credits",
+    "checkoutFailed": "Couldn't open checkout, please try again",
+    "notes": "Web payments are processed securely by Creem; cancel renewal any time.",
+    "usd": "Charged in USD on the web: ${{price}}"
+  },
+  "oauth": {
+    "title": "Connect an AI assistant",
+    "confirm": "“{{name}}” wants to access your OpenKoto account.",
+    "redirect": "You will be sent back to {{host}}.",
+    "scopeRead": "Read your vocabulary, lyrics, articles and books",
+    "scopeWrite": "Add and edit vocabulary and lyrics, and record reviews",
+    "scopeAi": "Use hosted AI features (spends your AI credits)",
+    "warning": "Only allow this if you are connecting an assistant yourself right now. You can revoke it any time under Account → Devices.",
+    "approve": "Allow",
+    "deny": "Deny",
+    "invalid": "This authorization request is invalid or has expired."
+  },
+  "assistant": {
+    "title": "Study assistant",
+    "subtitle": "Manage your words and library in plain language. Each turn uses credits ({{credits}} left).",
+    "example1": "Which words should I review today? Sort by how likely I am to forget them.",
+    "example2": "Make a word pack from the N2+ words in the song I added most recently.",
+    "example3": "How did my reviews go this week?",
+    "placeholder": "What should the assistant do?",
+    "send": "Send",
+    "thinking": "Working…",
+    "steps": "{{count}} actions",
+    "cost": "Used {{credits}} credits",
+    "noCredits": "Not enough credits. Buy credits or upgrade to Pro on the pricing page.",
+    "needsPlus": "The study assistant is a Plus / Pro feature and uses AI credits."
+  },
+  "authorizeApp": {
+    "title": "Allow {{app}} to sign in?",
+    "body": "{{app}} will sign in as {{email}} and sync your words, library and lyrics.",
+    "warning": "Only allow this if you just started signing in from the app yourself.",
+    "allow": "Allow",
+    "ios": "the OpenKoto iOS / Mac app",
+    "desktop": "OpenKoto for desktop",
+    "failed": "Authorization failed. Go back to the app and sign in again."
+  },
+  "public": {
+    "nav": {
+      "label": "Main",
+      "menu": "Menu",
+      "features": "Features",
+      "docs": "Docs",
+      "updates": "Updates",
+      "pricing": "Pricing"
+    },
+    "signIn": "Sign in",
+    "openApp": "Open app",
+    "footer": {
+      "tagline": "Open-source language learning with content you love: words, novels and lyrics, in sync on every device.",
+      "product": "Product",
+      "resources": "Resources",
+      "legal": "Legal",
+      "download": "Download",
+      "releases": "Desktop releases",
+      "feedback": "Feedback",
+      "copyright": "© {{year}} OpenKoto · Apache 2.0"
+    }
+  },
+  "landing": {
+    "hero": {
+      "badge": "Open source on GitHub",
+      "title": "Learn languages through ",
+      "highlight": "content you love",
+      "subtitle": "Review words with FSRS, read novels with AI translation and sing along to lyrics — synced across web, iPhone, Mac and Windows.",
+      "start": "Get started free",
+      "download": "Download apps",
+      "note": "Free to use, no credit card. Works without an account, too."
+    },
+    "preview": {
+      "review": "Review",
+      "word": "word, language",
+      "novel": "Novel",
+      "novelSource": "吾輩は猫である。名前はまだ無い。",
+      "translation": "I am a cat. As yet I have no name.",
+      "lyrics": "Lyrics"
+    },
+    "features": {
+      "eyebrow": "Features",
+      "title": "Everything you need to learn from real content",
+      "subtitle": "No fixed curriculum. Bring the books and songs you care about, and OpenKoto turns them into lessons.",
+      "review": {
+        "title": "Vocabulary review with FSRS",
+        "desc": "Save words as you read and review them with the modern FSRS spaced-repetition algorithm, so each word comes back right before you'd forget it."
+      },
+      "novels": {
+        "title": "Read novels with AI",
+        "desc": "Import EPUB and TXT books, read chapter by chapter, and get sentence-by-sentence AI translation and explanations. Progress and bookmarks sync."
+      },
+      "lyrics": {
+        "title": "Learn with lyrics",
+        "desc": "Import LRC lyrics, study them line by line with translations, and sing along with synced timing."
+      },
+      "sync": {
+        "title": "Sync across every device",
+        "desc": "Your words, reviews, books and lyrics stay in sync across the web, iOS, macOS and Windows."
+      },
+      "agents": {
+        "title": "CLI, MCP and agent skill",
+        "desc": "The koto CLI, a remote MCP server and an agent skill let AI assistants like Claude quiz you, read your library and save lyrics translations."
+      },
+      "open": {
+        "title": "Open source, your AI",
+        "desc": "Apache 2.0 licensed. Bring your own AI key (Gemini, Kimi, any OpenAI-compatible API) or use hosted AI on a paid plan."
+      }
+    },
+    "download": {
+      "eyebrow": "Download",
+      "title": "Use OpenKoto anywhere",
+      "subtitle": "One account, every device. Start on the web and pick up where you left off on your phone or computer.",
+      "web": {
+        "title": "Web",
+        "desc": "Nothing to install. Review, read and study lyrics right in your browser.",
+        "cta": "Open web app"
+      },
+      "ios": {
+        "title": "iPhone & iPad",
+        "desc": "The native iOS app — search “OpenKoto” on the App Store.",
+        "cta": "Get the iOS app"
+      },
+      "desktop": {
+        "title": "macOS · Windows · Linux",
+        "desc": "The native desktop app with local-first storage and a full reader.",
+        "cta": "Download from GitHub"
+      },
+      "cli": {
+        "title": "CLI & agents",
+        "desc": "koto CLI, MCP server and an agent skill for Claude Code and friends.",
+        "cta": "Set up the CLI"
+      },
+      "cliHint": "Install the CLI (Node.js 20+) and sign in:"
+    },
+    "pricing": {
+      "title": "Free to start",
+      "desc": "The free plan includes sync for a starter library. Plus and Pro add unlimited sync, hosted AI credits and CLI access.",
+      "cta": "See pricing"
+    },
+    "faq": {
+      "title": "Frequently asked questions",
+      "what": {
+        "q": "What is OpenKoto?",
+        "a": "OpenKoto is an open-source, AI-powered language-learning app. Instead of a fixed course, you learn from novels, song lyrics and articles you choose, and review the words you collect with spaced repetition."
+      },
+      "free": {
+        "q": "Is it free?",
+        "a": "Yes. All local features are free, and the source code is Apache 2.0 licensed. An optional free account syncs a starter library; paid plans add unlimited sync, hosted AI and CLI access."
+      },
+      "platforms": {
+        "q": "Which platforms are supported?",
+        "a": "The web app at openkoto.com, iPhone and iPad (App Store), and desktop apps for macOS, Windows and Linux (GitHub Releases). There is also a command-line tool and an MCP server."
+      },
+      "privacy": {
+        "q": "What happens to my data?",
+        "a": "Without an account, everything stays on your device. If you sign in, the data you sync is stored on Cloudflare so it can follow you across devices. We don't sell your data or train models on it, and you can export or delete it at any time."
+      },
+      "ai": {
+        "q": "Do I need an AI API key?",
+        "a": "You can bring your own key from Google AI Studio, 302.AI, Kimi or any OpenAI-compatible provider — see the docs for step-by-step guides. Paid plans also include hosted AI, so no key is required."
+      },
+      "agents": {
+        "q": "What are the CLI, MCP and agent skill?",
+        "a": "They let AI agents such as Claude work with your OpenKoto library: run a review session, look up words, read your books or save lyrics translations. Install with npm i -g @openkoto/cli, or connect to https://openkoto.com/mcp."
+      }
+    },
+    "cta": {
+      "title": "Start learning with what you love",
+      "desc": "Create a free account in seconds, or download the app for your device.",
+      "star": "Star on GitHub"
+    }
+  },
+  "docs": {
+    "back": "Back to docs"
+  },
+  "updates": {
+    "title": "Updates",
+    "subtitle": "What's new in OpenKoto."
+  },
+  "notFound": {
+    "message": "This page doesn't exist.",
+    "home": "Back to home"
+  }
+}
