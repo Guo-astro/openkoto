@@ -35,9 +35,9 @@ JWT_PRIVATE_KEY="<node scripts/gen-jwt-key.mjs 的输出>"
 
 这些步骤涉及购买、密钥或你的个人账号，没有代为操作：
 
-1. **注册域名 `openkoto.com`**（目前在注册局查询结果为未注册，issue #30 就是因为这个）。建议直接在 Cloudflare Registrar 购买，自动托管 DNS。
-2. **官网 `www.openkoto.com` 目前被 Vercel 停用**（`402 DEPLOYMENT_DISABLED`）。App Store 的隐私政策链接指向那里，需要尽快恢复，或者把 App Store Connect 里的隐私政策 URL 改成 `https://openkoto.com/privacy`（新网页端已内置 `/privacy` 和 `/terms`）。
-3. **Google 登录密钥**：Google Cloud → 项目 `textlingo` → Google Auth Platform → Clients → **OpenKoto Web** → Add secret，然后：
+1. **域名**：统一使用 `openkoto.com`（已在同一 Cloudflare 账号下，原计划的 `openkoto.app` 不再使用）。官网、文档与应用全部由 Worker 提供，不再使用 Vercel。首次生产部署前，在 Cloudflare → openkoto.com → DNS 删除指向 Vercel 的两条记录（根域名 A `216.150.1.1`、`www` CNAME `*.vercel-dns-016.com`），否则 Worker 自定义域名绑定会失败。
+2. **App Store Connect**：把隐私政策 URL 改成 `https://openkoto.com/privacy`，营销网址改成 `https://openkoto.com`（旧链接 `/privacy-policy` 也会 301 跳转）。
+3. **Google 登录密钥**（JS 来源、回调 `https://openkoto.com/api/auth/callback/google`、Branding 页的主页/隐私/条款链接已于 2026-09-29 改到 openkoto.com）：Google Cloud → 项目 `textlingo` → Google Auth Platform → Clients → **OpenKoto Web** → Add secret，然后：
    ```bash
    cd server/worker
    npx wrangler secret put GOOGLE_CLIENT_SECRET            # 生产
@@ -64,7 +64,7 @@ JWT_PRIVATE_KEY="<node scripts/gen-jwt-key.mjs 的输出>"
    - 在开发者后台给 App ID `com.openkoto.ios` 打开 **Sign in with Apple**。
 6. **Apple 网页登录（可选）**：Services ID + 私钥生成的 client secret（有效期最长 6 个月）写入 `APPLE_CLIENT_ID` / `APPLE_CLIENT_SECRET`。
 7. **托管 AI**：`AI_API_KEY`（例如 DeepSeek），可选 `AI_API_BASE` / `AI_MODEL`。
-8. **邮件**：生产 `EMAIL_PROVIDER=cloudflare`，走 Cloudflare Email Service（`send_email` 绑定 `EMAIL`，Workers 付费计划每月含 3000 封，之后 $0.35/千封）。在 Cloudflare 控制台 Compute → Email Service → Email Sending 里接入 `openkoto.com` 并添加它给出的 DNS 记录。备选：把 `EMAIL_PROVIDER` 改成 `resend` 并设置 `RESEND_API_KEY`。
+8. **邮件**：生产 `EMAIL_PROVIDER=cloudflare`，走 Cloudflare Email Service（`send_email` 绑定 `EMAIL`，Workers 付费计划每月含 3000 封，之后 $0.35/千封）。`openkoto.com` 已于 2026-09-29 在 Email Service → 邮件发送中接入并激活（DNS：`cf-bounce` 子域的 MX/SPF/DKIM 与 `_dmarc`），每日额度 1000 封。备选：把 `EMAIL_PROVIDER` 改成 `resend` 并设置 `RESEND_API_KEY`。
 
 ## 4. 部署命令
 
