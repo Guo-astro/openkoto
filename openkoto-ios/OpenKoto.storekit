@@ -13,7 +13,7 @@
           "locale" : "en_US"
         },
         {
-          "description" : "用于翻译、精讲与整本书翻译，12 个月内有效",
+          "description" : "用于翻译、精讲与整本书翻译，永不过期",
           "displayName" : "3000 AI 积分",
           "locale" : "zh_Hans"
         },
@@ -59,7 +59,7 @@
           "introductoryOffer" : null,
           "localizations" : [
             {
-              "description" : "Unlimited words, books, lyrics and articles",
+              "description" : "Sync for 20,000 words, 500 books and 2,000 lyrics",
               "displayName" : "Plus (Monthly)",
               "locale" : "en_US"
             },
@@ -69,7 +69,7 @@
               "locale" : "zh_Hans"
             },
             {
-              "description" : "単語・書籍・歌詞・記事が無制限",
+              "description" : "単語 2 万・本 500 冊・歌詞 2,000 曲を同期",
               "displayName" : "Plus（月額）",
               "locale" : "ja"
             }
@@ -90,7 +90,7 @@
           "introductoryOffer" : null,
           "localizations" : [
             {
-              "description" : "Unlimited words, books, lyrics and articles",
+              "description" : "Sync for 20,000 words, 500 books and 2,000 lyrics",
               "displayName" : "Plus (Yearly)",
               "locale" : "en_US"
             },
@@ -100,7 +100,7 @@
               "locale" : "zh_Hans"
             },
             {
-              "description" : "単語・書籍・歌詞・記事が無制限",
+              "description" : "単語 2 万・本 500 冊・歌詞 2,000 曲を同期",
               "displayName" : "Plus（年額）",
               "locale" : "ja"
             }

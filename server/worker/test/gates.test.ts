@@ -28,7 +28,7 @@ describe("server-side plan gates", () => {
     expect((await api(cli.accessToken, "/api/v1/library/vocab")).status).toBe(200);
   });
 
-  it("stops API keys after a downgrade", async () => {
+  it("meters access tokens by plan after a downgrade", async () => {
     const t = await nativeLogin("gate-key@example.com");
     await makePlus(t.accessToken);
     const created = await json<{ key: string }>(
@@ -36,7 +36,11 @@ describe("server-side plan gates", () => {
     );
     expect((await api(created.key, "/api/v1/library/vocab")).status).toBe(200);
     await env.DB.prepare("update subscriptions set period_end = ? where user_id = ?").bind(Date.now() - 1000, t.user.id).run();
-    expect((await api(created.key, "/api/v1/library/vocab")).status).toBe(403);
+    // Still works on the free plan, within the free daily allowance.
+    expect((await api(created.key, "/api/v1/library/vocab")).status).toBe(200);
+    const day = new Date().toISOString().slice(0, 10);
+    await env.DB.prepare("update agent_usage set count = ? where user_id = ? and day = ?").bind(FREE_AGENT_DAILY_LIMIT, t.user.id, day).run();
+    expect((await api(created.key, "/api/v1/library/vocab")).status).toBe(429);
   });
 
   it("rejects access tokens of revoked devices immediately", async () => {

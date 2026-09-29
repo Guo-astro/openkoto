@@ -3,9 +3,10 @@ import type { AppBindings, Env } from "../env";
 import { principalOf, requireAuth, requireSession } from "../auth/middleware";
 import { hmacSha256Hex, newId, randomFrom32, sha256Hex, timingSafeEqual } from "../lib/crypto";
 import { ApiError, badRequest, forbidden, notFound } from "../lib/http";
-import { PRO_MONTHLY_CREDITS, productForSku, SKUS, skuById, skuForProduct, type Sku } from "./catalog";
+import { productForSku, SKUS, skuById, skuForProduct, type Sku } from "./catalog";
 import { addCredits, addCreditsOnce } from "./credits";
-import { extendByDays, grantPeriodCredits, setAutoRenew, setSubscriptionStatus, upsertSubscription } from "./subscriptions";
+import { grantDueProCredits } from "./pro-credits";
+import { extendByDays, setAutoRenew, setSubscriptionStatus, upsertSubscription } from "./subscriptions";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -54,7 +55,10 @@ async function redeemActivationCode(env: Env, userId: string, code: string) {
     .first<{ plan: "plus" | "pro" | null; duration_days: number; credits: number }>();
   if (!claimed) throw notFound("code is invalid or already used");
   let periodEnd: number | null = null;
-  if (claimed.plan && claimed.duration_days > 0) periodEnd = await extendByDays(env, userId, claimed.plan, claimed.duration_days, `code:${hash}`);
+  if (claimed.plan && claimed.duration_days > 0) {
+    periodEnd = await extendByDays(env, userId, claimed.plan, claimed.duration_days, `code:${hash}`);
+    await grantDueProCredits(env, userId);
+  }
   if (claimed.credits > 0) await addCredits(env, userId, claimed.credits, "redeem", `code:${hash}`);
   return { plan: claimed.plan, credits: claimed.credits, periodEnd: periodEnd ? new Date(periodEnd).toISOString() : null };
 }
@@ -129,11 +133,12 @@ async function processCreemEvent(env: Env, event: CreemEvent): Promise<"processe
         await addCreditsOnce(env, userId, sku.credits ?? 0, "purchase", `creem:${idOf(obj.order) ?? event.id}`);
         return "processed";
       }
-      // Activate right away; period credits are granted by subscription.paid only, so the
-      // two events can't both grant for the same period.
+      // Activate right away. Pro's included credits come from the 30-day schedule, which
+      // grants at most once per period however many events arrive.
       const subscription = obj.subscription;
       const subId = idOf(subscription) ?? `order:${idOf(obj.order) ?? event.id}`;
       await upsertSubscription(env, { userId, plan: sku.plan!, channel: "creem", externalId: subId, periodEnd: periodEndOf(subscription, sku) });
+      await grantDueProCredits(env, userId);
       return "processed";
     }
     case "subscription.active":
@@ -143,10 +148,7 @@ async function processCreemEvent(env: Env, event: CreemEvent): Promise<"processe
       const subId = idOf(obj) ?? event.id;
       const dataPeriodEnd = periodEndFromData(obj);
       await upsertSubscription(env, { userId, plan: sku.plan!, channel: "creem", externalId: subId, periodEnd: dataPeriodEnd ?? periodEndOf(obj, sku) });
-      if (sku.credits && event.eventType === "subscription.paid") {
-        // One grant per billing period; fall back to the event id so retries stay idempotent.
-        await grantPeriodCredits(env, userId, sku.credits, `creem:${subId}:${dataPeriodEnd ?? event.id}`);
-      }
+      if (event.eventType === "subscription.paid") await grantDueProCredits(env, userId);
       return "processed";
     }
     case "subscription.canceled":
@@ -235,8 +237,8 @@ export const adminApi = new Hono<AppBindings>()
     const count = Math.min(Math.max(Number(body.count ?? 1), 1), 500);
     const plan = body.plan === "plus" || body.plan === "pro" ? body.plan : null;
     const durationDays = Math.max(0, Number(body.durationDays ?? 0));
-    // Pro includes AI credits: unless given, a Pro code carries the monthly allotment for each 30 days.
-    const credits = Math.max(0, Number(body.credits ?? (plan === "pro" ? PRO_MONTHLY_CREDITS * Math.max(1, Math.round(durationDays / 30)) : 0)));
+    // Pro codes need no credits of their own: Pro's monthly credits come from the schedule.
+    const credits = Math.max(0, Number(body.credits ?? 0));
     if (!plan && !credits) throw badRequest("a code must grant a plan or credits");
     if (plan && !durationDays) throw badRequest("durationDays is required with a plan");
     const batch = String(body.batch ?? new Date().toISOString().slice(0, 10)).slice(0, 60);

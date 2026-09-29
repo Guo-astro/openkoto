@@ -1,10 +1,10 @@
-import { internalRequests, requireFreeAgentAllowance } from "../billing/agent-quota";
+import { internalRequests, requireAgentAllowance } from "../billing/agent-quota";
 import type { Context, MiddlewareHandler } from "hono";
 import type { AppBindings, Env, Principal } from "../env";
 import { forbidden, unauthenticated } from "../lib/http";
 import { getAuth } from "./better-auth";
 import { FIRST_PARTY_SCOPES, onDeviceRevoked, resolveApiKey, verifyAccessToken } from "./tokens";
-import { currentPlan, planAtLeast } from "../billing/entitlements";
+import { currentPlan } from "../billing/entitlements";
 
 interface DeviceState {
   platform: string;
@@ -71,16 +71,15 @@ export async function resolvePrincipal(env: Env, req: Request): Promise<Principa
 }
 
 /**
- * Library/agent API: agent tokens (API keys, CLI, MCP). API keys need Plus; free CLI and MCP
- * devices get a small daily allowance (FREE_AGENT_DAILY_LIMIT), Plus and Pro are unlimited.
+ * Library/agent API: agent tokens (access tokens, CLI, MCP) are metered per UTC day by plan
+ * (AGENT_DAILY_LIMITS). First-party apps (iOS, desktop, web) are never counted.
  */
 export function requirePlusForAgents(): MiddlewareHandler<AppBindings> {
   return async (c, next) => {
     if (internalRequests.has(c.req.raw)) return next();
     const principal = await resolvePrincipal(c.env, c.req.raw);
-    if (principal && (await isAgentPrincipal(c.env, principal)) && !planAtLeast(await currentPlan(c.env, principal.userId), "plus")) {
-      if (principal.via === "api_key") throw forbidden("API-key access is part of OpenKoto Plus", "PLAN_REQUIRED");
-      await requireFreeAgentAllowance(c.env, principal.userId);
+    if (principal && (await isAgentPrincipal(c.env, principal))) {
+      await requireAgentAllowance(c.env, principal.userId, await currentPlan(c.env, principal.userId));
     }
     await next();
   };

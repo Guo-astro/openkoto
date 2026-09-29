@@ -30,7 +30,7 @@ export function planRequired(message = `The koto CLI is part of OpenKoto Plus. U
   return new CliError(EXIT.PLAN, "PLAN_REQUIRED", message);
 }
 
-const PLAN_CODES = new Set(["QUOTA_EXCEEDED", "PLAN_REQUIRED", "FREE_LIMIT_REACHED", "INSUFFICIENT_CREDITS", "PAYMENT_REQUIRED"]);
+const PLAN_CODES = new Set(["QUOTA_EXCEEDED", "PLAN_REQUIRED", "FREE_LIMIT_REACHED", "DAILY_LIMIT_REACHED", "INSUFFICIENT_CREDITS", "PAYMENT_REQUIRED"]);
 
 /** Normalizes anything thrown by a command into a CliError. */
 export function toCliError(err: unknown): CliError {

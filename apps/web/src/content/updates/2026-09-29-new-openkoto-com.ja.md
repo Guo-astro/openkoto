@@ -18,7 +18,7 @@ tags: サイト, Web アプリ, 同期
 
 - メール、Google、Apple、GitHub でサインイン
 - 単語、復習記録、本、歌詞、読書進捗を Web・iOS・macOS・Windows 間で同期
-- 無制限同期、ホスト型 AI、CLI が使える [Plus / Pro プラン](/pricing)（任意）
+- 大容量同期、ホスト型 AI、より多くの CLI が使える [Plus / Pro プラン](/pricing)（任意）
 
 ### 開発者とエージェント向け
 

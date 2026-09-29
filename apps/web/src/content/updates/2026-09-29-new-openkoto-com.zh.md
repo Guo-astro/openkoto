@@ -18,7 +18,7 @@ openkoto.com 过去是一个介绍网站，现在它就是 **OpenKoto 网页版�
 
 - 支持邮箱、Google、Apple、GitHub 登录
 - 生词、复习记录、书籍、歌词和阅读进度在网页、iOS、macOS、Windows 间同步
-- 可选 [Plus / Pro 会员](/pricing)：无限同步、托管 AI 与命令行工具
+- 可选 [Plus / Pro 会员](/pricing)：大容量同步、托管 AI 与命令行工具
 
 ### 面向开发者与 Agent
 

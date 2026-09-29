@@ -128,7 +128,7 @@ struct PaywallView: View {
                 price: "¥258" + L("paywall.perYear"), purchasing: false) {}
         }
         Section(L("paywall.credits")) {
-            row(name: "3000 AI 积分", detail: "用于翻译、精讲与整本书翻译，12 个月内有效",
+            row(name: "3000 AI 积分", detail: "用于翻译、精讲与整本书翻译，永不过期",
                 price: "¥30", purchasing: false) {}
         }
     }

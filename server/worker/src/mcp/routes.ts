@@ -10,8 +10,8 @@ import { LibraryClient, OpenKotoClient } from "@openkoto/client";
 import { createOpenKotoMcpServer, SERVER_VERSION } from "@openkoto/mcp-tools";
 import type { AppBindings, Env, Principal } from "../env";
 import { resolvePrincipal } from "../auth/middleware";
-import { consumeFreeAgentCall, freeLimitMessage, internalRequests } from "../billing/agent-quota";
-import { currentPlan, planAtLeast } from "../billing/entitlements";
+import { agentLimitMessage, consumeAgentCall, internalRequests } from "../billing/agent-quota";
+import { currentPlan } from "../billing/entitlements";
 import { ApiError } from "../lib/http";
 import { resourceMetadataUrl } from "./oauth";
 
@@ -83,15 +83,12 @@ export function mcpRoutes(dispatch: Dispatch) {
         },
       });
 
-      // Plus and Pro are unlimited. Free accounts get FREE_AGENT_DAILY_LIMIT tool calls a day
-      // (API keys stay Plus-only); the API requests a tool makes below are not counted again.
-      let entitled: boolean | null = null;
+      // Each tool call counts once against the plan's daily allowance (AGENT_DAILY_LIMITS);
+      // the API requests a tool makes below are not counted again.
       const guard = async () => {
-        entitled ??= planAtLeast(await currentPlan(c.env, p.userId), "plus");
-        if (entitled) return;
-        if (p.via === "api_key") throw new GuardError("PLAN_REQUIRED", "API-key access is part of OpenKoto Plus. The user can upgrade at https://openkoto.com/pricing.");
-        const { allowed } = await consumeFreeAgentCall(c.env, p.userId);
-        if (!allowed) throw new GuardError("FREE_LIMIT_REACHED", freeLimitMessage());
+        const plan = await currentPlan(c.env, p.userId);
+        const { allowed } = await consumeAgentCall(c.env, p.userId, plan);
+        if (!allowed) throw new GuardError(plan === "free" ? "FREE_LIMIT_REACHED" : "DAILY_LIMIT_REACHED", agentLimitMessage(plan));
       };
 
       const server = createOpenKotoMcpServer(new LibraryClient(client, c.req.header("X-Timezone") || undefined), {

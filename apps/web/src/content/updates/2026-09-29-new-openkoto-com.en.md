@@ -18,7 +18,7 @@ openkoto.com used to be a marketing site. It is now the **OpenKoto web app** its
 
 - Sign in with email, Google, Apple or GitHub
 - Words, reviews, books, lyrics and reading progress sync across web, iOS, macOS and Windows
-- Optional [Plus and Pro plans](/pricing) for unlimited sync, hosted AI and the CLI
+- Optional [Plus and Pro plans](/pricing) for roomy sync, hosted AI and more CLI calls
 
 ### For developers and agents
 

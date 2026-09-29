@@ -30,7 +30,7 @@ You agree to:
 - Memberships (Plus / Pro) renew automatically each billing period until cancelled.
 - **Web purchases** are processed by Creem. You can cancel renewal from the Account page; benefits remain until the end of the paid period.
 - **App Store purchases** are processed by Apple and managed in your device's subscription settings. Refunds for App Store purchases are handled by Apple.
-- Credits can only be spent on AI features inside OpenKoto and are not redeemable for cash or transferable. Purchased credits are valid for 12 months from purchase.
+- Credits can only be spent on AI features inside OpenKoto and are not redeemable for cash or transferable. Purchased credits never expire.
 - Redeemed activation codes cannot be reversed.
 
 ## Third-party services
