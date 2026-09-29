@@ -1,6 +1,6 @@
 [package]
 name = "openkoto-desktop"
-version = "0.6.17"
+version = "0.7.0"
 description = "OpenKoto Desktop - AI-powered Article Reader"
 authors = ["OpenKoto Team"]
 edition = "2021"

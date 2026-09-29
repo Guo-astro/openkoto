@@ -234,22 +234,19 @@ jobs:
           releaseName: "OpenKoto Desktop ${{ github.ref_name }}"
           releaseBody: |
             ## Release Highlights
-            - Smarter vocabulary review: the spaced-repetition engine is now unified on FSRS-6 (replacing SM-2), with a one-time automatic migration, review statistics, and Anki TSV export so you can move your vocabulary anywhere.
-            - AI web cleaning: when importing articles from the web, Smart mode asks the AI to remove navigation, ads, recommendation links, comments, and footers — keeping only the real content. Classic rule-based extraction remains available.
-            - TXT novel reading is much better: automatic detection of GBK/GB2312/Big5 encodings, per-page translation with original / translated / bilingual views, and imported books now open directly in the book reader.
-            - New `.okdata` transfer bundle export to share content with Apple devices.
-            - Media player: subtitles now support original / bilingual / translation view modes.
+            - OpenKoto Cloud: sign in with your OpenKoto account (Settings → Account & Sync) to sync vocabulary, books, lyrics and reading progress across desktop, web and iPhone. Changes arrive in real time, and your data stays local-first in a new SQLite store.
+            - Membership: your Free / Plus / Pro plan is shown in the app; upgrade, buy AI credits or redeem an activation code at openkoto.com/account.
+            - Account-switch guard: signing in to a different account asks whether to upload this computer's data or keep it local-only.
+            - Import Bilibili videos by link.
+            - New Meta AI (Muse Spark) API provider.
+            - Linux: .deb packages for x86_64.
 
             ## Improved
-            - Vocabulary management: edit dialog, word-pack selection, recite mode, and favorites refinements.
-            - Chat assistant auto-scroll is scoped to the message list and no longer jumps around while you read history.
-            - Article reader only scrolls to the selected sentence when it is off-screen.
+            - MKV/AVI videos are remuxed to MP4 on import, and the player gains keyboard shortcuts.
 
             ## Fixed
-            - Fixed TXT imports showing garbled text for non-UTF-8 files, and self-heal for legacy placeholder book content.
-            - Fixed scroll jumps in the chat panel and article reader.
-            - Fixed the media player sheet that could not be closed after cancelling.
-            - Fixed the OpenAI provider input.
+            - Fixed mind map generation in release builds.
+            - Fixed Meta AI model selection not being remembered.
 
             > Desktop version `${{ github.ref_name }}`. Multi-platform release publishing remains tag-driven through this workflow.
           releaseDraft: false
