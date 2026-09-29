@@ -60,7 +60,8 @@ JWT_PRIVATE_KEY="<node scripts/gen-jwt-key.mjs 的输出>"
      npx wrangler secret put APPSTORE_KEY_ID
      npx wrangler secret put APPSTORE_PRIVATE_KEY   # .p8 文件内容
      ```
-   - App Store Server Notifications V2 地址：`https://openkoto.com/api/webhooks/appstore`（沙盒可以填 staging 地址）。
+   - App Store Server Notifications V2 地址：`https://openkoto.com/api/webhooks/appstore`（沙盒填 staging 地址）。**2026-09-30 已设置**，订阅群组 "OpenKoto"（ID 22425469）与 5 个内购（4 个订阅 + `com.openkoto.credits.3000` 消耗型）也已创建，但价格、本地化显示名与描述尚未填写。
+   - **下一个带云同步的 iOS 版本提交时**：App 隐私里目前是"未收集数据"，需要改为收集"电子邮件地址（账户）、用户内容（同步的生词/书籍/歌词）、用户 ID、购买项目"；隐私政策网址改为 `https://openkoto.com/privacy`（只能随新版本修改）；首个订阅群组和内购必须随该版本一起提交审核。
    - 在开发者后台给 App ID `com.openkoto.ios` 打开 **Sign in with Apple**。
 6. **Apple 网页登录（可选）**：Services ID + 私钥生成的 client secret（有效期最长 6 个月）写入 `APPLE_CLIENT_ID` / `APPLE_CLIENT_SECRET`。
 7. **托管 AI**：`AI_API_KEY`（例如 DeepSeek），可选 `AI_API_BASE` / `AI_MODEL`。
