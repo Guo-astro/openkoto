@@ -41,7 +41,7 @@ pub fn new_pkce() -> Pkce {
 
 pub fn authorize_url(base_url: &str, redirect_uri: &str, pkce: &Pkce) -> String {
     let mut url = url::Url::parse(&format!("{base_url}/auth/native/authorize"))
-        .unwrap_or_else(|_| url::Url::parse("https://openkoto.app/auth/native/authorize").unwrap());
+        .unwrap_or_else(|_| url::Url::parse("https://openkoto.com/auth/native/authorize").unwrap());
     url.query_pairs_mut()
         .append_pair("client_id", "desktop")
         .append_pair("redirect_uri", redirect_uri)
@@ -211,8 +211,8 @@ mod tests {
             challenge: "c".into(),
             state: "s t".into(),
         };
-        let url = authorize_url("https://openkoto.app", "http://127.0.0.1:5555/callback", &p);
-        assert!(url.starts_with("https://openkoto.app/auth/native/authorize?client_id=desktop"));
+        let url = authorize_url("https://openkoto.com", "http://127.0.0.1:5555/callback", &p);
+        assert!(url.starts_with("https://openkoto.com/auth/native/authorize?client_id=desktop"));
         assert!(url.contains("redirect_uri=http%3A%2F%2F127.0.0.1%3A5555%2Fcallback"));
         assert!(url.contains("code_challenge_method=S256"));
         assert!(url.contains("state=s+t"));

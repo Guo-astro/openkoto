@@ -8,7 +8,7 @@ import { homedir } from "node:os";
 import { join } from "node:path";
 import type { TokenStore, Tokens } from "@openkoto/client";
 
-export const DEFAULT_API_BASE = "https://openkoto.app";
+export const DEFAULT_API_BASE = "https://openkoto.com";
 
 export type Env = Record<string, string | undefined>;
 

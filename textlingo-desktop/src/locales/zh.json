@@ -833,7 +833,7 @@
       "lmstudioHint": "LM Studio 通常通过 OpenAI 兼容接口提供服务，请填写当前加载模型对应的模型 ID。",
       "skipButton": "暂不配置",
       "tip": "提示：配置完成后，即可使用一键翻译等功能。",
-      "helpLink": "不会配置？ 访问 https://www.openkoto.com/ 查看配置文档"
+      "helpLink": "不会配置？ 访问 https://openkoto.com/docs 查看配置文档"
     },
     "welcome": {
       "title": "恭喜！",

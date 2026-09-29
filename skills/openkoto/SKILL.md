@@ -29,7 +29,7 @@ Always drive the CLI with `--json` and parse stdout. Never scrape the human-read
 koto whoami --json      # exit 3 → not logged in; entitlements.cli false → needs Plus
 ```
 
-If `koto` is missing: `npm i -g @openkoto/cli`, then the user runs `koto login`. The login prints a code and opens the browser. For CI or headless use, set `KOTO_API_KEY=ok_live_…`, created at openkoto.app → Settings → API keys.
+If `koto` is missing: `npm i -g @openkoto/cli`, then the user runs `koto login`. The login prints a code and opens the browser. For CI or headless use, set `KOTO_API_KEY=ok_live_…`, created at openkoto.com → Settings → API keys.
 
 # Command reference
 
@@ -75,7 +75,7 @@ A `Vocab` object has these fields: `id, word, meaning, reading?, example?, usage
 
 # MCP alternative
 
-If the `openkoto` MCP server is configured, prefer its tools. It is either the remote server `https://openkoto.app/mcp` or the local `npx @openkoto/mcp` (see README.md).
+If the `openkoto` MCP server is configured, prefer its tools. It is either the remote server `https://openkoto.com/mcp` or the local `npx @openkoto/mcp` (see README.md).
 
 - Read: `search_library`, `list_due_vocab`, `get_review_stats`, `get_lyrics`, `list_books`, `read_chapter`
 - Write: `add_vocab`, `update_vocab`, `review_vocab`, `save_lyrics_translation`, `create_lyrics`

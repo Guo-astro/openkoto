@@ -127,7 +127,7 @@ pub struct AppConfig {
     /// Active ASR config ID (defaults to first asr_config if not set).
     #[serde(default)]
     pub active_asr_model_id: Option<String>,
-    /// OpenKoto cloud API origin override (default https://openkoto.app; the
+    /// OpenKoto cloud API origin override (default https://openkoto.com; the
     /// OPENKOTO_API_BASE environment variable takes precedence).
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub cloud_api_base: Option<String>,

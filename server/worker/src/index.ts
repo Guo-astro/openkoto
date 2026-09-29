@@ -30,6 +30,29 @@ async function authRateLimit(c: Context<AppBindings>, next: Next) {
 
 const app = new Hono<AppBindings>();
 
+/** Old openkoto.com (Vercel) paths that shipped app builds and store listings still link to. */
+export function legacyRedirect(path: string): string | null {
+  const p = path.replace(/\/+$/, "") || "/";
+  const m = /^\/(?:en|zh|ja)(\/.*)?$/.exec(p);
+  const rest = m ? (m[1] ?? "/") : p;
+  if (rest === "/privacy-policy") return "/privacy";
+  if (rest === "/terms-of-service") return "/terms";
+  if (m) return rest;
+  return null;
+}
+
+// www.openkoto.com → openkoto.com, and 301s for the old marketing-site paths.
+app.use("*", async (c, next) => {
+  const url = new URL(c.req.url);
+  const target = legacyRedirect(url.pathname);
+  if (url.hostname.startsWith("www.") || (target !== null && c.req.method === "GET")) {
+    url.hostname = url.hostname.replace(/^www\./, "");
+    if (target !== null) url.pathname = target;
+    return c.redirect(url.toString(), 301);
+  }
+  await next();
+});
+
 app.onError((err, c) => {
   if (err instanceof ApiError) {
     for (const [k, v] of Object.entries(err.headers)) c.header(k, v);

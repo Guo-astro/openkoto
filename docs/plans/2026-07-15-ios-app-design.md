@@ -383,7 +383,7 @@ enum ThemeID: String, CaseIterable { case california, tokyo, seoul }
 > 详见 `docs/specs/vocabulary-srs-spec.md` §8;协议细节仍待二期 Sync RFC。
 
 - **认证**：候选为 Sign in with Apple + 邮箱验证码；若引入第三方/社交登录，按届时有效的 App Review 4.8 要求提供等价隐私登录选项。后端签发短期 access token，refresh token 存 Keychain，并定义撤销、登出和账号删除流程。
-- **同步策略结论：自建后端，否定 CloudKit。** 依据：桌面 `AppConfig` 已预留 `backend_url` / `auth_token`，openkoto.app Web 版已存在，Android 在路线图——CloudKit 无法覆盖非 Apple 端。
+- **同步策略结论：自建后端，否定 CloudKit。** 依据：桌面 `AppConfig` 已预留 `backend_url` / `auth_token`，openkoto.com Web 版已存在，Android 在路线图——CloudKit 无法覆盖非 Apple 端。
 - **同步协议仅为候选**：实体级增量——`GET /sync/pull?cursor=<opaque>` + `POST /sync/push`。cursor 必须由服务端生成且不解释为客户端时间；push 要有幂等 operation ID，服务端返回每个实体的新 revision/冲突结果。
 - **冲突原则**：不能直接用客户端 `updated_at` 做 LWW（设备时钟可漂移）。普通字段以 server revision + 明确冲突策略处理；文章重切分作为带 `segmentation_revision` 的整体操作，不与旧 segment 逐行混合。SRS 不只比较 `last_reviewed_at`，更稳妥的方案是同步不可变 review event，再由事件重算状态；若仍同步快照，必须定义同日多设备复习的合并规则。
 - **墓碑与体积**：定义墓碑保留期、首次全量同步、分页上限、压缩、附件/大正文限制、登出时本地数据归属、账号删除和恢复流程。`pack_ids` JSON 对多端并发编辑不友好，二期迁移为关联表或集合操作。

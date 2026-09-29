@@ -828,7 +828,7 @@
       "lmstudioHint": "LM Studio usually exposes an OpenAI-compatible endpoint. Enter the model ID for the model currently loaded there.",
       "skipButton": "Skip for Now",
       "tip": "Tip: Once configured, features like one-click translation will be available.",
-      "helpLink": "Don't know how to configure? Visit https://www.openkoto.com/ for documentation"
+      "helpLink": "Don't know how to configure? Visit https://openkoto.com/docs for documentation"
     },
     "welcome": {
       "title": "Congratulations!",

@@ -1050,7 +1050,7 @@ export function SettingsDialog({ isOpen, onClose, onSave, initialSection }: Sett
                 <button
                   type="button"
                   // 点击后在浏览器打开文档链接
-                  onClick={() => openUrl("https://www.openkoto.com/")}
+                  onClick={() => openUrl("https://openkoto.com/docs")}
                   className="text-muted-foreground hover:text-primary transition-colors focus:outline-none"
                   title={t("settings.syncErrors.modelHelpTooltip")}
                 >

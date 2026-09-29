@@ -24,7 +24,7 @@ export class CliError extends Error {
 export const usageError = (message: string) => new CliError(EXIT.USAGE, "USAGE", message);
 export const notLoggedIn = (message = "Not logged in. Run `koto login` (or set KOTO_API_KEY).") => new CliError(EXIT.NOT_LOGGED_IN, "NOT_LOGGED_IN", message);
 
-export const UPGRADE_URL = "https://openkoto.app/pricing";
+export const UPGRADE_URL = "https://openkoto.com/pricing";
 
 export function planRequired(message = `The koto CLI is part of OpenKoto Plus. Upgrade at ${UPGRADE_URL} — \`koto login\`, \`koto whoami\` and \`koto config\` keep working on the free plan.`) {
   return new CliError(EXIT.PLAN, "PLAN_REQUIRED", message);

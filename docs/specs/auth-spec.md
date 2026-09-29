@@ -24,7 +24,7 @@
 
 | claim | 含义 |
 |---|---|
-| `iss` | `APP_ORIGIN`，例如 `https://openkoto.app` |
+| `iss` | `APP_ORIGIN`，例如 `https://openkoto.com` |
 | `aud` | `openkoto-api` |
 | `sub` | user id |
 | `did` | device id |
@@ -81,8 +81,8 @@
 
    ```json
    { "deviceCode": "…", "userCode": "WDJB-MJHT",
-     "verificationUri": "https://openkoto.app/device",
-     "verificationUriComplete": "https://openkoto.app/device?code=WDJB-MJHT",
+     "verificationUri": "https://openkoto.com/device",
+     "verificationUriComplete": "https://openkoto.com/device?code=WDJB-MJHT",
      "interval": 5, "expiresIn": 600 }
    ```
 

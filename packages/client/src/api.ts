@@ -129,7 +129,7 @@ export type FetchCredentials = "include" | "omit" | "same-origin";
 export type FetchLike = (input: string, init?: RequestInit) => Promise<Response>;
 
 export interface OpenKotoClientOptions {
-  /** e.g. "https://openkoto.app" (no trailing slash needed). */
+  /** e.g. "https://openkoto.com" (no trailing slash needed). */
   baseUrl: string;
   /** `X-OpenKoto-Client`, "<platform>/<version>", e.g. "ios/1.5.0". */
   clientName: string;

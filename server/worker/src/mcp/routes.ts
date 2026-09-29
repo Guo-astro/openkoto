@@ -1,4 +1,4 @@
-// Remote MCP endpoint: POST https://openkoto.app/mcp (Streamable HTTP, stateless, JSON responses).
+// Remote MCP endpoint: POST https://openkoto.com/mcp (Streamable HTTP, stateless, JSON responses).
 // Same tools as the stdio server (@openkoto/mcp-tools). Tool calls go through the regular REST
 // routes in-process (the caller's bearer token is replayed), so scopes, plan quotas, credits and
 // validation are enforced exactly as for the CLI.
@@ -81,7 +81,7 @@ export function mcpRoutes(dispatch: Dispatch) {
       let entitled: boolean | null = null;
       const guard = async () => {
         entitled ??= planAtLeast(await currentPlan(c.env, p.userId), "plus");
-        if (!entitled) throw new GuardError("PLAN_REQUIRED", "Agent access (MCP/CLI) is part of OpenKoto Plus. The user can upgrade at https://openkoto.app/pricing.");
+        if (!entitled) throw new GuardError("PLAN_REQUIRED", "Agent access (MCP/CLI) is part of OpenKoto Plus. The user can upgrade at https://openkoto.com/pricing.");
       };
 
       const server = createOpenKotoMcpServer(new LibraryClient(client, c.req.header("X-Timezone") || undefined), {

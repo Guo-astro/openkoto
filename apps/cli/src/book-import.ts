@@ -51,7 +51,7 @@ async function apiError(res: Response): Promise<CliError> {
     // non-JSON
   }
   if (res.status === 401) return new CliError(EXIT.NOT_LOGGED_IN, code, `${message}. Run \`koto login\` again.`);
-  if (res.status === 402) return new CliError(EXIT.PLAN, code, `${message}. Upgrade at https://openkoto.app/pricing`);
+  if (res.status === 402) return new CliError(EXIT.PLAN, code, `${message}. Upgrade at https://openkoto.com/pricing`);
   return new CliError(EXIT.ERROR, code, `${message} (HTTP ${res.status})`);
 }
 
@@ -131,7 +131,7 @@ export async function importBook(deps: ImportBookDeps, bytes: Uint8Array, fileNa
     const res = await deps.client.sync.push({ deviceId, ops: batch });
     const rejected = res.results.find((r) => r.status === "rejected");
     if (rejected && rejected.status === "rejected") {
-      if (rejected.code === "QUOTA_EXCEEDED") throw new CliError(EXIT.PLAN, "QUOTA_EXCEEDED", `${rejected.message ?? "plan quota exceeded"}. Upgrade at https://openkoto.app/pricing`);
+      if (rejected.code === "QUOTA_EXCEEDED") throw new CliError(EXIT.PLAN, "QUOTA_EXCEEDED", `${rejected.message ?? "plan quota exceeded"}. Upgrade at https://openkoto.com/pricing`);
       throw new CliError(EXIT.ERROR, rejected.code, rejected.message ?? `sync push rejected: ${rejected.code}`);
     }
     done += batch.length;

@@ -31,7 +31,7 @@ const signedOut: SyncStatus = {
   lastError: null,
   pendingChanges: 3,
   lastReport: null,
-  baseUrl: "https://openkoto.app",
+  baseUrl: "https://openkoto.com",
   user: null,
 };
 
@@ -58,7 +58,7 @@ describe("AccountSyncPanel", () => {
         case "cloud_sync_status":
           return Promise.resolve(status);
         case "cloud_login_start":
-          return Promise.resolve({ authorizeUrl: "https://openkoto.app/auth/native/authorize", redirectUri: "openkoto://auth/callback", method: "deep-link" });
+          return Promise.resolve({ authorizeUrl: "https://openkoto.com/auth/native/authorize", redirectUri: "openkoto://auth/callback", method: "deep-link" });
         case "cloud_account":
           return Promise.resolve({ signedIn: true, user: { id: "u1", email: "me@example.com" }, plan: "plus" });
         default:
@@ -100,7 +100,7 @@ describe("AccountSyncPanel", () => {
     expect(await screen.findByTestId("sync-error")).toHaveTextContent("QUOTA_EXCEEDED");
 
     await userEvent.click(screen.getByRole("button", { name: /Manage account/ }));
-    expect(openUrlMock).toHaveBeenCalledWith("https://openkoto.app/account");
+    expect(openUrlMock).toHaveBeenCalledWith("https://openkoto.com/account");
 
     await userEvent.click(screen.getByRole("button", { name: /Sign out/ }));
     await waitFor(() => expect(invokeMock).toHaveBeenCalledWith("cloud_logout"));

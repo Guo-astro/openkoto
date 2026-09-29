@@ -23,7 +23,7 @@ use crate::sync::engine::SyncReport;
 use serde::{Deserialize, Serialize};
 use std::sync::{Mutex, OnceLock};
 
-pub const DEFAULT_API_BASE: &str = "https://openkoto.app";
+pub const DEFAULT_API_BASE: &str = "https://openkoto.com";
 pub const API_BASE_ENV: &str = "OPENKOTO_API_BASE";
 pub const DEEP_LINK_SCHEME: &str = "openkoto";
 pub const DEEP_LINK_CALLBACK: &str = "openkoto://auth/callback";
@@ -33,7 +33,7 @@ pub const EVENT_AUTH_CHANGED: &str = "cloud://auth-changed";
 pub const EVENT_SYNC_STATUS: &str = "cloud://sync-status";
 pub const EVENT_DATA_CHANGED: &str = "cloud://data-changed";
 
-/// API origin: `OPENKOTO_API_BASE` > `config.cloud_api_base` > https://openkoto.app.
+/// API origin: `OPENKOTO_API_BASE` > `config.cloud_api_base` > https://openkoto.com.
 pub fn resolve_base_url(config_value: Option<&str>) -> String {
     let env = std::env::var(API_BASE_ENV).ok();
     let chosen = env

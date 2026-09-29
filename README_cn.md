@@ -16,7 +16,7 @@
 
 </div>
 
-🌐 **官网与文档**: [openkoto.com](https://www.openkoto.com/)
+🌐 **官网与文档**: [openkoto.com](https://openkoto.com/)
 
 > 🎉 **新消息**: **OpenKoto iOS 版已正式上架 App Store！** 在 iPhone / iPad 上阅读文章和电子书、配字幕精学音视频、用间隔重复复习生词。在 App Store 搜索 **「OpenKoto」** 即可下载。 <!-- TODO: 替换为 App Store 直达链接 -->
 
@@ -49,7 +49,7 @@ OpenKoto Desktop 是一款**开源的 AI 驱动语言学习应用**，让你可�
 |------|------|------|
 | **iOS 版** | **新上线！** 📱 iPhone / iPad 原生应用 — 阅读、离线注音（振假名/拼音）、视频字幕、间隔重复复习，隐私优先 | App Store 搜索 **「OpenKoto」** <!-- TODO: 替换为 App Store 直达链接 --> |
 | **桌面版** | **推荐** 🖥️ 原生性能，本地数据，支持 Mac/Windows/Linux | [下载最新版本](https://github.com/hikariming/OpenKoto/releases) |
-| 网页版 | **重建中**：背单词、小说阅读、歌词学习，与 iOS / 桌面多端同步（即将在 openkoto.app 上线） | — |
+| 网页版 | **重建中**：背单词、小说阅读、歌词学习，与 iOS / 桌面多端同步（即将在 openkoto.com 上线） | — |
 | 命令行 / Agent | `koto` CLI、MCP Server 与 Agent Skill，让 Claude 等 AI 操作你的词库（Plus 会员） | [skills/openkoto](skills/openkoto) |
 | 源代码 | 🆓 完全开源，Apache 2.0 许可证 | [GitHub 仓库](https://github.com/hikariming/OpenKoto) |
 
@@ -185,7 +185,7 @@ sudo xattr -r -d com.apple.quarantine /Applications/OpenKoto\ Desktop.app
 [usedify](https://usedify.app/) 是一个专注于 Dify 的使用学习分享站。在这里，你可以学习到 Dify 相关的使用技巧、经验分享以及各种实用的案例，助力你更好地掌握和运用 Dify 工具。
 
 ### 基于感兴趣文本学习外语的站
-[openkoto](https://openkoto.app/) 是一个基于自己感兴趣文本学习外语的站。通过该网站，你能够利用自己感兴趣的文本内容作为学习材料，以更有趣和高效的方式提升外语水平。
+[openkoto](https://openkoto.com/) 是一个基于自己感兴趣文本学习外语的站。通过该网站，你能够利用自己感兴趣的文本内容作为学习材料，以更有趣和高效的方式提升外语水平。
 
 ## 许可证
 

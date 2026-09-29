@@ -695,7 +695,7 @@ export function OnboardingDialog({ isOpen, onFinish }: OnboardingDialogProps) {
                                                 {t("onboarding.model.tip")}
                                             </p>
                                             <a
-                                                href="https://www.openkoto.com/"
+                                                href="https://openkoto.com/docs"
                                                 target="_blank"
                                                 rel="noopener noreferrer"
                                                 className="text-[10px] text-primary/80 hover:text-primary underline decoration-dotted transition-colors self-start"

@@ -5,18 +5,21 @@
   "compatibility_date": "2026-08-15",
   "compatibility_flags": ["nodejs_compat"],
   "observability": { "enabled": true },
-  // Top level = production (https://openkoto.app). Local dev overrides APP_ORIGIN and
+  // Top level = production (https://openkoto.com). Local dev overrides APP_ORIGIN and
   // EMAIL_PROVIDER in .dev.vars; `wrangler dev` uses local D1/R2/queues.
-  "routes": [{ "pattern": "openkoto.app", "custom_domain": true }],
+  "routes": [
+    { "pattern": "openkoto.com", "custom_domain": true },
+    { "pattern": "www.openkoto.com", "custom_domain": true }
+  ],
   "vars": {
-    "APP_ORIGIN": "https://openkoto.app",
+    "APP_ORIGIN": "https://openkoto.com",
     "APP_NAME": "OpenKoto",
     "EMAIL_PROVIDER": "cloudflare",
-    "EMAIL_FROM": "OpenKoto <noreply@openkoto.app>",
+    "EMAIL_FROM": "OpenKoto <noreply@openkoto.com>",
     "APPLE_APP_BUNDLE_ID": "com.openkoto.ios",
     "GOOGLE_CLIENT_ID": "506826712750-uubvvapb2v0l976jutqsree5gaavq3jd.apps.googleusercontent.com"
   },
-  // Cloudflare Email Service (Workers Paid: 3,000/month included). openkoto.app must be onboarded
+  // Cloudflare Email Service (Workers Paid: 3,000/month included). openkoto.com must be onboarded
   // under Compute → Email Service; set EMAIL_PROVIDER=resend to fall back to Resend.
   "send_email": [{ "name": "EMAIL" }],
   "ratelimits": [
@@ -36,7 +39,7 @@
     "consumers": [{ "queue": "openkoto-jobs", "max_batch_size": 5, "max_retries": 3 }]
   },
   "triggers": { "crons": ["17 3 * * *"] },
-  "assets": { "directory": "../../apps/web/dist", "binding": "ASSETS", "not_found_handling": "single-page-application", "run_worker_first": ["/api/*", "/auth/*", "/.well-known/*", "/mcp", "/mcp/*"] }
+  "assets": { "directory": "../../apps/web/dist", "binding": "ASSETS", "not_found_handling": "single-page-application", "run_worker_first": ["/*", "!/assets/*"] }
 ,
   "env": {
     // Staging on workers.dev: Creem test mode, console email, BYOK/hosted AI via secrets.
@@ -48,7 +51,7 @@
         "APP_ORIGIN": "https://openkoto-api-staging.beiming1201.workers.dev",
         "APP_NAME": "OpenKoto (staging)",
         "EMAIL_PROVIDER": "console",
-        "EMAIL_FROM": "OpenKoto <noreply@openkoto.app>",
+        "EMAIL_FROM": "OpenKoto <noreply@openkoto.com>",
         "APPLE_APP_BUNDLE_ID": "com.openkoto.ios",
         "APPSTORE_ENVIRONMENT": "Sandbox",
         "GOOGLE_CLIENT_ID": "506826712750-uubvvapb2v0l976jutqsree5gaavq3jd.apps.googleusercontent.com",

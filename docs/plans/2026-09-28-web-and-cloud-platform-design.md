@@ -40,7 +40,7 @@
 | # | 问题 | 结论 |
 |---|---|---|
 | D1 | 账号品牌 | 只做 **OpenKoto** 自己的账号，不做多产品统一平台；原 `orbit-platform/`（Aivofind 原型）已移除 |
-| D2 | 域名 | **`openkoto.app`**：网页端与 API 同域（`openkoto.app` + `/api/*`）；官网与文档仍为 `openkoto.com` |
+| D2 | 域名 | **`openkoto.com`**（2026-09-29 由 `openkoto.app` 改定）：官网、文档、网页端与 API 全部由同一个 Worker 提供（`openkoto.com` + `/api/*`），`www` 跳转到根域名；完全不再使用 Vercel |
 | D3 | 开源范围 | **全部开源**（含服务端、计费、托管 AI 转发逻辑）；密钥只存 Worker Secrets；提供自部署文档 |
 | D4 | iCloud 去留 | **并存一个大版本**：设置中可选 iCloud / OpenKoto 云，提供一键迁移，下一个大版本移除 CloudKit |
 | D5 | 免费用户同步 | **开放但限额**：生词 200 个；书籍 / 小说最多 5 本，单个文件 ≤ 10 MB；歌词见 §11.1 |
@@ -71,7 +71,7 @@
  └─────┬──────┘ └──────┬───────┘ └──────┬───────┘ └─────┬──────┘ └────────┬─────────┘
        │ Bearer JWT    │ Bearer JWT     │ Cookie         │ Bearer/APIKey   │ OAuth/APIKey
        └───────────────┴────────────────┴───────┬────────┴─────────────────┘
-                                                │ HTTPS  openkoto.app/api/*
+                                                │ HTTPS  openkoto.com/api/*
                           ┌─────────────────────▼─────────────────────┐
                           │     API Worker（Hono + Better Auth）        │
                           │  auth · sync · ai · books · billing · keys │
@@ -229,7 +229,7 @@ backups/{date}/{user_id}.ndjson.gz               # DO 每日快照
 
 ### 3.6 环境与部署
 
-- 三套环境：`dev`（本地 `wrangler dev` + 本地 D1/R2 模拟）、`staging`（`staging.openkoto.app`）、`prod`。
+- 三套环境：`dev`（本地 `wrangler dev` + 本地 D1/R2 模拟）、`staging`（`staging.openkoto.com`）、`prod`。
 - D1 schema 用 Drizzle 管理迁移；DO 内部 schema 在构造时按 `meta.schema_version` 迁移。
 - GitHub Actions：PR 跑单测 + 契约测试（Miniflare/`@cloudflare/vitest-pool-workers`）；合并 main 部署 staging；打 tag 部署 prod。
 - 观测：Workers Logs + Analytics Engine（请求量、同步延迟、AI 用量）；错误上报 Sentry（脱敏，不含正文）。
@@ -242,7 +242,7 @@ backups/{date}/{user_id}.ndjson.gz               # DO 每日快照
 |---|---|---|
 | Cloudflare Workers Paid | $5（≈ ¥36） | 含 1000 万次请求；D1 / DO 各含 5 GB 存储、每月 250 亿行读 / 5000 万行写的免费额度 |
 | 邮件（Resend） | 初期 $0；超出免费额度后 $20（≈ ¥144） | 免费额度较小（以官网为准），登录验证码是主要用量；延长会话有效期可减少发信 |
-| 域名 `openkoto.app` | ≈ ¥10 | 按年付费折算 |
+| 域名 `openkoto.com` | ≈ ¥10 | 按年付费折算 |
 | Apple 开发者账号 | $99/年（≈ ¥59/月） | 已有，属沉没成本 |
 | **合计** | **≈ ¥50–250 / 月** | |
 
@@ -318,7 +318,7 @@ Worker 通过 JWKS 本地验签 JWT，不查库；只有 refresh 和敏感操作
 **iOS / Mac Catalyst**
 
 1. Apple 登录：`ASAuthorizationController` 拿到 `identityToken` + `nonce`，发给 `POST /api/auth/native/apple`，服务端校验后签发 token 对。
-2. 邮箱 / Google：`ASWebAuthenticationSession` 打开 `openkoto.app/auth/native?client=ios&code_challenge=...`，完成后回调 `openkoto://auth/callback?code=...`，App 用 `code + code_verifier` 换 token 对。
+2. 邮箱 / Google：`ASWebAuthenticationSession` 打开 `openkoto.com/auth/native?client=ios&code_challenge=...`，完成后回调 `openkoto://auth/callback?code=...`，App 用 `code + code_verifier` 换 token 对。
 3. Token 存 Keychain（沿用 `OKAIClient/KeychainStore.swift` 的 data-protection keychain 方案，改用独立 service 名）。
 
 **桌面端（Tauri）**
@@ -331,13 +331,13 @@ Worker 通过 JWKS 本地验签 JWT，不查库；只有 refresh 和敏感操作
 
 ```
 $ koto login
-请在浏览器中打开 https://openkoto.app/device 并输入：WDJB-MJHT
+请在浏览器中打开 https://openkoto.com/device 并输入：WDJB-MJHT
 （已尝试自动打开浏览器）  等待授权…  ✓ 已登录为 you@example.com
 ```
 
 Token 优先存系统钥匙串；无钥匙串环境（SSH / 容器）存 `~/.config/koto/credentials.json`（权限 0600）。环境变量 `KOTO_API_KEY` 优先级最高，用于 CI 与 Agent。
 
-**远程 MCP**：`https://openkoto.app/mcp` 按 MCP 授权规范提供 OAuth 2.1（授权服务器元数据 + 动态客户端注册 + PKCE），用户在网页上确认授权范围。
+**远程 MCP**：`https://openkoto.com/mcp` 按 MCP 授权规范提供 OAuth 2.1（授权服务器元数据 + 动态客户端注册 + PKCE），用户在网页上确认授权范围。
 
 ### 4.4 API Key 作用域
 
@@ -580,7 +580,7 @@ Prompt 统一由 `@openkoto/core` 的 Prompt 库生成并带版本号（与 iOS 
 
 - **在线优先**：数据以云端为准，本地使用 IndexedDB 缓存最近数据，支持短时离线的复习与阅读（离线期间的操作排队，恢复网络后 push）。
 - **必须登录**：网页端不提供匿名本地模式，未登录只展示营销页与试用 Demo。这样可以降低复杂度，也便于转化。
-- 与官网的分工：`openkoto.com`（官网 / 文档 / 博客，保持现状）；`openkoto.app`（应用 + 账户中心 + API）。
+- 官网与应用合一：`openkoto.com` 的落地页、文档、更新日志、隐私政策由网页端直接提供，登录后进入应用；旧 Vercel 官网（`koto_intro_web`）停用，旧链接（`/privacy-policy`、`/zh/...`、`/docs/...`）做 301 跳转。
 
 ### 7.2 技术栈
 
@@ -731,7 +731,7 @@ koto keys create --name ci --scopes vocab:read
 ### 10.2 MCP Server
 
 - **本地 stdio 版**：`npx @openkoto/mcp`，使用 CLI 的登录凭证或 `KOTO_API_KEY`。
-- **远程版**：`https://openkoto.app/mcp`，使用 OAuth 授权，适合 Claude 网页端等不能运行本地进程的客户端。
+- **远程版**：`https://openkoto.com/mcp`，使用 OAuth 授权，适合 Claude 网页端等不能运行本地进程的客户端。
 - 工具（tools）设计为粗粒度、贴近业务：
 
 | tool | 说明 |
@@ -841,7 +841,7 @@ skills/openkoto/
 - [ ] `server/worker`：Hono 骨架、zod 路由与 OpenAPI、D1 迁移（Drizzle）
 - [ ] Better Auth：邮箱验证码（Resend）、Apple 登录、设备表、refresh token 轮换
 - [ ] UserVault DO：`record` 表、`/sync/pull`、`/sync/push`、幂等、墓碑、免费额度校验
-- [ ] 环境：`openkoto.app` 绑定到 Cloudflare，staging / prod 两套，GitHub Actions 自动部署
+- [ ] 环境：`openkoto.com` 绑定到 Cloudflare，staging / prod 两套，GitHub Actions 自动部署
 - **完成标准**：用 curl 能跑通 登录 → push → pull；契约用例全绿
 
 ### P1 背单词多端打通 + 网页端上线（约 4 周）
@@ -888,7 +888,7 @@ skills/openkoto/
 - [ ] 积分扣费：reserve → settle / refund，按用户串行防超扣；Pro 每月赠送积分
 - [ ] 整本翻译后台任务（Queues，优先非高峰执行）
 - [ ] 各端接入"OpenKoto AI"作为一个 Provider（iOS `OpenKotoCloudTransport`、桌面、网页、CLI）
-- [ ] 远程 MCP（`openkoto.app/mcp`，OAuth 2.1）
+- [ ] 远程 MCP（`openkoto.com/mcp`，OAuth 2.1）
 - [ ] 网页云端 Agent（复用 MCP 工具集，操作记录可撤销）
 - [ ] WebSocket 实时同步通知、数据导出、账号删除完整清理流程
 - [ ] 自部署文档（服务端全部开源）

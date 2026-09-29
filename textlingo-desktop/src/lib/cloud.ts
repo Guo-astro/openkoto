@@ -1,7 +1,7 @@
 // OpenKoto cloud account & sync — thin wrappers over the Rust commands in src-tauri/src/cloud.
 import { invoke } from "@tauri-apps/api/core";
 
-export const ACCOUNT_URL = "https://openkoto.app/account";
+export const ACCOUNT_URL = "https://openkoto.com/account";
 
 export const CLOUD_EVENTS = {
   authChanged: "cloud://auth-changed",

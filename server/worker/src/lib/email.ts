@@ -7,7 +7,7 @@ export interface EmailMessage {
   html?: string;
 }
 
-/** "OpenKoto <noreply@openkoto.app>" → { name, email } */
+/** "OpenKoto <noreply@openkoto.com>" → { name, email } */
 export function parseAddress(value: string): { email: string; name?: string } {
   const m = /^\s*(.*?)\s*<([^>]+)>\s*$/.exec(value);
   return m?.[2] ? { email: m[2], ...(m[1] ? { name: m[1].replace(/^"|"$/g, "") } : {}) } : { email: value.trim() };

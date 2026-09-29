@@ -9,7 +9,7 @@
 |---|---|---|---|---|---|
 | 本地 | http://localhost:5174（网页）→ :8787（Worker） | 本地模拟 | 本地模拟 | 本地模拟 | — |
 | staging | https://openkoto-api-staging.beiming1201.workers.dev | `openkoto-staging` | `openkoto-files-staging` | `openkoto-jobs-staging` | Creem 测试模式 / App Store Sandbox |
-| production | https://openkoto.app（**域名尚未注册**） | `openkoto` | `openkoto-files` | `openkoto-jobs` | Creem 正式 / App Store |
+| production | https://openkoto.com（**域名尚未注册**） | `openkoto` | `openkoto-files` | `openkoto-jobs` | Creem 正式 / App Store |
 
 staging 与 production 的资源都已在 Cloudflare 账号中创建，配置写在 `server/worker/wrangler.jsonc`（顶层为生产，`env.staging` 为测试）。
 
@@ -35,8 +35,8 @@ JWT_PRIVATE_KEY="<node scripts/gen-jwt-key.mjs 的输出>"
 
 这些步骤涉及购买、密钥或你的个人账号，没有代为操作：
 
-1. **注册域名 `openkoto.app`**（目前在注册局查询结果为未注册，issue #30 就是因为这个）。建议直接在 Cloudflare Registrar 购买，自动托管 DNS。
-2. **官网 `www.openkoto.com` 目前被 Vercel 停用**（`402 DEPLOYMENT_DISABLED`）。App Store 的隐私政策链接指向那里，需要尽快恢复，或者把 App Store Connect 里的隐私政策 URL 改成 `https://openkoto.app/privacy`（新网页端已内置 `/privacy` 和 `/terms`）。
+1. **注册域名 `openkoto.com`**（目前在注册局查询结果为未注册，issue #30 就是因为这个）。建议直接在 Cloudflare Registrar 购买，自动托管 DNS。
+2. **官网 `www.openkoto.com` 目前被 Vercel 停用**（`402 DEPLOYMENT_DISABLED`）。App Store 的隐私政策链接指向那里，需要尽快恢复，或者把 App Store Connect 里的隐私政策 URL 改成 `https://openkoto.com/privacy`（新网页端已内置 `/privacy` 和 `/terms`）。
 3. **Google 登录密钥**：Google Cloud → 项目 `textlingo` → Google Auth Platform → Clients → **OpenKoto Web** → Add secret，然后：
    ```bash
    cd server/worker
@@ -50,7 +50,7 @@ JWT_PRIVATE_KEY="<node scripts/gen-jwt-key.mjs 的输出>"
      npx wrangler secret put CREEM_API_KEY --env staging
      npx wrangler secret put CREEM_WEBHOOK_SECRET --env staging
      ```
-   - 正式上线：在 Creem **实时模式**下按同样价格创建 4 个商品，把它们的 ID 填进顶层 `vars.CREEM_PRODUCTS`，创建指向 `https://openkoto.app/api/webhooks/creem` 的 webhook，然后 `wrangler secret put CREEM_API_KEY` / `CREEM_WEBHOOK_SECRET`（不加 `--env`）。
+   - 正式上线：在 Creem **实时模式**下按同样价格创建 4 个商品，把它们的 ID 填进顶层 `vars.CREEM_PRODUCTS`，创建指向 `https://openkoto.com/api/webhooks/creem` 的 webhook，然后 `wrangler secret put CREEM_API_KEY` / `CREEM_WEBHOOK_SECRET`（不加 `--env`）。
 5. **App Store**：
    - App Store Connect 中创建内购：`com.openkoto.plus.month`（¥8）、`com.openkoto.plus.year`（¥68）、`com.openkoto.pro.month`（¥28）、`com.openkoto.pro.year`（¥258），放在同一个订阅群组；消耗型 `com.openkoto.credits.3000`（¥30）。
    - 加入 App Store 小型企业计划（佣金 15%）。
@@ -60,11 +60,11 @@ JWT_PRIVATE_KEY="<node scripts/gen-jwt-key.mjs 的输出>"
      npx wrangler secret put APPSTORE_KEY_ID
      npx wrangler secret put APPSTORE_PRIVATE_KEY   # .p8 文件内容
      ```
-   - App Store Server Notifications V2 地址：`https://openkoto.app/api/webhooks/appstore`（沙盒可以填 staging 地址）。
+   - App Store Server Notifications V2 地址：`https://openkoto.com/api/webhooks/appstore`（沙盒可以填 staging 地址）。
    - 在开发者后台给 App ID `com.openkoto.ios` 打开 **Sign in with Apple**。
 6. **Apple 网页登录（可选）**：Services ID + 私钥生成的 client secret（有效期最长 6 个月）写入 `APPLE_CLIENT_ID` / `APPLE_CLIENT_SECRET`。
 7. **托管 AI**：`AI_API_KEY`（例如 DeepSeek），可选 `AI_API_BASE` / `AI_MODEL`。
-8. **邮件**：生产 `EMAIL_PROVIDER=cloudflare`，走 Cloudflare Email Service（`send_email` 绑定 `EMAIL`，Workers 付费计划每月含 3000 封，之后 $0.35/千封）。在 Cloudflare 控制台 Compute → Email Service → Email Sending 里接入 `openkoto.app` 并添加它给出的 DNS 记录。备选：把 `EMAIL_PROVIDER` 改成 `resend` 并设置 `RESEND_API_KEY`。
+8. **邮件**：生产 `EMAIL_PROVIDER=cloudflare`，走 Cloudflare Email Service（`send_email` 绑定 `EMAIL`，Workers 付费计划每月含 3000 封，之后 $0.35/千封）。在 Cloudflare 控制台 Compute → Email Service → Email Sending 里接入 `openkoto.com` 并添加它给出的 DNS 记录。备选：把 `EMAIL_PROVIDER` 改成 `resend` 并设置 `RESEND_API_KEY`。
 
 ## 4. 部署命令
 
@@ -89,8 +89,8 @@ node scripts/gen-jwt-key.mjs | npx wrangler secret put JWT_PRIVATE_KEY
 
 | 资源 | 位置 | 值 |
 |---|---|---|
-| Google OAuth Web 客户端 | GCP 项目 `textlingo` → OpenKoto Web | Client ID `506826712750-uubvvapb2v0l976jutqsree5gaavq3jd.apps.googleusercontent.com`；回调已包含 openkoto.app、localhost:5173 和 staging |
-| Google 同意屏幕 | 同上 → Branding | 应用名 OpenKoto，首页 / 隐私 / 条款指向 openkoto.app，授权域名新增 openkoto.app |
+| Google OAuth Web 客户端 | GCP 项目 `textlingo` → OpenKoto Web | Client ID `506826712750-uubvvapb2v0l976jutqsree5gaavq3jd.apps.googleusercontent.com`；回调已包含 openkoto.com、localhost:5173 和 staging |
+| Google 同意屏幕 | 同上 → Branding | 应用名 OpenKoto，首页 / 隐私 / 条款指向 openkoto.com，授权域名新增 openkoto.com |
 | Creem 测试商品 | 店铺 textlingo（测试模式） | Plus 年付 $9.49 `prod_6v5Z5VzHCJkH2Lw13OaCZN`；Pro 月付 $3.89 `prod_IOVBOniqHPSdkhfecE5Lu`；Pro 年付 $35.99 `prod_6wLJyGLDKYAsMSkMACVVFU`；积分 3000 $4.19 `prod_1Sq0hHek0znn21NM7qwlo1` |
 | Creem 测试 webhook | 测试模式 → 网络钩子 | `OpenKoto staging` → staging `/api/webhooks/creem` |
 
@@ -98,8 +98,8 @@ node scripts/gen-jwt-key.mjs | npx wrangler secret put JWT_PRIVATE_KEY
 
 - **生成激活码**（小红书等渠道销售）：用 `ADMIN_EMAILS` 中的账号登录网页后调用：
   ```bash
-  curl -X POST https://openkoto.app/api/admin/codes \
-    -H 'Content-Type: application/json' -H 'Origin: https://openkoto.app' \
+  curl -X POST https://openkoto.com/api/admin/codes \
+    -H 'Content-Type: application/json' -H 'Origin: https://openkoto.com' \
     --cookie '<登录后的会话 cookie>' \
     -d '{"batch":"xhs-2026-10","plan":"plus","durationDays":365,"credits":0,"count":50}'
   ```

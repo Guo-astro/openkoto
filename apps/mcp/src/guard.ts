@@ -31,5 +31,5 @@ export function createGuard(source: "api_key" | "credentials" | "none", me: () =
 }
 
 function planError() {
-  return new GuardError("PLAN_REQUIRED", "Agent access (CLI/MCP) is part of OpenKoto Plus. The user can upgrade at https://openkoto.app/pricing.");
+  return new GuardError("PLAN_REQUIRED", "Agent access (CLI/MCP) is part of OpenKoto Plus. The user can upgrade at https://openkoto.com/pricing.");
 }

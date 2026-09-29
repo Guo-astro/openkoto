@@ -223,8 +223,8 @@ import Testing
     }
 
     @Test func accountConfigurationBuildsDeletionURL() {
-        let config = AccountConfiguration(baseURL: URL(string: "https://openkoto.app")!)
-        #expect(config.accountDeletionURL.absoluteString == "https://openkoto.app/account?delete=1")
+        let config = AccountConfiguration(baseURL: URL(string: "https://openkoto.com")!)
+        #expect(config.accountDeletionURL.absoluteString == "https://openkoto.com/account?delete=1")
     }
 }
 

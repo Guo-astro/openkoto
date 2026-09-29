@@ -822,7 +822,7 @@
       "lmstudioHint": "LM Studio は通常 OpenAI 互換エンドポイントを提供します。現在ロード中のモデル ID を入力してください。",
       "skipButton": "設定をスキップ",
       "tip": "ヒント：設定完了後、字幕の一括翻訳などの機能が利用可能になります。",
-      "helpLink": "設定方法が不明な場合、https://www.openkoto.com/ にアクセスして設定ドキュメントを確認してください"
+      "helpLink": "設定方法が不明な場合、https://openkoto.com/docs にアクセスして設定ドキュメントを確認してください"
     },
     "welcome": {
       "title": "おめでとうございます！",

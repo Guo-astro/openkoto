@@ -7,9 +7,9 @@
 - 主分类：教育
 - 次分类：工具
 - 价格：免费
-- 隐私政策：https://www.openkoto.com/zh/privacy-policy
+- 隐私政策：https://openkoto.com/privacy
 - 支持网址：https://github.com/hikariming/OpenKoto/issues
-- 营销网址：https://www.openkoto.com/
+- 营销网址：https://openkoto.com/
 
 ## 关键词
 

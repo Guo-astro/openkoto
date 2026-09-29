@@ -176,8 +176,8 @@ mod tests {
     #[test]
     fn urls_and_messages() {
         assert_eq!(
-            ws_url("https://openkoto.app/"),
-            "wss://openkoto.app/api/v1/sync/ws"
+            ws_url("https://openkoto.com/"),
+            "wss://openkoto.com/api/v1/sync/ws"
         );
         assert_eq!(
             ws_url("http://localhost:8787"),

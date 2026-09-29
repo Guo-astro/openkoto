@@ -3,10 +3,10 @@ import Foundation
 /// OpenKoto 云的连接参数。
 ///
 /// 基址读 Info.plist 的 `OpenKotoAPIBaseURL`（自托管 / 联调时改这里），
-/// 缺省 `https://openkoto.app`。
+/// 缺省 `https://openkoto.com`。
 public struct AccountConfiguration: Sendable, Equatable {
     public static let infoPlistKey = "OpenKotoAPIBaseURL"
-    public static let defaultBaseURL = URL(string: "https://openkoto.app")!
+    public static let defaultBaseURL = URL(string: "https://openkoto.com")!
     /// 与服务端 `redirect_uri` 白名单一致（`server/worker/src/auth/routes.ts`）。
     public static let redirectURI = "openkoto://auth/callback"
     public static let callbackScheme = "openkoto"
