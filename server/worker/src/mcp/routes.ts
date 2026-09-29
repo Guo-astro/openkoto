@@ -10,6 +10,7 @@ import { LibraryClient, OpenKotoClient } from "@openkoto/client";
 import { createOpenKotoMcpServer, SERVER_VERSION } from "@openkoto/mcp-tools";
 import type { AppBindings, Env, Principal } from "../env";
 import { resolvePrincipal } from "../auth/middleware";
+import { consumeFreeAgentCall, freeLimitMessage, internalRequests } from "../billing/agent-quota";
 import { currentPlan, planAtLeast } from "../billing/entitlements";
 import { ApiError } from "../lib/http";
 import { resourceMetadataUrl } from "./oauth";
@@ -75,13 +76,22 @@ export function mcpRoutes(dispatch: Dispatch) {
         baseUrl: new URL(c.env.APP_ORIGIN).origin,
         clientName: `mcp-remote/${SERVER_VERSION}`,
         tokenStore: { get: async () => ({ accessToken: token }), set: async () => {} },
-        fetch: async (url, init) => dispatch(new Request(url, init), c.env, c.executionCtx),
+        fetch: async (url, init) => {
+          const req = new Request(url, init);
+          internalRequests.add(req);
+          return dispatch(req, c.env, c.executionCtx);
+        },
       });
 
+      // Plus and Pro are unlimited. Free accounts get FREE_AGENT_DAILY_LIMIT tool calls a day
+      // (API keys stay Plus-only); the API requests a tool makes below are not counted again.
       let entitled: boolean | null = null;
       const guard = async () => {
         entitled ??= planAtLeast(await currentPlan(c.env, p.userId), "plus");
-        if (!entitled) throw new GuardError("PLAN_REQUIRED", "Agent access (MCP/CLI) is part of OpenKoto Plus. The user can upgrade at https://openkoto.com/pricing.");
+        if (entitled) return;
+        if (p.via === "api_key") throw new GuardError("PLAN_REQUIRED", "API-key access is part of OpenKoto Plus. The user can upgrade at https://openkoto.com/pricing.");
+        const { allowed } = await consumeFreeAgentCall(c.env, p.userId);
+        if (!allowed) throw new GuardError("FREE_LIMIT_REACHED", freeLimitMessage());
       };
 
       const server = createOpenKotoMcpServer(new LibraryClient(client, c.req.header("X-Timezone") || undefined), {

@@ -84,7 +84,8 @@ export interface CreatedApiKey {
 export interface AccountSummary {
   user: { id: string; email: string; name: string; image: string | null; createdAt: string };
   plan: Plan;
-  entitlements: { sync: boolean; cli: boolean; apiKeys: boolean; hostedAi: boolean };
+  /** cliDailyLimit: CLI/MCP calls per UTC day on the free plan; null = unlimited. */
+  entitlements: { sync: boolean; cli: boolean; cliDailyLimit?: number | null; apiKeys: boolean; hostedAi: boolean };
   subscriptions: unknown[];
   credits: number;
   pendingDeletion: string | null;

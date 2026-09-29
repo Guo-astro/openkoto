@@ -1,5 +1,6 @@
 import { env, SELF } from "cloudflare:test";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { FREE_AGENT_DAILY_LIMIT } from "../src/billing/agent-quota";
 import { addCredits } from "../src/billing/credits";
 import { generateActivationCodes } from "../src/billing/routes";
 import { api, json, nativeLogin, pkce, signInWithEmail, url, ORIGIN } from "./helpers";
@@ -87,10 +88,16 @@ describe("remote MCP over streamable HTTP", () => {
     expect(ai.data.error.message).toContain("scope");
   });
 
-  it("refuses tools for accounts without Plus", async () => {
+  it("counts free accounts' tool calls once each and stops them at the daily limit", async () => {
     const t = await nativeLogin("mcp-free@example.com");
+    const ok = await tool(t.accessToken, "list_books");
+    expect(ok.isError).toBeFalsy();
+    const day = new Date().toISOString().slice(0, 10);
+    const row = await env.DB.prepare("select count from agent_usage where user_id = ? and day = ?").bind(t.user.id, day).first<{ count: number }>();
+    expect(row?.count).toBe(1); // the API request the tool made internally is not counted again
+    await env.DB.prepare("update agent_usage set count = ? where user_id = ? and day = ?").bind(FREE_AGENT_DAILY_LIMIT, t.user.id, day).run();
     const res = await tool(t.accessToken, "list_books");
-    expect(res).toMatchObject({ isError: true, data: { error: { code: "PLAN_REQUIRED" } } });
+    expect(res).toMatchObject({ isError: true, data: { error: { code: "FREE_LIMIT_REACHED" } } });
   });
 });
 

@@ -3,6 +3,7 @@ import type { AppBindings, Env } from "../env";
 import { principalOf, requireAuth, requireSession } from "../auth/middleware";
 import { getAuth } from "../auth/better-auth";
 import { API_KEY_SCOPES, createApiKey } from "../auth/tokens";
+import { FREE_AGENT_DAILY_LIMIT } from "../billing/agent-quota";
 import { activeSubscriptions, currentPlan, planAtLeast } from "../billing/entitlements";
 import { creditBalance } from "../billing/credits";
 import { vaultFor } from "../sync/routes";
@@ -27,7 +28,9 @@ export async function accountSummary(env: Env, userId: string) {
     plan,
     entitlements: {
       sync: true,
-      cli: planAtLeast(plan, "plus"),
+      cli: true,
+      /** CLI/MCP calls per UTC day; null = unlimited (Plus and Pro). */
+      cliDailyLimit: planAtLeast(plan, "plus") ? null : FREE_AGENT_DAILY_LIMIT,
       apiKeys: planAtLeast(plan, "plus"),
       hostedAi: credits > 0 || plan === "pro",
     },

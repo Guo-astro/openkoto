@@ -16,7 +16,7 @@ Always drive the CLI with `--json` and parse stdout. Never scrape the human-read
   - `0` ok
   - `2` usage error: fix the arguments
   - `3` not logged in: ask the user to run `koto login`; don't try to log in for them
-  - `4` plan or quota: tell the user; the CLI needs OpenKoto Plus, and free accounts have storage limits. Don't retry
+  - `4` plan or quota: tell the user; free accounts get 50 CLI/MCP calls a day (`FREE_LIMIT_REACHED`, resets 00:00 UTC; Plus is unlimited) and have storage limits. Don't retry
   - `1` anything else: report the message
 - Changes are real and sync to all devices. Before a bulk write (import, more than ~10 adds, overwriting translations), confirm with the user. There is no bulk-delete command; `koto vocab rm <id>` deletes one card. Only use it when the user asks.
 - Ids are opaque strings. Always take them from previous `--json` output, never invent them.
@@ -26,7 +26,7 @@ Always drive the CLI with `--json` and parse stdout. Never scrape the human-read
 # Setup check
 
 ```bash
-koto whoami --json      # exit 3 → not logged in; entitlements.cli false → needs Plus
+koto whoami --json      # exit 3 → not logged in; entitlements.cliDailyLimit: 50 on free, null on Plus/Pro
 ```
 
 If `koto` is missing: `npm i -g @openkoto/cli`, then the user runs `koto login`. The login prints a code and opens the browser. For CI or headless use, set `KOTO_API_KEY=ok_live_…`, created at openkoto.com → Settings → API keys.

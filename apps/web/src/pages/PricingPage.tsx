@@ -17,7 +17,7 @@ interface Sku {
 }
 
 const TIERS = [
-  { plan: "free", features: ["pricing.f.local", "pricing.f.syncFree", "pricing.f.byok"] },
+  { plan: "free", features: ["pricing.f.local", "pricing.f.syncFree", "pricing.f.byok", "pricing.f.cliFree"] },
   { plan: "plus", features: ["pricing.f.local", "pricing.f.syncPlus", "pricing.f.cli", "pricing.f.guide", "pricing.f.topup"] },
   { plan: "pro", features: ["pricing.f.local", "pricing.f.syncPro", "pricing.f.cli", "pricing.f.credits", "pricing.f.agent"] },
 ] as const;
