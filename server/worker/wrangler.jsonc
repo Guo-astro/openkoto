@@ -17,7 +17,8 @@
     "EMAIL_PROVIDER": "cloudflare",
     "EMAIL_FROM": "OpenKoto <noreply@openkoto.com>",
     "APPLE_APP_BUNDLE_ID": "com.openkoto.ios",
-    "GOOGLE_CLIENT_ID": "506826712750-uubvvapb2v0l976jutqsree5gaavq3jd.apps.googleusercontent.com"
+    "GOOGLE_CLIENT_ID": "506826712750-uubvvapb2v0l976jutqsree5gaavq3jd.apps.googleusercontent.com",
+    "CREEM_PRODUCTS": "{\"prod_6Ymabyy9r3KEDzfWQCRYcB\":\"plus_year\",\"prod_16RrXYuvKqwEsuQsB3Na2R\":\"pro_month\",\"prod_2qwYiPMKYdOJT1OoCcF1eU\":\"pro_year\",\"prod_3DPsHkwaB8S7aAwBqFkiQz\":\"credits_3000\"}"
   },
   // Cloudflare Email Service (Workers Paid: 3,000/month included). openkoto.com must be onboarded
   // under Compute → Email Service; set EMAIL_PROVIDER=resend to fall back to Resend.
