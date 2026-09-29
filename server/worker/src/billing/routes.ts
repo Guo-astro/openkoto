@@ -3,7 +3,7 @@ import type { AppBindings, Env } from "../env";
 import { principalOf, requireAuth, requireSession } from "../auth/middleware";
 import { hmacSha256Hex, newId, randomFrom32, sha256Hex, timingSafeEqual } from "../lib/crypto";
 import { ApiError, badRequest, forbidden, notFound } from "../lib/http";
-import { productForSku, SKUS, skuById, skuForProduct, type Sku } from "./catalog";
+import { PRO_MONTHLY_CREDITS, productForSku, SKUS, skuById, skuForProduct, type Sku } from "./catalog";
 import { addCredits, addCreditsOnce } from "./credits";
 import { extendByDays, grantPeriodCredits, setAutoRenew, setSubscriptionStatus, upsertSubscription } from "./subscriptions";
 
@@ -235,7 +235,8 @@ export const adminApi = new Hono<AppBindings>()
     const count = Math.min(Math.max(Number(body.count ?? 1), 1), 500);
     const plan = body.plan === "plus" || body.plan === "pro" ? body.plan : null;
     const durationDays = Math.max(0, Number(body.durationDays ?? 0));
-    const credits = Math.max(0, Number(body.credits ?? 0));
+    // Pro includes AI credits: unless given, a Pro code carries the monthly allotment for each 30 days.
+    const credits = Math.max(0, Number(body.credits ?? (plan === "pro" ? PRO_MONTHLY_CREDITS * Math.max(1, Math.round(durationDays / 30)) : 0)));
     if (!plan && !credits) throw badRequest("a code must grant a plan or credits");
     if (plan && !durationDays) throw badRequest("durationDays is required with a plan");
     const batch = String(body.batch ?? new Date().toISOString().slice(0, 10)).slice(0, 60);
