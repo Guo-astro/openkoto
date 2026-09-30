@@ -5297,19 +5297,19 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Plus removes the free-plan limits on words, books, lyrics and articles. Pro adds hosted AI. Credits pay for hosted AI requests."
+            "value": "Plus syncs 20,000 words, 500 books and 2,000 lyrics and articles (2 GB) with 2,000 CLI calls a day. Pro raises the limits and adds 1,500 AI credits every month. Credits pay for hosted AI; purchased credits never expire."
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "Plus は無料プランの単語・書籍・歌詞・記事の上限を解除します。Pro にはホスト型 AI が含まれます。クレジットはホスト型 AI のリクエストに使います。"
+            "value": "Plus は単語 2 万・本 500 冊・歌詞と記事 2,000 件（2 GB）を同期し、CLI は 1 日 2,000 回まで。Pro は上限がさらに高く、毎月 1,500 AI クレジット付き。クレジットはホスト型 AI に使い、購入分に有効期限はありません。"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "Plus 解除免费版对生词、书籍、歌词与文章数量的限制；Pro 另含托管 AI。积分用于托管 AI 请求。"
+            "value": "Plus 可同步 2 万生词、500 本书、2000 首歌词与文章（2 GB），命令行每天 2000 次；Pro 上限更高，并每月赠送 1500 AI 积分。积分用于托管 AI，购买的积分永不过期。"
           }
         }
       }
