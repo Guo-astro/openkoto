@@ -1,211 +1,301 @@
-import { ArrowRight, BookOpen, Brain, ChevronDown, Download, Globe, KeyRound, Monitor, Music, RefreshCw, Smartphone, Terminal } from "lucide-react";
-import { useEffect } from "react";
+import "@fontsource/cutive/latin-400.css";
+import "@fontsource/newsreader/latin-400.css";
+import "@fontsource/newsreader/latin-500.css";
+import "@fontsource/newsreader/latin-400-italic.css";
+import "../components/landing/landing.css";
+
+import { ArrowUpRight, Globe, Monitor, Plus, Smartphone, Terminal } from "lucide-react";
+import { useEffect, type ComponentType, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
-import { GithubIcon, linkButton, PublicLayout } from "../components/PublicLayout";
+import { Headline, LandingFooter, LandingHeader } from "../components/landing/LandingChrome";
+import {
+  BannerPattern,
+  DevicesIllustration,
+  FlashcardsIllustration,
+  ForgettingCurveIllustration,
+  GuideThumb,
+  HeadphonesIllustration,
+  HeroIllustration,
+  LrcTimelineIllustration,
+  MicrophoneIllustration,
+  NewspaperThumb,
+  OpenBookIllustration,
+  ReaderIllustration,
+  SyncIllustration,
+  TerminalIllustration,
+} from "../components/landing/illustrations";
+import { contentLang, listDocs, listUpdates } from "../lib/content";
 import { APP_STORE_URL, GITHUB_URL, RELEASES_URL, SKILL_URL } from "../lib/links";
 
-const FEATURES = [
-  { key: "review", icon: Brain },
-  { key: "novels", icon: BookOpen },
-  { key: "lyrics", icon: Music },
-  { key: "sync", icon: RefreshCw },
-  { key: "agents", icon: Terminal },
-  { key: "open", icon: KeyRound },
-] as const;
+type Illo = ComponentType<{ className?: string }>;
+
+const FOCUS: { key: string; bg: string; Illo: Illo }[] = [
+  { key: "review", bg: "var(--lp-mustard)", Illo: FlashcardsIllustration },
+  { key: "novels", bg: "var(--lp-lavender)", Illo: OpenBookIllustration },
+  { key: "lyrics", bg: "var(--lp-blue)", Illo: MicrophoneIllustration },
+  { key: "sync", bg: "var(--lp-mint)", Illo: DevicesIllustration },
+];
+
+/** Showcase rows: name card colour, detail drawing, where "Learn more" goes. */
+const SHOWCASE: { key: string; descKey: string; bg: string; Illo: Illo; href: string }[] = [
+  { key: "review", descKey: "landing.features.review.desc", bg: "var(--lp-mustard)", Illo: ForgettingCurveIllustration, href: "/docs" },
+  { key: "novels", descKey: "landing.features.novels.desc", bg: "var(--lp-lavender)", Illo: ReaderIllustration, href: "/docs" },
+  { key: "lyrics", descKey: "landing.features.lyrics.desc", bg: "var(--lp-blue)", Illo: LrcTimelineIllustration, href: "/docs" },
+  { key: "agents", descKey: "landing.features.agents.desc", bg: "var(--lp-mint)", Illo: TerminalIllustration, href: SKILL_URL },
+  { key: "sync", descKey: "landing.features.sync.desc", bg: "var(--lp-sky-strong)", Illo: SyncIllustration, href: "#download" },
+];
 
 const FAQ = ["what", "free", "platforms", "privacy", "ai", "agents"] as const;
 
-function SectionTitle({ eyebrow, title, subtitle }: { eyebrow?: string; title: string; subtitle?: string }) {
-  return (
-    <div className="mx-auto max-w-2xl text-center space-y-3">
-      {eyebrow && <p className="text-sm font-medium text-primary">{eyebrow}</p>}
-      <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">{title}</h2>
-      {subtitle && <p className="text-muted-foreground">{subtitle}</p>}
-    </div>
-  );
-}
+const container = "mx-auto w-full max-w-[1240px] px-5 md:px-10";
 
-/** A small illustrative collage of the three study modes (no screenshots to keep it light). */
-function HeroPreview() {
-  const { t } = useTranslation();
+/** Internal route, in-page anchor or external URL, rendered with the right element. */
+function SmartLink({ href, className, children }: { href: string; className?: string; children: ReactNode }) {
+  if (href.startsWith("/")) {
+    return (
+      <Link to={href} className={className}>
+        {children}
+      </Link>
+    );
+  }
+  const external = href.startsWith("http");
   return (
-    <div className="relative mx-auto w-full max-w-md" aria-hidden>
-      <div className="absolute -inset-2 sm:-inset-6 -z-10 rounded-[2rem] bg-gradient-to-br from-primary/15 via-transparent to-primary/5 blur-2xl" />
-      <div className="space-y-3">
-        <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
-          <div className="flex items-center justify-between text-xs text-muted-foreground">
-            <span className="flex items-center gap-1.5"><Brain size={14} /> {t("landing.preview.review")}</span>
-            <span>FSRS</span>
-          </div>
-          <p className="mt-3 text-center text-3xl font-semibold">言葉</p>
-          <p className="text-center text-sm text-muted-foreground">ことば · {t("landing.preview.word")}</p>
-          <div className="mt-4 grid grid-cols-4 gap-1.5 text-center text-xs">
-            {(["again", "hard", "good", "easy"] as const).map((g) => (
-              <span key={g} className={`rounded-md border border-border py-1.5 ${g === "good" ? "bg-primary text-primary-foreground border-primary" : "bg-background"}`}>
-                {t(`review.${g}`)}
-              </span>
-            ))}
-          </div>
-        </div>
-        <div className="ml-6 rounded-xl border border-border bg-card p-4 shadow-sm">
-          <div className="flex items-center gap-1.5 text-xs text-muted-foreground"><BookOpen size={14} /> {t("landing.preview.novel")}</div>
-          <p className="mt-2 text-sm leading-relaxed">{t("landing.preview.novelSource")}</p>
-          <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{t("landing.preview.translation")}</p>
-        </div>
-        <div className="mr-6 rounded-xl border border-border bg-card p-4 shadow-sm">
-          <div className="flex items-center gap-1.5 text-xs text-muted-foreground"><Music size={14} /> {t("landing.preview.lyrics")}</div>
-          <div className="mt-2 space-y-1 text-sm">
-            <p className="text-muted-foreground"><span className="font-mono text-xs mr-2">[00:12]</span>夜空に光る星のように</p>
-            <p className="font-medium text-primary"><span className="font-mono text-xs mr-2">[00:16]</span>君の声が聞こえる</p>
-          </div>
-        </div>
-      </div>
-    </div>
+    <a href={href} className={className} {...(external ? { target: "_blank", rel: "noreferrer" } : {})}>
+      {children}
+    </a>
   );
 }
 
 export function LandingPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const lang = contentLang(i18n.language);
 
   useEffect(() => {
-    document.title = `OpenKoto — ${t("landing.hero.title")}${t("landing.hero.highlight")}`;
+    document.title = `OpenKoto — ${t("landing.meta.title")}`;
   }, [t]);
 
+  const notes = [
+    ...listUpdates(lang)
+      .slice(0, 2)
+      .map((d) => ({ kind: "update" as const, href: "/updates", title: d.title, desc: d.description, date: d.date })),
+    ...listDocs(lang)
+      .slice(0, 2)
+      .map((d) => ({ kind: "doc" as const, href: d.slug === "index" ? "/docs" : `/docs/${d.slug}`, title: d.title, desc: d.description, date: undefined })),
+  ];
+  const noteBg = ["var(--lp-sky-strong)", "var(--lp-mustard-soft)", "var(--lp-lavender)", "var(--lp-mint)"];
+
   const platforms = [
-    { key: "web", icon: Globe, href: "/login", internal: true },
-    { key: "ios", icon: Smartphone, href: APP_STORE_URL },
-    { key: "desktop", icon: Monitor, href: RELEASES_URL },
-    { key: "cli", icon: Terminal, href: SKILL_URL },
-  ] as const;
+    { key: "web", Icon: Globe, href: "/login" },
+    { key: "ios", Icon: Smartphone, href: APP_STORE_URL },
+    { key: "desktop", Icon: Monitor, href: RELEASES_URL },
+    { key: "cli", Icon: Terminal, href: SKILL_URL },
+  ];
 
   return (
-    <PublicLayout>
-      {/* Hero */}
-      <section className="mx-auto grid max-w-6xl items-center gap-12 px-4 pt-12 pb-16 md:grid-cols-2 md:pt-20 md:pb-24">
-        <div className="space-y-6 text-center md:text-left">
+    <div className="lp flex min-h-screen flex-col overflow-x-clip">
+      <LandingHeader />
+      <main className="flex-1">
+        {/* 1 · Hero */}
+        <section className={`${container} pt-14 pb-10 text-center md:pt-24`}>
           <a
             href={GITHUB_URL}
             target="_blank"
             rel="noreferrer"
-            className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1 text-xs text-muted-foreground hover:text-foreground"
+            className="lp-tiny lp-muted inline-flex items-center gap-1.5 rounded-full border border-[var(--lp-line)] px-3.5 py-1.5 hover:text-[var(--lp-ink)]"
           >
-            <GithubIcon size={13} /> {t("landing.hero.badge")} <ArrowRight size={12} aria-hidden />
+            {t("landing.hero.badge")} · Apache-2.0 <ArrowUpRight size={12} aria-hidden />
           </a>
-          <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">
-            {t("landing.hero.title")}
-            <span className="inline-block text-primary">{t("landing.hero.highlight")}</span>
+          <h1 className="lp-h1 mx-auto mt-8 max-w-[1180px]">
+            <Headline i18nKey="landing.hero.headline" />
           </h1>
-          <p className="text-lg text-muted-foreground">{t("landing.hero.subtitle")}</p>
-          <div className="flex flex-col gap-3 sm:flex-row sm:justify-center md:justify-start">
-            <Link to="/login" className={linkButton("default", "lg")}>
-              {t("landing.hero.start")} <ArrowRight size={18} aria-hidden />
+          <p className="lp-muted mx-auto mt-7 max-w-xl text-[18px] md:text-[19px]">{t("landing.hero.subtitle")}</p>
+          <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
+            <Link to="/login" className="lp-pill">
+              {t("landing.hero.start")}
             </Link>
-            <a href="#download" className={linkButton("outline", "lg")}>
-              <Download size={18} aria-hidden /> {t("landing.hero.download")}
+            <a href="#download" className="lp-pill lp-pill-outline">
+              {t("landing.hero.download")}
             </a>
           </div>
-          <p className="text-sm text-muted-foreground">{t("landing.hero.note")}</p>
-        </div>
-        <HeroPreview />
-      </section>
+          <p className="lp-muted mt-5 text-[15px]">{t("landing.hero.note")}</p>
+          <HeroIllustration className="lp-float mx-auto mt-10 w-full max-w-[680px] md:mt-6" />
+        </section>
 
-      {/* Features */}
-      <section id="features" className="scroll-mt-16 border-t border-border bg-muted/30 py-16 md:py-24">
-        <div className="mx-auto max-w-6xl px-4 space-y-12">
-          <SectionTitle eyebrow={t("landing.features.eyebrow")} title={t("landing.features.title")} subtitle={t("landing.features.subtitle")} />
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {FEATURES.map(({ key, icon: Icon }) => (
-              <div key={key} className="rounded-xl border border-border bg-card p-6">
-                <div className="mb-4 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                  <Icon size={20} aria-hidden />
-                </div>
-                <h3 className="font-semibold">{t(`landing.features.${key}.title`)}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{t(`landing.features.${key}.desc`)}</p>
+        {/* 2 · Sky band */}
+        <section className="bg-[var(--lp-sky)] py-20 md:py-28">
+          <div className={`${container} text-center`}>
+            <h2 className="lp-h2 mx-auto max-w-4xl">
+              <Headline i18nKey="landing.band.headline" />
+            </h2>
+            <p className="lp-muted mx-auto mt-6 max-w-2xl text-[18px]">{t("landing.band.body")}</p>
+            <a href="#features" className="lp-pill mt-9">
+              {t("landing.band.cta")}
+            </a>
+            <HeadphonesIllustration className="mx-auto mt-12 w-full max-w-[560px]" />
+          </div>
+        </section>
+
+        {/* 3 · Focus */}
+        <section id="features" className={`${container} scroll-mt-20 py-20 md:py-28`}>
+          <p className="lp-eyebrow lp-muted text-center">{t("landing.focus.eyebrow")}</p>
+          <p className="lp-display mx-auto mt-6 max-w-3xl text-center text-[22px] leading-[1.55] md:text-[28px]">{t("landing.focus.statement")}</p>
+          <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            {FOCUS.map(({ key, bg, Illo }) => (
+              <article key={key} className="lp-card flex flex-col rounded-[18px] p-6" style={{ background: bg }}>
+                <Illo className="mx-auto aspect-[11/8] w-full max-w-[240px]" />
+                <h3 className="lp-display mt-5 text-[21px] leading-tight">{t(`landing.focus.cards.${key}.title`)}</h3>
+                <p className="mt-2 text-[15.5px] leading-relaxed opacity-80">{t(`landing.focus.cards.${key}.desc`)}</p>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        {/* 4 · Showcase list on a beige panel */}
+        <section className="px-3 md:px-6" aria-labelledby="lp-showcase">
+          <div className="mx-auto max-w-[1320px] rounded-[28px] bg-[var(--lp-beige)] px-5 py-16 md:px-14 md:py-24">
+            <div className="mx-auto max-w-[1140px]">
+              <p className="lp-eyebrow lp-muted text-center">{t("landing.showcase.eyebrow")}</p>
+              <h2 id="lp-showcase" className="lp-h2 mx-auto mt-5 max-w-3xl text-center">
+                <Headline i18nKey="landing.showcase.title" />
+              </h2>
+              <ol className="mt-14 space-y-14 md:mt-20 md:space-y-20">
+                {SHOWCASE.map(({ key, descKey, bg, Illo, href }, i) => (
+                  <li key={key}>
+                    <div className="mb-4 flex items-baseline gap-4 border-t border-[var(--lp-line)] pt-4">
+                      <span className="lp-tiny lp-muted">{String(i + 1).padStart(2, "0")}</span>
+                      <h3 className="lp-tiny">{t(`landing.showcase.rows.${key}.label`)}</h3>
+                    </div>
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <div className="lp-card flex min-h-[200px] items-end rounded-[18px] p-6 md:min-h-[280px] md:p-9" style={{ background: bg }}>
+                        <p className="lp-display text-[26px] leading-[1.25] md:text-[34px]">{t(`landing.showcase.rows.${key}.name`)}</p>
+                      </div>
+                      <div className="lp-dark-card flex min-h-[200px] items-center justify-center rounded-[18px] p-6 md:min-h-[280px]">
+                        <Illo className="w-full max-w-[400px]" />
+                      </div>
+                    </div>
+                    <div className="mt-5 flex flex-col gap-4 md:flex-row md:items-start md:justify-between md:gap-10">
+                      <p className="lp-muted max-w-2xl text-[16.5px]">{t(descKey)}</p>
+                      <SmartLink href={href} className="lp-pill lp-pill-outline lp-pill-sm self-start">
+                        {t("landing.showcase.learnMore")}
+                        <span className="sr-only"> — {t(`landing.showcase.rows.${key}.label`)}</span>
+                      </SmartLink>
+                    </div>
+                  </li>
+                ))}
+              </ol>
+            </div>
+          </div>
+        </section>
+
+        {/* 5 · Download */}
+        <section id="download" className={`${container} scroll-mt-20 py-20 md:py-28`}>
+          <p className="lp-eyebrow lp-muted text-center">{t("landing.download.eyebrow")}</p>
+          <h2 className="lp-h2 mx-auto mt-5 max-w-3xl text-center">
+            <Headline i18nKey="landing.download.headline" />
+          </h2>
+          <p className="lp-muted mx-auto mt-5 max-w-xl text-center text-[17px]">{t("landing.download.subtitle")}</p>
+          <ul className="mt-14 grid gap-px overflow-hidden rounded-[18px] border border-[var(--lp-line)] bg-[var(--lp-line)] sm:grid-cols-2 lg:grid-cols-4">
+            {platforms.map(({ key, Icon, href }) => (
+              <li key={key} className="flex flex-col bg-[var(--lp-bg)] p-7">
+                <Icon size={26} strokeWidth={1.3} aria-hidden />
+                <h3 className="lp-display mt-5 text-[20px]">{t(`landing.download.${key}.title`)}</h3>
+                <p className="lp-muted mt-2 flex-1 text-[15.5px]">{t(`landing.download.${key}.desc`)}</p>
+                <SmartLink href={href} className="lp-pill lp-pill-outline lp-pill-sm mt-6 self-start">
+                  {t(`landing.download.${key}.cta`)}
+                </SmartLink>
+              </li>
+            ))}
+          </ul>
+          <div className="lp-dark-card mx-auto mt-8 max-w-xl rounded-[18px] p-6">
+            <p className="text-[15px] opacity-75">{t("landing.download.cliHint")}</p>
+            <pre className="mt-3 overflow-x-auto font-mono text-[14px] leading-relaxed">
+              <span className="opacity-50">$ </span>npm i -g @openkoto/cli{"\n"}
+              <span className="opacity-50">$ </span>koto login
+            </pre>
+          </div>
+        </section>
+
+        {/* 6 · Updates & docs */}
+        <section className="border-t border-[var(--lp-line)] py-20 md:py-28" aria-labelledby="lp-notes">
+          <div className={container}>
+            <div className="flex flex-col items-start justify-between gap-6 md:flex-row md:items-end">
+              <div>
+                <p className="lp-eyebrow lp-muted">{t("landing.notes.eyebrow")}</p>
+                <h2 id="lp-notes" className="lp-h2 mt-4">
+                  <Headline i18nKey="landing.notes.title" />
+                </h2>
               </div>
-            ))}
+              <div className="flex flex-wrap gap-2">
+                <Link to="/updates" className="lp-pill lp-pill-outline lp-pill-sm">{t("landing.notes.allUpdates")}</Link>
+                <Link to="/docs" className="lp-pill lp-pill-outline lp-pill-sm">{t("landing.notes.allDocs")}</Link>
+              </div>
+            </div>
+            <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+              {notes.map((n, i) => {
+                const Thumb = n.kind === "update" ? NewspaperThumb : GuideThumb;
+                return (
+                  <Link key={`${n.kind}-${n.title}`} to={n.href} className="group flex flex-col rounded-[18px] border border-[var(--lp-line)] p-3 transition-colors hover:border-current">
+                    <div className="lp-card flex aspect-[16/10] items-center justify-center rounded-[12px]" style={{ background: noteBg[i % noteBg.length] }}>
+                      <Thumb className="w-3/4 transition-transform duration-300 group-hover:-translate-y-1" />
+                    </div>
+                    <div className="flex flex-1 flex-col px-2 pb-2 pt-4">
+                      <p className="lp-tiny lp-muted">
+                        {n.kind === "update" ? t("landing.notes.update") : t("landing.notes.doc")}
+                        {n.date && <> · <time dateTime={n.date}>{n.date}</time></>}
+                      </p>
+                      <h3 className="lp-display mt-2 text-[18px] leading-snug">{n.title}</h3>
+                      {n.desc && <p className="lp-muted mt-2 line-clamp-2 text-[15px]">{n.desc}</p>}
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* Download */}
-      <section id="download" className="scroll-mt-16 py-16 md:py-24">
-        <div className="mx-auto max-w-6xl px-4 space-y-12">
-          <SectionTitle eyebrow={t("landing.download.eyebrow")} title={t("landing.download.title")} subtitle={t("landing.download.subtitle")} />
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {platforms.map(({ key, icon: Icon, href, ...rest }) => {
-              const internal = "internal" in rest;
-              const content = (
-                <>
-                  <Icon size={22} className="text-primary" aria-hidden />
-                  <h3 className="mt-3 font-semibold">{t(`landing.download.${key}.title`)}</h3>
-                  <p className="mt-1 flex-1 text-sm text-muted-foreground">{t(`landing.download.${key}.desc`)}</p>
-                  <span className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-primary">
-                    {t(`landing.download.${key}.cta`)} <ArrowRight size={14} aria-hidden />
-                  </span>
-                </>
-              );
-              const cls = "flex flex-col rounded-xl border border-border bg-card p-5 transition-colors hover:border-primary/50";
-              return internal ? (
-                <Link key={key} to={href} className={cls}>{content}</Link>
-              ) : (
-                <a key={key} href={href} target="_blank" rel="noreferrer" className={cls}>{content}</a>
-              );
-            })}
+        {/* 7 · FAQ */}
+        <section id="faq" className="scroll-mt-20 border-t border-[var(--lp-line)] py-20 md:py-28">
+          <div className="mx-auto max-w-3xl px-5">
+            <h2 className="lp-h2 text-center">{t("landing.faq.title")}</h2>
+            <div className="mt-12 border-b border-[var(--lp-line)]">
+              {FAQ.map((key) => (
+                <details key={key} className="lp-faq border-t border-[var(--lp-line)]">
+                  <summary className="flex cursor-pointer list-none items-center justify-between gap-6 py-5 text-left">
+                    <span className="lp-display text-[18px] md:text-[20px]">{t(`landing.faq.${key}.q`)}</span>
+                    <Plus size={18} strokeWidth={1.4} className="lp-faq-plus shrink-0 transition-transform" aria-hidden />
+                  </summary>
+                  <p className="lp-muted pb-6 pr-8 text-[16.5px]">{t(`landing.faq.${key}.a`)}</p>
+                </details>
+              ))}
+            </div>
           </div>
-          <div className="mx-auto max-w-xl rounded-xl border border-border bg-muted/40 p-4">
-            <p className="text-sm text-muted-foreground">{t("landing.download.cliHint")}</p>
-            <pre className="mt-2 overflow-x-auto rounded-md bg-background p-3 text-sm font-mono border border-border">npm i -g @openkoto/cli{"\n"}koto login</pre>
-          </div>
-        </div>
-      </section>
+        </section>
 
-      {/* Pricing teaser */}
-      <section className="border-t border-border bg-muted/30 py-16">
-        <div className="mx-auto flex max-w-4xl flex-col items-center gap-6 px-4 text-center md:flex-row md:text-left">
-          <div className="flex-1 space-y-2">
-            <h2 className="text-2xl font-semibold tracking-tight">{t("landing.pricing.title")}</h2>
-            <p className="text-muted-foreground">{t("landing.pricing.desc")}</p>
+        {/* 8 · Dark warm banner */}
+        <section className="px-3 pb-16 md:px-6 md:pb-24">
+          <div className="lp-banner relative mx-auto max-w-[1320px] overflow-hidden rounded-[28px] px-6 py-20 text-center md:py-28">
+            <BannerPattern className="pointer-events-none absolute inset-0 h-full w-full opacity-[0.16]" />
+            <div className="relative mx-auto max-w-3xl">
+              <p className="lp-eyebrow opacity-75">{t("landing.banner.eyebrow")}</p>
+              <h2 className="lp-h2 mt-6">
+                <Headline i18nKey="landing.banner.headline" />
+              </h2>
+              <p className="mx-auto mt-6 max-w-xl text-[17px] opacity-85">{t("landing.banner.desc")}</p>
+              <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
+                <a href={GITHUB_URL} target="_blank" rel="noreferrer" className="lp-pill">
+                  {t("landing.cta.star")}
+                </a>
+                <Link to="/pricing" className="lp-pill lp-pill-outline">
+                  {t("landing.pricing.cta")}
+                </Link>
+              </div>
+              <p className="mx-auto mt-6 max-w-lg text-[14.5px] opacity-70">{t("landing.pricing.desc")}</p>
+            </div>
           </div>
-          <Link to="/pricing" className={linkButton("outline", "lg")}>
-            {t("landing.pricing.cta")} <ArrowRight size={18} aria-hidden />
-          </Link>
-        </div>
-      </section>
-
-      {/* FAQ */}
-      <section id="faq" className="scroll-mt-16 py-16 md:py-24">
-        <div className="mx-auto max-w-3xl px-4 space-y-10">
-          <SectionTitle title={t("landing.faq.title")} />
-          <div className="divide-y divide-border rounded-xl border border-border bg-card">
-            {FAQ.map((key) => (
-              <details key={key} className="group p-5">
-                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium [&::-webkit-details-marker]:hidden">
-                  {t(`landing.faq.${key}.q`)}
-                  <ChevronDown size={18} className="shrink-0 text-muted-foreground transition-transform group-open:rotate-180" aria-hidden />
-                </summary>
-                <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{t(`landing.faq.${key}.a`)}</p>
-              </details>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Final CTA */}
-      <section className="border-t border-border py-16 md:py-20">
-        <div className="mx-auto max-w-2xl space-y-6 px-4 text-center">
-          <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">{t("landing.cta.title")}</h2>
-          <p className="text-muted-foreground">{t("landing.cta.desc")}</p>
-          <div className="flex flex-col justify-center gap-3 sm:flex-row">
-            <Link to="/login" className={linkButton("default", "lg")}>
-              {t("landing.hero.start")} <ArrowRight size={18} aria-hidden />
-            </Link>
-            <a href={GITHUB_URL} target="_blank" rel="noreferrer" className={linkButton("outline", "lg")}>
-              <GithubIcon size={18} /> {t("landing.cta.star")}
-            </a>
-          </div>
-        </div>
-      </section>
-    </PublicLayout>
+        </section>
+      </main>
+      <LandingFooter />
+    </div>
   );
 }
