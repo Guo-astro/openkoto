@@ -1,9 +1,9 @@
 /*
  * Landing page look: warm paper, typewriter serif headlines with one italic accent word,
- * pastel colour blocks and hand-drawn line art. Everything is scoped under `.lp` so the
- * rest of the app (and its theme variables) is untouched.
+ * pastel colour blocks and hand-drawn line art. Everything is scoped under `.lp` (the landing page and the signed-in shell); the
+ * app-wide Tailwind tokens mirror these colours in styles/themes/paper.css.
  *
- * Fonts are bundled from @fontsource (latin subsets only, no CDN; imported by LandingPage.tsx):
+ * Fonts are bundled from @fontsource (latin subsets only, no CDN; imported by main.tsx):
  * Cutive for display, Newsreader for body and the italic accent. CJK falls back to system serif (Song/Mincho).
  */
 
@@ -256,4 +256,9 @@
       transform: translateY(-8px);
     }
   }
+}
+
+/* Hero headline is sized so headline, copy, buttons and drawing all fit in the first screen. */
+.lp-hero-title {
+  font-size: clamp(1.85rem, 4.1vw, 3.6rem);
 }

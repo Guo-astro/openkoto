@@ -19,7 +19,7 @@ export function GithubIcon({ size = 16, className }: { size?: number; className?
 /** Button look for links (the shared Button component renders a <button>). */
 export function linkButton(variant: "default" | "outline" | "ghost" = "default", size: "sm" | "md" | "lg" = "md"): string {
   return cn(
-    "inline-flex items-center justify-center gap-2 rounded-lg font-medium transition-colors whitespace-nowrap",
+    "inline-flex items-center justify-center gap-2 rounded-full font-medium transition-colors whitespace-nowrap",
     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
     variant === "default" && "bg-primary text-primary-foreground hover:bg-primary/90",
     variant === "outline" && "border border-input bg-background hover:bg-accent hover:text-accent-foreground",

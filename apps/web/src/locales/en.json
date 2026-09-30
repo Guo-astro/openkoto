@@ -4,7 +4,8 @@
     "save": "Save",
     "cancel": "Cancel",
     "delete": "Delete",
-    "networkError": "Network error, please try again"
+    "networkError": "Network error, please try again",
+    "close": "Close"
   },
   "nav": {
     "home": "Home",
