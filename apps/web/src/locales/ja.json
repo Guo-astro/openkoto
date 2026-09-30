@@ -317,12 +317,29 @@
   },
   "landing": {
     "hero": {
-      "badge": "GitHub でオープンソース",
-      "subtitle": "単語復習、小説、歌詞 —— Web・iPhone・Mac・Windows で同期。",
+      "badge": "オープンソースの語学アプリ",
+      "subtitle": "小説・歌詞・記事を取り込んで、知らない単語はタップ。意味だけでなく文法と文化的な背景まで AI が解説し、自動で復習に。Web・iPhone・Mac・Windows で同期。",
       "start": "無料ではじめる",
-      "headline": "好きな物語と歌で、<br/>新しい<em>ことば</em>を学ぼう",
+      "headline": "小説や歌で、<br/>そのまま<em>単語</em>を覚えよう",
       "dlIos": "iPhone / iPad 版をダウンロード",
       "dlDesktop": "デスクトップ版 · Mac / Windows"
+    },
+    "mock": {
+      "lang": "en",
+      "chapter": "第 3 章 · An Old Book of Poems",
+      "before": "The bookshop by the station smelled of paper. It reminded me of the library I visited as a child, and I felt strangely ",
+      "word": "nostalgic",
+      "after": ".",
+      "reading": "/nɒˈstæl.dʒɪk/",
+      "pos": "形",
+      "meaning": "懐かしい；昔を思い出させる",
+      "grammarLabel": "文法",
+      "grammar": "feel + 形容詞：「〜な気持ちになる」。strangely は「なんだか」",
+      "cultureLabel": "文化",
+      "culture": "少し切なさを含む懐かしさ。子ども時代や故郷によく使う",
+      "added": "単語帳に追加しました",
+      "review": "明日の復習 · 12 語",
+      "sync": "iPhone に同期済み"
     },
     "download": {
       "eyebrow": "ダウンロード",

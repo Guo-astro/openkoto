@@ -74,9 +74,9 @@ function Note({ x, y, s = 1 }: { x: number; y: number; s?: number }) {
 }
 
 /* ------------------------------------------------------------------ */
-/* Hero: an open book whose page has been folded into a paper plane.  */
+/* Band: an open book whose page has been folded into a paper plane.  */
 /* ------------------------------------------------------------------ */
-export function HeroIllustration({ className }: { className?: string }) {
+export function BookFlightIllustration({ className }: { className?: string }) {
   // Book is symmetric about x = 300; its page lines are offsets of the page's top curve.
   const leftLine = (d: number) => `M288 ${321 + d} C 256 ${302 + d}, 196 ${298 + d}, 146 ${309 + d}`;
   const rightLine = (d: number) => `M312 ${321 + d} C 344 ${302 + d}, 404 ${298 + d}, 454 ${309 + d}`;
@@ -121,52 +121,6 @@ export function HeroIllustration({ className }: { className?: string }) {
 
       <Sparkle x={140} y={140} r={7} />
       <Sparkle x={572} y={196} r={5} />
-    </Sketch>
-  );
-}
-
-/* ------------------------------------------------------------------ */
-/* Band: vintage headphones beside a sheet of timed lyrics.           */
-/* ------------------------------------------------------------------ */
-export function HeadphonesIllustration({ className }: { className?: string }) {
-  return (
-    <Sketch viewBox="0 0 560 280" className={className}>
-      <path d="M40 262 C 200 270, 380 270, 530 260" />
-      {Array.from({ length: 10 }, (_, i) => (
-        <path key={i} d={`M${70 + i * 44} 272 l10 -7`} strokeWidth={1} />
-      ))}
-
-      {/* headphones */}
-      <path d="M96 176 C 92 70, 250 54, 262 170" strokeWidth={2.2} />
-      <path d="M106 176 C 104 88, 242 76, 252 170" />
-      <rect x="72" y="160" width="46" height="84" rx="20" fill="var(--lp-paper)" />
-      <rect x="240" y="156" width="46" height="84" rx="20" fill="var(--lp-paper)" />
-      <path d="M84 176 C 80 196, 80 212, 84 230" strokeWidth={1.1} />
-      <path d="M274 172 C 278 192, 278 208, 274 226" strokeWidth={1.1} />
-      {[0, 1, 2, 3].map((i) => (
-        <path key={i} d={`M${96 + i * 5} 168 l -8 ${10 + i}`} strokeWidth={0.9} />
-      ))}
-      {/* coiled cable to the lyric sheet */}
-      <path d="M268 240 C 280 262, 300 250, 300 236 C 300 222, 318 222, 318 238 C 318 254, 338 252, 338 236 C 338 222, 356 222, 360 240" />
-
-      {/* lyric sheet, slightly tilted */}
-      <g transform="rotate(5 450 140)">
-        <rect x="370" y="30" width="160" height="210" rx="4" fill="var(--lp-paper)" />
-        <path d="M370 44 L 530 44" strokeWidth={1} />
-        <rect x="382" y="120" width="136" height="20" rx="3" fill="var(--lp-honey-soft)" stroke="none" />
-        {["[00:08]", "[00:12]", "[00:16]", "[00:21]", "[00:25]", "[00:30]"].map((ts, i) => (
-          <g key={ts}>
-            <text x="386" y={70 + i * 28} fontSize="10" fill="currentColor" stroke="none" fontFamily="ui-monospace, Menlo, monospace">{ts}</text>
-            <path d={`M428 ${66 + i * 28} C 450 ${62 + i * 28}, 480 ${68 + i * 28}, ${510 - (i % 3) * 12} ${64 + i * 28}`} strokeWidth={i === 2 ? 2 : 1.1} />
-          </g>
-        ))}
-      </g>
-
-      <Note x={200} y={70} s={1.1} />
-      <Note x={320} y={96} s={0.9} />
-      <Note x={350} y={40} s={0.8} />
-      <Sparkle x={40} y={110} r={7} />
-      <Sparkle x={300} y={30} r={5} />
     </Sketch>
   );
 }

@@ -209,3 +209,57 @@
     transition: none;
   }
 }
+
+/* ---------- hero product sketch (HeroMock.tsx) ---------- */
+.lp-mock-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  border-radius: 999px;
+  font-size: 13px;
+  line-height: 1;
+  white-space: nowrap;
+  box-shadow: var(--shadow-md), inset 0 0 0 1px var(--line);
+}
+.lp-mock-word {
+  color: inherit;
+  white-space: nowrap;
+  padding: 0.05em 0.15em;
+  border-radius: 4px;
+  background: var(--honey-soft);
+  box-shadow: inset 0 -2px 0 color-mix(in srgb, var(--foreground) 55%, transparent);
+}
+.lp-mock-text:lang(ja) {
+  letter-spacing: 0.04em;
+}
+/* Tell the story in order: the word lights up, its card pops in, grammar and culture notes follow, then the review chip. */
+@media (prefers-reduced-motion: no-preference) {
+  .lp-mock-word {
+    animation: lp-mock-mark 0.6s ease-out 0.3s both;
+  }
+  .lp-mock-pop {
+    animation: lp-mock-in 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) 0.8s both;
+  }
+  .lp-mock-note {
+    animation: lp-mock-in 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) 1.2s both;
+  }
+  .lp-mock-note + .lp-mock-note {
+    animation-delay: 1.5s;
+  }
+  .lp-mock-review {
+    animation: lp-mock-in 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) 1.9s both;
+  }
+  @keyframes lp-mock-mark {
+    from {
+      background: transparent;
+      box-shadow: inset 0 0 0 transparent;
+    }
+  }
+  @keyframes lp-mock-in {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+  }
+}

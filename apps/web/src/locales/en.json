@@ -317,12 +317,29 @@
   },
   "landing": {
     "hero": {
-      "badge": "Open source on GitHub",
-      "subtitle": "Review words, read novels and sing along to lyrics — synced across web, iPhone, Mac and Windows.",
+      "badge": "Open-source language app",
+      "subtitle": "Import novels, lyrics or articles. Tap a word for its meaning, the grammar behind the sentence and the cultural context — then it's saved and scheduled for review. Synced across web, iPhone, Mac and Windows.",
       "start": "Get started free",
-      "headline": "Learn languages through<br/>content you <em>love</em>",
+      "headline": "Learn a language from the<br/>books and songs you <em>love</em>",
       "dlIos": "Get the iPhone & iPad app",
       "dlDesktop": "Download for Mac / Windows"
+    },
+    "mock": {
+      "lang": "ja",
+      "chapter": "Chapter 3 · An old book of poems",
+      "before": "駅前の小さな本屋に入ると、紙の匂いがした。子どものころに通った図書館を思い出して、なんだか",
+      "word": "懐かしい",
+      "after": "気持ちになった。",
+      "reading": "natsukashii",
+      "pos": "adj.",
+      "meaning": "nostalgic; bringing back fond memories",
+      "grammarLabel": "Grammar",
+      "grammar": "なんだか〜気持ちになった — “somehow came to feel …”",
+      "cultureLabel": "Culture",
+      "culture": "A warm nostalgia; used for old streets, school songs and Shōwa-era things",
+      "added": "Saved to your words",
+      "review": "Review tomorrow · 12 words",
+      "sync": "Synced to iPhone"
     },
     "download": {
       "eyebrow": "Download",

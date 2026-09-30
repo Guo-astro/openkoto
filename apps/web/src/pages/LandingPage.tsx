@@ -3,6 +3,7 @@ import { ArrowUpRight, Globe, Monitor, Plus, Smartphone, Terminal } from "lucide
 import { useEffect, type ComponentType, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
+import { HeroMock } from "../components/landing/HeroMock";
 import { Headline, LandingFooter, LandingHeader } from "../components/landing/LandingChrome";
 import { buttonVariants } from "../components/ui/button";
 import {
@@ -10,8 +11,7 @@ import {
   DevicesIllustration,
   FlashcardsIllustration,
   GuideThumb,
-  HeadphonesIllustration,
-  HeroIllustration,
+  BookFlightIllustration,
   MicrophoneIllustration,
   NewspaperThumb,
   OpenBookIllustration,
@@ -106,18 +106,18 @@ export function LandingPage() {
     <div className="lp flex min-h-screen flex-col overflow-x-clip">
       <LandingHeader />
       <main className="flex-1">
-        {/* 1 · Hero — text and drawing share the first screen: side by side on desktop, stacked tight on phones. */}
+        {/* 1 · Hero — copy and a product sketch share the first screen: side by side on desktop, stacked on phones. */}
         <section
-          className={`${container} grid items-center gap-6 pt-8 pb-10 md:pt-12 lg:grid-cols-[1.1fr_1fr] lg:gap-8 lg:pt-14 lg:pb-16`}
+          className={`${container} grid grid-cols-1 items-center gap-6 pt-8 pb-10 md:pt-12 lg:grid-cols-[1.1fr_1fr] lg:gap-8 lg:pt-14 lg:pb-16`}
         >
-          <div className="text-center lg:text-left">
+          <div className="min-w-0 text-center lg:text-left">
             <a
               href={GITHUB_URL}
               target="_blank"
               rel="noreferrer"
-              className="lp-tiny lp-muted inline-flex items-center gap-1.5 rounded-full border border-line px-3.5 py-1.5 hover:text-foreground"
+              className="lp-tiny lp-muted inline-flex max-w-full items-center gap-1.5 rounded-full border border-line px-3.5 py-1.5 hover:text-foreground"
             >
-              {t("landing.hero.badge")} · Apache-2.0 <ArrowUpRight size={12} aria-hidden />
+              {t("landing.hero.badge")} <ArrowUpRight size={12} aria-hidden />
             </a>
             <h1 className="lp-h1 lp-hero-title mx-auto mt-5 lg:mx-0 lg:mt-7">
               <Headline i18nKey="landing.hero.headline" />
@@ -135,7 +135,7 @@ export function LandingPage() {
               </DownloadDot>
             </div>
           </div>
-          <HeroIllustration className="lp-float mx-auto w-full max-w-[360px] sm:max-w-[460px] lg:max-w-[600px]" />
+          <HeroMock className="w-full" />
         </section>
 
         {/* 2 · Band */}
@@ -144,7 +144,7 @@ export function LandingPage() {
             <h2 className="lp-h2 mx-auto max-w-4xl">
               <Headline i18nKey="landing.band.headline" />
             </h2>
-            <HeadphonesIllustration className="mx-auto mt-10 w-full max-w-[480px]" />
+            <BookFlightIllustration className="lp-float mx-auto mt-10 w-full max-w-[520px]" />
             <a href="#features" className={cn(buttonVariants({ variant: "outline", size: "lg" }), "mt-8")}>
               {t("landing.band.cta")}
             </a>
