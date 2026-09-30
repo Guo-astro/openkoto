@@ -309,6 +309,10 @@
       "releases": "桌面端下载",
       "feedback": "问题反馈",
       "copyright": "© {{year}} OpenKoto · Apache 2.0"
+    },
+    "theme": {
+      "dark": "切换到暗色模式",
+      "light": "切换到亮色模式"
     }
   },
   "landing": {
@@ -316,9 +320,10 @@
       "badge": "在 GitHub 上开源",
       "subtitle": "FSRS 背单词、AI 翻译读小说、跟着歌词一起唱 —— 在网页、iPhone、Mac 和 Windows 之间同步。",
       "start": "免费开始",
-      "download": "下载客户端",
       "note": "免费使用，无需绑卡；不注册账号也能用。",
-      "headline": "用你喜欢的文字，<br/>学一门新的<em>语言</em>"
+      "headline": "用你喜欢的文字，<br/>学一门新的<em>语言</em>",
+      "dlIos": "下载 iPhone / iPad 版",
+      "dlDesktop": "下载桌面版 · Mac / Windows"
     },
     "features": {
       "review": {

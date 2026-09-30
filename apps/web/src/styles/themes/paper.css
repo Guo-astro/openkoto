@@ -61,18 +61,18 @@
 
 :root.theme-paper.dark,
 .theme-paper.dark {
-  --background: #15130f;
-  --foreground: #efe8d6;
+  --background: #1a1815;
+  --foreground: #ece4d1;
   --card: #1f1c17;
   --card-foreground: #efe8d6;
   --popover: #1f1c17;
   --popover-foreground: #efe8d6;
-  --primary: #cdb862;
+  --primary: #d4bd6f;
   --primary-foreground: #1b1b18;
   --secondary: #2a261e;
   --secondary-foreground: #efe8d6;
   --muted: #221f19;
-  --muted-foreground: #aaa28e;
+  --muted-foreground: #a9a08b;
   --accent: #4d4326;
   --accent-foreground: #f6f1e3;
   --destructive: #d9644c;

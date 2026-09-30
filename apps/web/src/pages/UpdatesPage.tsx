@@ -1,8 +1,10 @@
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
+import { LandingShell } from "../components/landing/LandingChrome";
 import { Markdown } from "../components/Markdown";
-import { PublicLayout } from "../components/PublicLayout";
 import { contentLang, listUpdates } from "../lib/content";
+
+const TAG_BG = ["var(--lp-sky-strong)", "var(--lp-mustard-soft)", "var(--lp-lavender)", "var(--lp-mint)"];
 
 export function UpdatesPage() {
   const { t, i18n } = useTranslation();
@@ -14,34 +16,38 @@ export function UpdatesPage() {
   }, [t]);
 
   return (
-    <PublicLayout>
-      <div className="mx-auto max-w-3xl px-4 py-10 md:py-14">
-        <h1 className="text-3xl font-semibold tracking-tight">{t("updates.title")}</h1>
-        <p className="mt-2 text-muted-foreground">{t("updates.subtitle")}</p>
-        <ol className="mt-10 space-y-12">
+    <LandingShell>
+      <div className="mx-auto max-w-3xl px-5 py-14 md:py-20">
+        <p className="lp-eyebrow lp-muted">{t("public.nav.updates")}</p>
+        <h1 className="lp-h2 mt-4">{t("updates.title")}</h1>
+        <p className="lp-muted mt-4 text-[17px]">{t("updates.subtitle")}</p>
+        <ol className="mt-14 space-y-14">
           {entries.map((e) => (
-            <li key={e.slug} className="relative border-l-2 border-border pl-6">
-              <span className="absolute -left-[7px] top-1.5 h-3 w-3 rounded-full bg-primary" aria-hidden />
-              {e.date && (
-                <time dateTime={e.date} className="text-sm text-muted-foreground">
-                  {new Date(`${e.date}T00:00:00`).toLocaleDateString(i18n.language, { year: "numeric", month: "long", day: "numeric" })}
-                </time>
-              )}
-              <h2 className="mt-1 text-xl font-semibold">{e.title}</h2>
-              {e.tags.length > 0 && (
-                <div className="mt-2 flex flex-wrap gap-1.5">
-                  {e.tags.map((tag) => (
-                    <span key={tag} className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              )}
-              <Markdown className="mt-4">{e.body}</Markdown>
+            <li key={e.slug} className="relative border-t border-[var(--lp-line)] pt-6 md:grid md:grid-cols-[150px_1fr] md:gap-8">
+              <div>
+                {e.date && (
+                  <time dateTime={e.date} className="lp-tiny lp-muted">
+                    {new Date(`${e.date}T00:00:00`).toLocaleDateString(i18n.language, { year: "numeric", month: "short", day: "numeric" })}
+                  </time>
+                )}
+              </div>
+              <div className="min-w-0">
+                <h2 className="mt-2 text-[26px] leading-tight md:mt-0">{e.title}</h2>
+                {e.tags.length > 0 && (
+                  <div className="mt-3 flex flex-wrap gap-1.5">
+                    {e.tags.map((tag, i) => (
+                      <span key={tag} className="lp-card rounded-full px-2.5 py-0.5 text-[13px]" style={{ background: TAG_BG[i % TAG_BG.length] }}>
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                )}
+                <Markdown className="mt-5">{e.body}</Markdown>
+              </div>
             </li>
           ))}
         </ol>
       </div>
-    </PublicLayout>
+    </LandingShell>
   );
 }

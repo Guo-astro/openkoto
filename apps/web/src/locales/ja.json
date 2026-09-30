@@ -309,6 +309,10 @@
       "releases": "デスクトップ版",
       "feedback": "フィードバック",
       "copyright": "© {{year}} OpenKoto · Apache 2.0"
+    },
+    "theme": {
+      "dark": "ダークモードに切り替え",
+      "light": "ライトモードに切り替え"
     }
   },
   "landing": {
@@ -316,9 +320,10 @@
       "badge": "GitHub でオープンソース",
       "subtitle": "FSRS で単語復習、AI 翻訳で小説を読み、歌詞に合わせて歌う —— Web・iPhone・Mac・Windows で同期。",
       "start": "無料ではじめる",
-      "download": "アプリをダウンロード",
       "note": "無料・クレジットカード不要。アカウントなしでも使えます。",
-      "headline": "好きな物語と歌で、<br/>新しい<em>ことば</em>を学ぼう"
+      "headline": "好きな物語と歌で、<br/>新しい<em>ことば</em>を学ぼう",
+      "dlIos": "iPhone / iPad 版をダウンロード",
+      "dlDesktop": "デスクトップ版 · Mac / Windows"
     },
     "features": {
       "review": {

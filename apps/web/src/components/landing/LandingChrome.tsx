@@ -1,10 +1,11 @@
-import { Menu, X } from "lucide-react";
-import { useState } from "react";
+import { Languages, Menu, Moon, Sun, X } from "lucide-react";
+import { useState, type ReactNode } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { Link } from "react-router";
 import { setLanguage } from "../../i18n";
 import { GITHUB_URL, ISSUES_URL, RELEASES_URL } from "../../lib/links";
 import { useSession } from "../../lib/session";
+import { setTheme, useTheme } from "../../lib/theme";
 import { cn } from "../../lib/utils";
 
 const LANGS = [
@@ -18,21 +19,51 @@ export function Headline({ i18nKey }: { i18nKey: string }) {
   return <Trans i18nKey={i18nKey} components={{ em: <em className="lp-em" />, br: <br /> }} />;
 }
 
-function LangSelect({ className }: { className?: string }) {
+export function LangSelect({ className }: { className?: string }) {
   const { i18n } = useTranslation();
   return (
-    <select
-      aria-label="Language"
-      value={i18n.language}
-      onChange={(e) => setLanguage(e.target.value)}
-      className={cn("lp-tiny cursor-pointer rounded-full border border-[var(--lp-line)] bg-transparent px-2.5 py-1.5 hover:border-current", className)}
+    <label
+      className={cn(
+        "lp-tiny relative inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-full border border-[var(--lp-line)] pl-3 pr-3 transition-colors hover:border-current",
+        className,
+      )}
     >
-      {LANGS.map((l) => (
-        <option key={l.code} value={l.code} className="text-black">
-          {l.label}
-        </option>
-      ))}
-    </select>
+      <Languages size={14} strokeWidth={1.6} aria-hidden />
+      <span>{LANGS.find((l) => l.code === i18n.language)?.label ?? "EN"}</span>
+      {/* Native select stretched over the pill: keeps keyboard and mobile pickers, hides the platform chrome. */}
+      <select
+        aria-label="Language"
+        value={i18n.language}
+        onChange={(e) => setLanguage(e.target.value)}
+        className="absolute inset-0 cursor-pointer appearance-none opacity-0"
+      >
+        {LANGS.map((l) => (
+          <option key={l.code} value={l.code}>
+            {l.label}
+          </option>
+        ))}
+      </select>
+    </label>
+  );
+}
+
+export function ThemeToggle({ className }: { className?: string }) {
+  const { t } = useTranslation();
+  const theme = useTheme();
+  const next = theme === "dark" ? "light" : "dark";
+  return (
+    <button
+      type="button"
+      onClick={() => setTheme(next)}
+      aria-label={t(next === "dark" ? "public.theme.dark" : "public.theme.light")}
+      title={t(next === "dark" ? "public.theme.dark" : "public.theme.light")}
+      className={cn(
+        "inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[var(--lp-line)] transition-colors hover:border-current",
+        className,
+      )}
+    >
+      {theme === "dark" ? <Sun size={15} strokeWidth={1.6} aria-hidden /> : <Moon size={15} strokeWidth={1.6} aria-hidden />}
+    </button>
   );
 }
 
@@ -43,7 +74,7 @@ export function LandingHeader() {
   const close = () => setOpen(false);
 
   const items = [
-    { href: "#features", label: t("public.nav.features") },
+    { href: "/#features", label: t("public.nav.features") },
     { to: "/docs", label: t("public.nav.docs") },
     { to: "/updates", label: t("public.nav.updates") },
     { to: "/pricing", label: t("public.nav.pricing") },
@@ -72,7 +103,8 @@ export function LandingHeader() {
           )}
         </nav>
         <div className="ml-auto flex items-center gap-2 lg:ml-2">
-          <LangSelect className="hidden sm:block" />
+          <LangSelect className="hidden sm:inline-flex" />
+          <ThemeToggle />
           <Link to={account ? "/" : "/login"} className="lp-pill lp-pill-sm">
             {account ? t("public.openApp") : t("public.signIn")}
           </Link>
@@ -134,9 +166,9 @@ export function LandingFooter() {
         <div>
           <p className={head}>{t("public.footer.product")}</p>
           <ul className="space-y-2.5">
-            <li><a href="#features" className={link}>{t("public.nav.features")}</a></li>
+            <li><a href="/#features" className={link}>{t("public.nav.features")}</a></li>
             <li><Link to="/pricing" className={link}>{t("public.nav.pricing")}</Link></li>
-            <li><a href="#download" className={link}>{t("public.footer.download")}</a></li>
+            <li><a href="/#download" className={link}>{t("public.footer.download")}</a></li>
             <li><Link to="/updates" className={link}>{t("public.nav.updates")}</Link></li>
           </ul>
         </div>
@@ -161,5 +193,16 @@ export function LandingFooter() {
         <p className="lp-tiny lp-muted mx-auto max-w-[1240px] px-5 py-6 md:px-10">{t("public.footer.copyright", { year })}</p>
       </div>
     </footer>
+  );
+}
+
+/** Landing header and footer around a public content page (docs, changelog, legal, 404). */
+export function LandingShell({ children }: { children: ReactNode }) {
+  return (
+    <div className="lp flex min-h-screen flex-col overflow-x-clip">
+      <LandingHeader />
+      <main className="app-main flex-1">{children}</main>
+      <LandingFooter />
+    </div>
   );
 }

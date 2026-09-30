@@ -5,6 +5,7 @@ import { Link, NavLink, Navigate, Outlet, useLocation, useNavigate } from "react
 import { setLanguage } from "../i18n";
 import { cn } from "../lib/utils";
 import { useSession } from "../lib/session";
+import { ThemeToggle } from "./landing/LandingChrome";
 import { SyncIndicator } from "./SyncIndicator";
 
 const NAV = [
@@ -88,7 +89,10 @@ function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
       <div className="mt-auto space-y-3 border-t border-[var(--lp-line)] pt-4">
         <div className="flex items-center justify-between gap-2 px-1">
           <SyncIndicator />
-          <LanguageSwitcher />
+          <div className="flex items-center gap-1.5">
+            <LanguageSwitcher />
+            <ThemeToggle className="h-8 w-8" />
+          </div>
         </div>
         {account ? (
           <>
