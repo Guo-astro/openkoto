@@ -4,7 +4,8 @@
     "save": "保存",
     "cancel": "取消",
     "delete": "删除",
-    "networkError": "网络错误，请稍后重试"
+    "networkError": "网络错误，请稍后重试",
+    "close": "关闭"
   },
   "nav": {
     "home": "首页",

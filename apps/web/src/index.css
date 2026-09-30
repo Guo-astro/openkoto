@@ -2,6 +2,7 @@
 
 /* 导入城市主题样式 */
 @import "./styles/themes/california.css";
+@import "./styles/themes/paper.css";
 
 /* 暗色模式变体 */
 @custom-variant dark (&:where(.dark, .dark *));

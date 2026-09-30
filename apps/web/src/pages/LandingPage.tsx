@@ -1,8 +1,3 @@
-import "@fontsource/cutive/latin-400.css";
-import "@fontsource/newsreader/latin-400.css";
-import "@fontsource/newsreader/latin-500.css";
-import "@fontsource/newsreader/latin-400-italic.css";
-import "../components/landing/landing.css";
 
 import { ArrowUpRight, Globe, Monitor, Plus, Smartphone, Terminal } from "lucide-react";
 import { useEffect, type ComponentType, type ReactNode } from "react";
@@ -96,30 +91,34 @@ export function LandingPage() {
     <div className="lp flex min-h-screen flex-col overflow-x-clip">
       <LandingHeader />
       <main className="flex-1">
-        {/* 1 · Hero */}
-        <section className={`${container} pt-14 pb-10 text-center md:pt-24`}>
-          <a
-            href={GITHUB_URL}
-            target="_blank"
-            rel="noreferrer"
-            className="lp-tiny lp-muted inline-flex items-center gap-1.5 rounded-full border border-[var(--lp-line)] px-3.5 py-1.5 hover:text-[var(--lp-ink)]"
-          >
-            {t("landing.hero.badge")} · Apache-2.0 <ArrowUpRight size={12} aria-hidden />
-          </a>
-          <h1 className="lp-h1 mx-auto mt-8 max-w-[1180px]">
-            <Headline i18nKey="landing.hero.headline" />
-          </h1>
-          <p className="lp-muted mx-auto mt-7 max-w-xl text-[18px] md:text-[19px]">{t("landing.hero.subtitle")}</p>
-          <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <Link to="/login" className="lp-pill">
-              {t("landing.hero.start")}
-            </Link>
-            <a href="#download" className="lp-pill lp-pill-outline">
-              {t("landing.hero.download")}
+        {/* 1 · Hero — text and drawing share the first screen: side by side on desktop, stacked tight on phones. */}
+        <section
+          className={`${container} grid items-center gap-6 pt-8 pb-10 md:pt-12 lg:grid-cols-[1.1fr_1fr] lg:gap-8 lg:pt-14 lg:pb-16`}
+        >
+          <div className="text-center lg:text-left">
+            <a
+              href={GITHUB_URL}
+              target="_blank"
+              rel="noreferrer"
+              className="lp-tiny lp-muted inline-flex items-center gap-1.5 rounded-full border border-[var(--lp-line)] px-3.5 py-1.5 hover:text-[var(--lp-ink)]"
+            >
+              {t("landing.hero.badge")} · Apache-2.0 <ArrowUpRight size={12} aria-hidden />
             </a>
+            <h1 className="lp-h1 lp-hero-title mx-auto mt-5 lg:mx-0 lg:mt-7">
+              <Headline i18nKey="landing.hero.headline" />
+            </h1>
+            <p className="lp-muted mx-auto mt-4 max-w-xl text-[16px] md:text-[18px] lg:mx-0 lg:mt-6">{t("landing.hero.subtitle")}</p>
+            <div className="mt-6 flex flex-wrap items-center justify-center gap-3 lg:mt-8 lg:justify-start">
+              <Link to="/login" className="lp-pill">
+                {t("landing.hero.start")}
+              </Link>
+              <a href="#download" className="lp-pill lp-pill-outline">
+                {t("landing.hero.download")}
+              </a>
+            </div>
+            <p className="lp-muted mt-3 text-[14px] md:text-[15px] lg:mt-4">{t("landing.hero.note")}</p>
           </div>
-          <p className="lp-muted mt-5 text-[15px]">{t("landing.hero.note")}</p>
-          <HeroIllustration className="lp-float mx-auto mt-10 w-full max-w-[680px] md:mt-6" />
+          <HeroIllustration className="lp-float mx-auto w-full max-w-[360px] sm:max-w-[460px] lg:max-w-[600px]" />
         </section>
 
         {/* 2 · Sky band */}

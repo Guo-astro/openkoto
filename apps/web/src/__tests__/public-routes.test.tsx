@@ -49,6 +49,7 @@ describe("public routes", () => {
     renderAt("/");
     expect(screen.getByText("dashboard-home")).toBeInTheDocument();
     expect(screen.queryByText(/get started free/i)).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /sign out/i })).toBeInTheDocument();
   });
 
   it("redirects legacy legal URLs", async () => {

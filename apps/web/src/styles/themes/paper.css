@@ -1,0 +1,110 @@
+/*
+ * Paper theme — the landing page look (components/landing/landing.css) carried into the app:
+ * warm paper background, ink text, brown accent from the open-source banner, mustard highlights,
+ * serif type (Newsreader body, Cutive headings; CJK falls back to Song/Mincho).
+ */
+
+:root.theme-paper,
+.theme-paper {
+  --background: #fbf9f1;
+  --foreground: #1b1b18;
+  --card: #fffdf6;
+  --card-foreground: #1b1b18;
+  --popover: #fffdf6;
+  --popover-foreground: #1b1b18;
+  --primary: #7a3f1f;
+  --primary-foreground: #fbf6ea;
+  --secondary: #f1ebdb;
+  --secondary-foreground: #1b1b18;
+  --muted: #f1ebdb;
+  --muted-foreground: #5c594f;
+  --accent: #efe0a8;
+  --accent-foreground: #1b1b18;
+  --destructive: #a3321f;
+  --destructive-foreground: #fffdf6;
+  --border: #e3ddcd;
+  --input: #d9d2bf;
+  --ring: #1b1b18;
+  --chart-1: #7a3f1f;
+  --chart-2: #6a9fab;
+  --chart-3: #c2a54b;
+  --chart-4: #9a86bd;
+  --chart-5: #6fb08f;
+  --sidebar: #f5f0e2;
+  --sidebar-foreground: #1b1b18;
+  --sidebar-primary: #7a3f1f;
+  --sidebar-primary-foreground: #fbf6ea;
+  --sidebar-accent: #efe0a8;
+  --sidebar-accent-foreground: #1b1b18;
+  --sidebar-border: #e3ddcd;
+  --sidebar-ring: #1b1b18;
+
+  --font-cjk: "Songti SC", "STSong", "Noto Serif CJK SC", "Source Han Serif SC", "Noto Serif SC", serif;
+  --font-sans: "Newsreader", Georgia, var(--font-cjk);
+  --font-serif: "Newsreader", Georgia, var(--font-cjk);
+  --font-display: "Cutive", var(--font-cjk);
+  --font-mono: ui-monospace, "SF Mono", Menlo, monospace;
+  --radius: 0.75rem;
+  --shadow-2xs: 0 1px 2px 0 rgb(27 27 24 / 0.04);
+  --shadow-xs: 0 1px 2px 0 rgb(27 27 24 / 0.05);
+  --shadow-sm: 0 1px 3px 0 rgb(27 27 24 / 0.06);
+  --shadow: 0 1px 3px 0 rgb(27 27 24 / 0.07);
+  --shadow-md: 0 4px 10px -2px rgb(27 27 24 / 0.08);
+  --shadow-lg: 0 10px 24px -6px rgb(27 27 24 / 0.1);
+  --shadow-xl: 0 16px 36px -8px rgb(27 27 24 / 0.12);
+  --shadow-2xl: 0 24px 48px -12px rgb(27 27 24 / 0.18);
+}
+
+:root.theme-paper:lang(ja) {
+  --font-cjk: "Hiragino Mincho ProN", "Yu Mincho", "YuMincho", "Noto Serif JP", "Noto Serif CJK JP", "Source Han Serif JP", serif;
+}
+
+:root.theme-paper.dark,
+.theme-paper.dark {
+  --background: #15130f;
+  --foreground: #efe8d6;
+  --card: #1f1c17;
+  --card-foreground: #efe8d6;
+  --popover: #1f1c17;
+  --popover-foreground: #efe8d6;
+  --primary: #cdb862;
+  --primary-foreground: #1b1b18;
+  --secondary: #2a261e;
+  --secondary-foreground: #efe8d6;
+  --muted: #221f19;
+  --muted-foreground: #aaa28e;
+  --accent: #4d4326;
+  --accent-foreground: #f6f1e3;
+  --destructive: #d9644c;
+  --destructive-foreground: #15130f;
+  --border: #332e24;
+  --input: #3d372b;
+  --ring: #efe8d6;
+  --chart-1: #cdb862;
+  --chart-2: #8fbfca;
+  --chart-3: #d9a86a;
+  --chart-4: #b3a2cc;
+  --chart-5: #95c4ad;
+  --sidebar: #1a1813;
+  --sidebar-foreground: #efe8d6;
+  --sidebar-primary: #cdb862;
+  --sidebar-primary-foreground: #1b1b18;
+  --sidebar-accent: #4d4326;
+  --sidebar-accent-foreground: #f6f1e3;
+  --sidebar-border: #332e24;
+  --sidebar-ring: #efe8d6;
+  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.3);
+  --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.3);
+  --shadow-md: 0 4px 10px -2px rgb(0 0 0 / 0.35);
+  --shadow-lg: 0 10px 24px -6px rgb(0 0 0 / 0.4);
+}
+
+/* Page titles inside the app use the landing's typewriter display face (it only ships one weight). */
+.theme-paper .app-main :is(h1, h2) {
+  font-family: var(--font-display);
+  font-weight: 400;
+  letter-spacing: -0.01em;
+}
+.theme-paper .app-main :is(h1, h2):is(:lang(zh), :lang(ja)) {
+  letter-spacing: 0.02em;
+}
