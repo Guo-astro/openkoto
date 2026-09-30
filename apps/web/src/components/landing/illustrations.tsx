@@ -77,63 +77,50 @@ function Note({ x, y, s = 1 }: { x: number; y: number; s?: number }) {
 /* Hero: an open book whose page has been folded into a paper plane.  */
 /* ------------------------------------------------------------------ */
 export function HeroIllustration({ className }: { className?: string }) {
+  // Book is symmetric about x = 300; its page lines are offsets of the page's top curve.
+  const leftLine = (d: number) => `M288 ${321 + d} C 256 ${302 + d}, 196 ${298 + d}, 146 ${309 + d}`;
+  const rightLine = (d: number) => `M312 ${321 + d} C 344 ${302 + d}, 404 ${298 + d}, 454 ${309 + d}`;
   return (
-    <Sketch viewBox="0 0 600 430" className={className}>
-      {/* pastel blobs behind */}
-      <path d="M170 250 C 150 150, 260 70, 370 92 C 480 112, 520 210, 470 280 C 420 350, 250 360, 196 318 C 180 305, 173 280, 170 250 Z" fill="var(--lp-mist-strong)" stroke="none" />
-      <circle cx="470" cy="118" r="58" fill="var(--lp-honey-soft)" stroke="none" />
+    <Sketch viewBox="0 50 600 380" className={className} wobble={1.2}>
+      {/* soft shapes behind: a mist cloud and a honey sun the plane flies into */}
+      <path d="M178 262 C 158 170, 250 96, 350 104 C 452 112, 506 196, 474 268 C 446 332, 262 348, 206 314 C 190 302, 182 284, 178 262 Z" fill="var(--lp-mist-strong)" stroke="none" />
+      <circle cx="498" cy="118" r="54" fill="var(--lp-honey-soft)" stroke="none" />
 
-      {/* shadow + hatching under the book */}
-      <path d="M110 398 C 200 410, 400 410, 492 398" />
-      {Array.from({ length: 14 }, (_, i) => (
-        <path key={i} d={`M${150 + i * 22} 406 l12 -9`} strokeWidth={1.1} />
-      ))}
+      {/* ground */}
+      <path d="M104 418 C 220 426, 380 426, 496 418" strokeWidth={1.1} />
 
       {/* open book */}
-      <path d="M300 312 C 258 292, 190 290, 124 302 L 112 382 C 178 370, 250 372, 300 394 Z" fill="var(--lp-paper)" />
-      <path d="M300 312 C 342 292, 410 290, 476 302 L 488 382 C 422 370, 350 372, 300 394 Z" fill="var(--lp-paper)" />
-      <path d="M300 312 V394" />
-      <path d="M112 382 L 106 392 C 176 380, 250 382, 300 404 C 350 382, 424 380, 494 392 L 488 382" />
-      {/* lines of text on the left page */}
-      {[0, 1, 2, 3, 4].map((i) => (
-        <path key={`l${i}`} d={`M${140 - i * 2} ${316 + i * 12} C ${190} ${306 + i * 12}, ${240} ${308 + i * 12}, ${284} ${322 + i * 12}`} strokeWidth={1.1} />
+      <path d="M300 318 C 262 296, 190 292, 130 306 L 122 380 C 190 366, 262 370, 300 392 Z" fill="var(--lp-paper)" />
+      <path d="M300 318 C 338 296, 410 292, 470 306 L 478 380 C 410 366, 338 370, 300 392 Z" fill="var(--lp-paper)" />
+      <path d="M122 380 L 116 392 C 190 380, 262 384, 300 404 C 338 384, 410 380, 484 392 L 478 380" />
+      <path d="M300 318 V 392" />
+      {[14, 26, 38, 50].map((d) => (
+        <path key={`l${d}`} d={leftLine(d)} strokeWidth={1} />
       ))}
-      {/* right page: a torn corner where the plane came from, and a few lines */}
-      <path d="M404 296 L 418 314 L 440 306 L 452 322 L 476 318" strokeDasharray="3 4" />
-      {[0, 1, 2, 3].map((i) => (
-        <path key={`r${i}`} d={`M316 ${334 + i * 12} C 350 ${322 + i * 12}, 400 ${320 + i * 12}, ${456 + i * 2} ${328 + i * 12}`} strokeWidth={1.1} />
+      {/* right page: two full lines, then shorter ones (same curve, cut short) — a page half read */}
+      {[14, 26].map((d) => (
+        <path key={`r${d}`} d={rightLine(d)} strokeWidth={1} />
       ))}
-      {/* bookmark ribbon */}
-      <path d="M268 300 V 346 L 276 338 L 284 346 V 303" fill="var(--lp-clay)" />
+      <path d={rightLine(38)} strokeWidth={1} pathLength={1} strokeDasharray="0.62 1" />
+      <path d={rightLine(50)} strokeWidth={1} pathLength={1} strokeDasharray="0.38 1" />
+      {/* ribbon bookmark hanging from the spine over the bottom edge */}
+      <path d="M306 316 V 408 L 312 402 L 318 408 V 311" fill="var(--lp-clay)" strokeWidth={1.2} />
 
-      {/* dotted flight path from the page to the plane */}
-      <path d="M430 300 C 470 250, 360 250, 330 220 C 300 190, 340 160, 372 168" strokeDasharray="2 7" />
+      {/* dotted flight path: rises out of the page and ends at the plane's tail */}
+      <path d="M360 296 C 330 262, 300 234, 318 204 C 336 176, 386 178, 422 160" strokeDasharray="0.5 8" strokeWidth={2} />
 
-      {/* the paper plane (folded from a printed page) */}
-      <g>
-        <path d="M512 70 L 350 124 L 420 140 Z" fill="var(--lp-paper)" />
-        <path d="M512 70 L 420 140 L 404 182 L 434 150 Z" fill="var(--lp-paper)" />
-        <path d="M420 140 L 434 150" />
-        {/* print on the wing */}
-        <path d="M384 122 L 460 100" strokeWidth={1} />
-        <path d="M398 128 L 470 106" strokeWidth={1} />
-        <path d="M414 132 L 478 112" strokeWidth={1} />
-      </g>
-      {/* speed lines */}
-      <path d="M332 92 L 262 108" />
-      <path d="M340 112 L 244 134" />
-      <path d="M350 140 L 290 154" />
-      <path d="M318 76 L 290 82" />
+      {/* paper plane: keel (shaded) under the upper wing */}
+      <path d="M522 94 L 434 150 L 440 192 Z" fill="var(--lp-sand)" />
+      <path d="M522 94 L 380 140 L 434 150 Z" fill="var(--lp-paper)" />
 
-      {/* letters drifting off the page */}
-      <Glyph x={214} y={232} size={34} rotate={-12}>言</Glyph>
-      <Glyph x={262} y={176} size={28} rotate={8}>あ</Glyph>
-      <Glyph x={170} y={180} size={30} rotate={-6} family="var(--lp-italic)">a</Glyph>
-      <Glyph x={520} y={236} size={26} rotate={10}>♪</Glyph>
+      {/* letters drifting up from the page */}
+      <Glyph x={262} y={258} size={32} rotate={-10}>言</Glyph>
+      <Glyph x={226} y={196} size={26} rotate={8}>あ</Glyph>
+      <Glyph x={278} y={146} size={28} rotate={-6} family="var(--lp-italic)">a</Glyph>
+      <Glyph x={534} y={244} size={24} rotate={10}>♪</Glyph>
 
-      <Sparkle x={130} y={120} r={8} />
-      <Sparkle x={560} y={170} r={6} />
-      <Sparkle x={300} y={60} r={5} />
+      <Sparkle x={140} y={140} r={7} />
+      <Sparkle x={572} y={196} r={5} />
     </Sketch>
   );
 }
