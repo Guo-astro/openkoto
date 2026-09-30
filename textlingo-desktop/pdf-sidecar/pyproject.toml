@@ -27,7 +27,7 @@ dependencies = [
     "onnxruntime",
     "opencv-python-headless",
     "pdfminer-six==20250416",
-    "pikepdf",
+    "pikepdf<10.14",  # 10.14+ ships no macOS 14 arm64 / x86_64 wheels; the release runners would build from source and fail
     "peewee>=3.17.8",
     "fontTools",
     "babeldoc>=0.1.22, <0.3.0",
