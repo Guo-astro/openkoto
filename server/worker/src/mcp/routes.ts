@@ -10,7 +10,8 @@ import { LibraryClient, OpenKotoClient } from "@openkoto/client";
 import { createOpenKotoMcpServer, SERVER_VERSION } from "@openkoto/mcp-tools";
 import type { AppBindings, Env, Principal } from "../env";
 import { resolvePrincipal } from "../auth/middleware";
-import { currentPlan, planAtLeast } from "../billing/entitlements";
+import { agentLimitMessage, consumeAgentCall, internalRequests } from "../billing/agent-quota";
+import { currentPlan } from "../billing/entitlements";
 import { ApiError } from "../lib/http";
 import { resourceMetadataUrl } from "./oauth";
 
@@ -75,13 +76,19 @@ export function mcpRoutes(dispatch: Dispatch) {
         baseUrl: new URL(c.env.APP_ORIGIN).origin,
         clientName: `mcp-remote/${SERVER_VERSION}`,
         tokenStore: { get: async () => ({ accessToken: token }), set: async () => {} },
-        fetch: async (url, init) => dispatch(new Request(url, init), c.env, c.executionCtx),
+        fetch: async (url, init) => {
+          const req = new Request(url, init);
+          internalRequests.add(req);
+          return dispatch(req, c.env, c.executionCtx);
+        },
       });
 
-      let entitled: boolean | null = null;
+      // Each tool call counts once against the plan's daily allowance (AGENT_DAILY_LIMITS);
+      // the API requests a tool makes below are not counted again.
       const guard = async () => {
-        entitled ??= planAtLeast(await currentPlan(c.env, p.userId), "plus");
-        if (!entitled) throw new GuardError("PLAN_REQUIRED", "Agent access (MCP/CLI) is part of OpenKoto Plus. The user can upgrade at https://openkoto.com/pricing.");
+        const plan = await currentPlan(c.env, p.userId);
+        const { allowed } = await consumeAgentCall(c.env, p.userId, plan);
+        if (!allowed) throw new GuardError(plan === "free" ? "FREE_LIMIT_REACHED" : "DAILY_LIMIT_REACHED", agentLimitMessage(plan));
       };
 
       const server = createOpenKotoMcpServer(new LibraryClient(client, c.req.header("X-Timezone") || undefined), {

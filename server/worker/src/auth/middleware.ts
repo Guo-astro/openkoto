@@ -1,9 +1,10 @@
+import { internalRequests, requireAgentAllowance } from "../billing/agent-quota";
 import type { Context, MiddlewareHandler } from "hono";
 import type { AppBindings, Env, Principal } from "../env";
 import { forbidden, unauthenticated } from "../lib/http";
 import { getAuth } from "./better-auth";
 import { FIRST_PARTY_SCOPES, onDeviceRevoked, resolveApiKey, verifyAccessToken } from "./tokens";
-import { currentPlan, planAtLeast } from "../billing/entitlements";
+import { currentPlan } from "../billing/entitlements";
 
 interface DeviceState {
   platform: string;
@@ -32,7 +33,7 @@ export function forgetDevice(deviceId: string): void {
 }
 onDeviceRevoked(forgetDevice);
 
-/** Tokens held by agents and scripts: API keys, CLI and MCP devices. These need Plus. */
+/** Tokens held by agents and scripts: API keys, CLI and MCP devices. */
 export async function isAgentPrincipal(env: Env, p: Principal): Promise<boolean> {
   if (p.via === "api_key") return true;
   if (p.via !== "jwt" || !p.deviceId || p.deviceId === "agent") return false;
@@ -69,12 +70,16 @@ export async function resolvePrincipal(env: Env, req: Request): Promise<Principa
   return { userId: session.user.id, email: session.user.email, deviceId: null, scopes: FIRST_PARTY_SCOPES, via: "session" };
 }
 
-/** Library/agent API: agent tokens (API keys, CLI, MCP) need a Plus or Pro plan server-side. */
+/**
+ * Library/agent API: agent tokens (access tokens, CLI, MCP) are metered per UTC day by plan
+ * (AGENT_DAILY_LIMITS). First-party apps (iOS, desktop, web) are never counted.
+ */
 export function requirePlusForAgents(): MiddlewareHandler<AppBindings> {
   return async (c, next) => {
+    if (internalRequests.has(c.req.raw)) return next();
     const principal = await resolvePrincipal(c.env, c.req.raw);
-    if (principal && (await isAgentPrincipal(c.env, principal)) && !planAtLeast(await currentPlan(c.env, principal.userId), "plus")) {
-      throw forbidden("CLI, MCP and API-key access are part of OpenKoto Plus", "PLAN_REQUIRED");
+    if (principal && (await isAgentPrincipal(c.env, principal))) {
+      await requireAgentAllowance(c.env, principal.userId, await currentPlan(c.env, principal.userId));
     }
     await next();
   };

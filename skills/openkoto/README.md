@@ -10,7 +10,7 @@ koto login                 # shows a code and opens openkoto.com/device to appro
 koto whoami
 ```
 
-The CLI (and MCP) are part of **OpenKoto Plus**. On the free plan, `koto login`, `koto whoami` and `koto config` still work, and every other command exits with code 4 and an upgrade hint.
+The CLI and MCP work on every plan. Free accounts get **50 calls a day** (reset at 00:00 UTC); past that, commands exit with code 4 (`FREE_LIMIT_REACHED`) and an upgrade hint. **OpenKoto Plus** and Pro are unlimited. API keys (`KOTO_API_KEY`) need Plus.
 
 - Credentials are stored in `~/.config/koto/credentials.json` (mode 0600, respects `$XDG_CONFIG_HOME`).
 - For CI or headless use, set `KOTO_API_KEY=ok_live_…` (created at openkoto.com → Settings → API keys). It takes precedence over the stored login.
@@ -48,7 +48,7 @@ The same MCP tools are available two ways:
 \* These tools modify user data and say so in their description, so MCP clients ask before running them.
 † These tools spend AI credits.
 
-No delete tools are exposed. Agent access (MCP and CLI) needs **OpenKoto Plus**.
+No delete tools are exposed. Free accounts get 50 MCP/CLI calls a day; Plus and Pro are unlimited.
 
 ### Remote server (`https://openkoto.com/mcp`)
 

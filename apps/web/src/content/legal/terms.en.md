@@ -30,7 +30,8 @@ You agree to:
 - Memberships (Plus / Pro) renew automatically each billing period until cancelled.
 - **Web purchases** are processed by Creem. You can cancel renewal from the Account page; benefits remain until the end of the paid period.
 - **App Store purchases** are processed by Apple and managed in your device's subscription settings. Refunds for App Store purchases are handled by Apple.
-- Credits can only be spent on AI features inside OpenKoto and are not redeemable for cash or transferable. Purchased credits are valid for 12 months from purchase.
+- Credits can only be spent on AI features inside OpenKoto and are not redeemable for cash or transferable. Purchased credits never expire.
+- When a membership ends, cloud data is kept under the free plan. If your cloud book files exceed the free storage (50 MB), we email you 60 days after the membership ends; 90 days after it ends and at least 30 days after that email, the oldest book files above 50 MB are removed (the newest are kept). Words, lyrics and reading progress are not deleted, and books already on your devices are unaffected.
 - Redeemed activation codes cannot be reversed.
 
 ## Third-party services

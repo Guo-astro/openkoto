@@ -155,7 +155,7 @@ describe("sync", () => {
 
   it("counts lyrics separately from articles", async () => {
     const t = await nativeLogin("lyrics@example.com");
-    const ops = Array.from({ length: 31 }, (_, i) => ({
+    const ops = Array.from({ length: 11 }, (_, i) => ({
       opId: `l-${i}`,
       type: "Article",
       id: `a${i}`,
@@ -165,8 +165,8 @@ describe("sync", () => {
       payload: { title: `song ${i}`, content: "…", sourceType: "lyrics", createdAt: "2026-09-28T00:00:00Z" },
     }));
     const res = await push(t.accessToken, ops);
-    expect(res.results.filter((r) => r.status === "applied")).toHaveLength(30);
-    expect(res.results[30]).toMatchObject({ code: "QUOTA_EXCEEDED" });
+    expect(res.results.filter((r) => r.status === "applied")).toHaveLength(10);
+    expect(res.results[10]).toMatchObject({ code: "QUOTA_EXCEEDED" });
     const article = await push(t.accessToken, [
       { opId: "l-art", type: "Article", id: "plain", baseRev: 0, hlc: hlc(), deleted: false, payload: { title: "t", content: "c", sourceType: "article" } },
     ]);

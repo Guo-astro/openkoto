@@ -5,7 +5,8 @@ import { principalOf, requireAuth } from "../auth/middleware";
 import { ApiError, badRequest, forbidden } from "../lib/http";
 import { skuById, type Sku } from "./catalog";
 import { addCreditsOnce } from "./credits";
-import { grantPeriodCredits, setAutoRenew, setSubscriptionStatus, upsertSubscription } from "./subscriptions";
+import { grantDueProCredits } from "./pro-credits";
+import { setAutoRenew, setSubscriptionStatus, upsertSubscription } from "./subscriptions";
 
 // Trust model: payloads sent by the app (or in notifications) are only used to learn the
 // transactionId. The authoritative transaction is then fetched from the App Store Server
@@ -107,8 +108,10 @@ export async function applyTransaction(env: Env, userId: string, tx: AppStoreTra
   }
   let periodEnd = tx.expiresDate ?? Date.now();
   if (sandboxOnProduction) periodEnd = Math.min(periodEnd, Date.now() + SANDBOX_GRACE_MS);
-  await upsertSubscription(env, { userId, plan: sku.plan!, channel: "appstore", externalId, periodEnd, status: periodEnd > Date.now() ? "active" : "expired" });
-  if (sku.credits && periodEnd > Date.now() && !sandboxOnProduction) await grantPeriodCredits(env, userId, sku.credits, `appstore:${tx.transactionId}`);
+  const channel = sandboxOnProduction ? "appstore_sandbox" : "appstore";
+  await upsertSubscription(env, { userId, plan: sku.plan!, channel, externalId, periodEnd, status: periodEnd > Date.now() ? "active" : "expired" });
+  // Pro's included credits come from the monthly schedule (sandbox subscriptions are excluded there).
+  if (periodEnd > Date.now() && !sandboxOnProduction) await grantDueProCredits(env, userId);
   return { sku: sku.id, plan: sku.plan ?? null };
 }
 

@@ -2,7 +2,7 @@
 //
 //   node scripts/gen-activation-codes.mjs --plan plus --days 365 --count 20 --batch xhs-2026-10
 //   node scripts/gen-activation-codes.mjs --credits 3000 --count 10
-//   node scripts/gen-activation-codes.mjs --plan pro --days 30 --count 1 --env staging   # Pro codes include 1500 credits per 30 days
+//   node scripts/gen-activation-codes.mjs --plan pro --days 30 --count 1 --env staging   # Pro codes get 1500 credits every 30 days while active
 //
 // Codes are printed once and written to codes-<batch>.csv in the current directory; the
 // database cannot recover them later. Must match hashActivationCode() in src/billing/routes.ts.
@@ -28,10 +28,9 @@ const { values } = parseArgs({
 const plan = values.plan === "plus" || values.plan === "pro" ? values.plan : null;
 if (values.plan && !plan) throw new Error("--plan must be plus or pro");
 const days = Number(values.days);
-// Pro includes AI credits: by default a Pro code carries the same monthly allotment as a paid
-// Pro subscription (PRO_MONTHLY_CREDITS in src/billing/catalog.ts) for each 30 days.
-const PRO_MONTHLY_CREDITS = 1500;
-const credits = values.credits !== "0" || plan !== "pro" ? Number(values.credits) : PRO_MONTHLY_CREDITS * Math.max(1, Math.round(days / 30));
+// Pro codes need no credits of their own: redeeming one starts Pro's monthly credit
+// schedule (1,500 every 30 days while Pro is active). --credits adds extra on top.
+const credits = Number(values.credits);
 const count = Math.min(Math.max(Number(values.count), 1), 500);
 if (!plan && !credits) throw new Error("a code must grant --plan (with --days) or --credits");
 if (plan && !(days > 0)) throw new Error("--days is required with --plan");

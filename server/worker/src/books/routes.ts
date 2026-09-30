@@ -3,6 +3,7 @@ import { PLAN_LIMITS } from "@openkoto/core";
 import type { AppBindings, Env } from "../env";
 import { principalOf, requireAuth } from "../auth/middleware";
 import { currentPlan } from "../billing/entitlements";
+import { filesWerePurged } from "../billing/lapsed-cleanup";
 import { ApiError, badRequest, notFound } from "../lib/http";
 
 const EXTENSIONS = new Set(["epub", "txt"]);
@@ -59,7 +60,10 @@ export const booksApi = new Hono<AppBindings>()
     const list = await c.env.BUCKET.list({ prefix: bookPrefix(p.userId, c.req.param("bookId")), limit: 1 });
     const key = list.objects[0]?.key;
     const obj = key ? await c.env.BUCKET.get(key) : null;
-    if (!obj) throw notFound("book file not found");
+    if (!obj) {
+      if (await filesWerePurged(c.env, p.userId)) throw new ApiError(410, "FILE_EXPIRED", "this book's cloud file was removed after the membership ended; re-upload it from a device that has it");
+      throw notFound("book file not found");
+    }
     const headers = new Headers({ "Cache-Control": "private, max-age=3600" });
     obj.writeHttpMetadata(headers);
     return new Response(obj.body, { headers });

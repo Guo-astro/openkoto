@@ -1,5 +1,6 @@
 import { env, SELF } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
+import { grantAllDueProCredits, grantDueProCredits } from "../src/billing/pro-credits";
 import { generateActivationCodes } from "../src/billing/routes";
 import { api, json, nativeLogin, url } from "./helpers";
 
@@ -92,18 +93,34 @@ describe("activation codes", () => {
     expect(me.credits).toBe(200);
   });
 
-  it("unlocks API keys for Plus members", async () => {
+  it("gives free accounts one access token and Plus more", async () => {
     const t = await nativeLogin("keys@example.com");
     const create = () => api(t.accessToken, "/api/v1/keys", { method: "POST", body: JSON.stringify({ name: "cli", scopes: ["vocab:read"] }) });
-    expect((await create()).status).toBe(403);
-    const [code] = await generateActivationCodes(env, { batch: "t", plan: "plus", durationDays: 30, credits: 0, count: 1 });
-    await api(t.accessToken, "/api/v1/billing/redeem", { method: "POST", body: JSON.stringify({ code }) });
     const created = await json<{ key: string }>(await create());
     expect(created.key).toMatch(/^ok_live_/);
+    const second = await create();
+    expect(second.status).toBe(403);
+    expect((await json<{ error: { code: string } }>(second)).error.code).toBe("QUOTA_EXCEEDED");
+    const [code] = await generateActivationCodes(env, { batch: "t", plan: "plus", durationDays: 30, credits: 0, count: 1 });
+    await api(t.accessToken, "/api/v1/billing/redeem", { method: "POST", body: JSON.stringify({ code }) });
+    expect((await create()).status).toBe(201);
     const viaKey = await api(created.key, "/api/v1/me");
     expect(viaKey.status).toBe(200);
     // Key scopes are enforced.
     expect((await api(created.key, "/api/v1/sync/pull")).status).toBe(403);
+  });
+
+  it("pays Pro credits monthly, not up front, and only once per 30 days", async () => {
+    const t = await nativeLogin("pro-monthly@example.com");
+    const [code] = await generateActivationCodes(env, { batch: "t", plan: "pro", durationDays: 365, credits: 0, count: 1 });
+    await api(t.accessToken, "/api/v1/billing/redeem", { method: "POST", body: JSON.stringify({ code }) });
+    const balance = async () => (await json<{ credits: number }>(await api(t.accessToken, "/api/v1/me"))).credits;
+    expect(await balance()).toBe(1500);
+    expect(await grantDueProCredits(env, t.user.id)).toBe(false); // same period: nothing more
+    expect(await balance()).toBe(1500);
+    const later = Date.now() + 31 * 24 * 60 * 60 * 1000;
+    expect(await grantAllDueProCredits(env, later)).toBe(1);
+    expect(await balance()).toBe(3000);
   });
 });
 

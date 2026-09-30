@@ -52,7 +52,7 @@ JWT_PRIVATE_KEY="<node scripts/gen-jwt-key.mjs 的输出>"
      ```
    - 正式模式（2026-09-29 已建）：Plus (Yearly) `prod_6Ymabyy9r3KEDzfWQCRYcB` $9.49/yr、Pro (Monthly) `prod_16RrXYuvKqwEsuQsB3Na2R` $3.89/mo、Pro (Yearly) `prod_2qwYiPMKYdOJT1OoCcF1eU` $35.99/yr、AI Credits (3,000) `prod_3DPsHkwaB8S7aAwBqFkiQz` $4.19，已写入顶层 `vars.CREEM_PRODUCTS`；webhook "OpenKoto production" → `https://openkoto.com/api/webhooks/creem`。还需要 `wrangler secret put CREEM_API_KEY` / `CREEM_WEBHOOK_SECRET`（不加 `--env`，用正式模式的值）。
 5. **App Store**：
-   - App Store Connect 中创建内购：`com.openkoto.plus.month`（¥8）、`com.openkoto.plus.year`（¥68）、`com.openkoto.pro.month`（¥28）、`com.openkoto.pro.year`（¥258），放在同一个订阅群组；消耗型 `com.openkoto.credits.3000`（¥30）。
+   - App Store Connect 中创建内购：`com.openkoto.plus.month`（¥8）、`com.openkoto.plus.year`（¥68）、`com.openkoto.pro.month`（¥28）、`com.openkoto.pro.year`（¥258），放在同一个订阅群组；消耗型 `com.openkoto.credits.3000`（¥28，App Store 没有 ¥30 档位）。
    - 加入 App Store 小型企业计划（佣金 15%）。
    - 创建 In-App Purchase API 密钥，然后：
      ```bash
@@ -60,7 +60,7 @@ JWT_PRIVATE_KEY="<node scripts/gen-jwt-key.mjs 的输出>"
      npx wrangler secret put APPSTORE_KEY_ID
      npx wrangler secret put APPSTORE_PRIVATE_KEY   # .p8 文件内容
      ```
-   - App Store Server Notifications V2 地址：`https://openkoto.com/api/webhooks/appstore`（沙盒填 staging 地址）。**2026-09-30 已设置**，订阅群组 "OpenKoto"（ID 22425469）与 5 个内购（4 个订阅 + `com.openkoto.credits.3000` 消耗型）也已创建，但价格、本地化显示名与描述尚未填写。
+   - App Store Server Notifications V2 地址：`https://openkoto.com/api/webhooks/appstore`（沙盒填 staging 地址）。**2026-09-30 已设置**。订阅群组 "OpenKoto"（ID 22425469）与 5 个内购已创建，价格（Plus ¥8/¥68、Pro ¥28/¥258、积分 ¥28）、简体中文显示名与描述、审核截屏均已填写，状态为"可供审核"，已加入草稿提交，随下一个 iOS 版本一起送审。正式环境的 `APPSTORE_ISSUER_ID` / `APPSTORE_KEY_ID` / `APPSTORE_PRIVATE_KEY` 已设置。
    - **下一个带云同步的 iOS 版本提交时**：App 隐私里目前是"未收集数据"，需要改为收集"电子邮件地址（账户）、用户内容（同步的生词/书籍/歌词）、用户 ID、购买项目"；隐私政策网址改为 `https://openkoto.com/privacy`（只能随新版本修改）；首个订阅群组和内购必须随该版本一起提交审核。
    - 在开发者后台给 App ID `com.openkoto.ios` 打开 **Sign in with Apple**。
 6. **Apple 网页登录（可选）**：Services ID + 私钥生成的 client secret（有效期最长 6 个月）写入 `APPLE_CLIENT_ID` / `APPLE_CLIENT_SECRET`。

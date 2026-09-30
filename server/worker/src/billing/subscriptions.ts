@@ -1,14 +1,14 @@
 import type { Plan } from "@openkoto/core";
 import type { Env } from "../env";
 import { newId } from "../lib/crypto";
-import { addCreditsOnce } from "./credits";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 export interface GrantInput {
   userId: string;
   plan: Plan;
-  channel: "creem" | "appstore" | "code";
+  /** appstore_sandbox: TestFlight/App Review purchases honoured on production (never earn credits). */
+  channel: "creem" | "appstore" | "appstore_sandbox" | "code";
   externalId: string;
   periodEnd: number;
   autoRenew?: boolean;
@@ -60,7 +60,3 @@ export async function extendByDays(env: Env, userId: string, plan: Plan, days: n
   return periodEnd;
 }
 
-/** Grants a billing period's included credits exactly once per (subscription, period). */
-export async function grantPeriodCredits(env: Env, userId: string, credits: number, periodRef: string): Promise<void> {
-  await addCreditsOnce(env, userId, credits, "grant", periodRef);
-}

@@ -3,7 +3,9 @@ import type { AppBindings, Env } from "../env";
 import { principalOf, requireAuth, requireSession } from "../auth/middleware";
 import { getAuth } from "../auth/better-auth";
 import { API_KEY_SCOPES, createApiKey } from "../auth/tokens";
-import { activeSubscriptions, currentPlan, planAtLeast } from "../billing/entitlements";
+import { AGENT_DAILY_LIMITS, API_KEY_LIMITS } from "../billing/agent-quota";
+import { grantDueProCredits } from "../billing/pro-credits";
+import { activeSubscriptions, currentPlan } from "../billing/entitlements";
 import { creditBalance } from "../billing/credits";
 import { vaultFor } from "../sync/routes";
 import { forbidden, notFound } from "../lib/http";
@@ -16,6 +18,8 @@ export async function accountSummary(env: Env, userId: string) {
     .bind(userId)
     .first<{ id: string; email: string; name: string; image: string | null; created_at: string }>();
   if (!user) throw notFound("user not found");
+  // Pay out any monthly Pro credits that came due since the last cron run.
+  await grantDueProCredits(env, userId);
   const [plan, subscriptions, credits, deletion] = await Promise.all([
     currentPlan(env, userId),
     activeSubscriptions(env, userId),
@@ -27,8 +31,12 @@ export async function accountSummary(env: Env, userId: string) {
     plan,
     entitlements: {
       sync: true,
-      cli: planAtLeast(plan, "plus"),
-      apiKeys: planAtLeast(plan, "plus"),
+      cli: true,
+      /** CLI/MCP/access-token calls per UTC day. */
+      cliDailyLimit: AGENT_DAILY_LIMITS[plan],
+      apiKeys: true,
+      /** Active access tokens (OpenKoto API keys) allowed. */
+      apiKeyLimit: API_KEY_LIMITS[plan],
       hostedAi: credits > 0 || plan === "pro",
     },
     subscriptions: subscriptions.map((s) => ({ ...s, periodEnd: new Date(s.periodEnd).toISOString() })),
@@ -62,7 +70,15 @@ export const accountApi = new Hono<AppBindings>()
 
   .post("/keys", requireAuth("account"), async (c) => {
     const p = principalOf(c);
-    if (!planAtLeast(await currentPlan(c.env, p.userId), "plus")) throw forbidden("API keys require a Plus membership", "PLAN_REQUIRED");
+    const plan = await currentPlan(c.env, p.userId);
+    const active = await c.env.DB.prepare(
+      "select count(*) as n from api_keys where user_id = ? and revoked_at is null and (expires_at is null or expires_at > ?)",
+    )
+      .bind(p.userId, Date.now())
+      .first<{ n: number }>();
+    if ((active?.n ?? 0) >= API_KEY_LIMITS[plan]) {
+      throw forbidden(`your plan allows ${API_KEY_LIMITS[plan]} active access token(s); revoke one or upgrade`, "QUOTA_EXCEEDED");
+    }
     const body = (await c.req.json()) as { name?: string; scopes?: string[]; expiresInDays?: number };
     const expiresAt = body.expiresInDays ? Date.now() + body.expiresInDays * 24 * 60 * 60 * 1000 : null;
     const key = await createApiKey(c.env, p.userId, body.name ?? "API key", body.scopes ?? ["vocab:read", "library:read"], expiresAt);

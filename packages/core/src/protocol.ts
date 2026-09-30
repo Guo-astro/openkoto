@@ -127,10 +127,11 @@ export interface PlanLimits {
 const MB = 1024 * 1024;
 const GB = 1024 * MB;
 
+// Every plan has finite caps (no "unlimited" tier); nulls are only accepted for older clients.
 export const PLAN_LIMITS: Record<Plan, PlanLimits> = {
-  free: { vocabulary: 200, books: 5, bookFileBytes: 10 * MB, fileBytesTotal: 50 * MB, lyrics: 30, articles: 30 },
-  plus: { vocabulary: null, books: null, bookFileBytes: 50 * MB, fileBytesTotal: 2 * GB, lyrics: null, articles: null },
-  pro: { vocabulary: null, books: null, bookFileBytes: 50 * MB, fileBytesTotal: 10 * GB, lyrics: null, articles: null },
+  free: { vocabulary: 200, books: 5, bookFileBytes: 10 * MB, fileBytesTotal: 50 * MB, lyrics: 10, articles: 10 },
+  plus: { vocabulary: 20_000, books: 500, bookFileBytes: 50 * MB, fileBytesTotal: 2 * GB, lyrics: 2_000, articles: 2_000 },
+  pro: { vocabulary: 50_000, books: 2_000, bookFileBytes: 50 * MB, fileBytesTotal: 10 * GB, lyrics: 5_000, articles: 5_000 },
 };
 
 export interface SyncStats {

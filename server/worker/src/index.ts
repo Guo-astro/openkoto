@@ -14,6 +14,8 @@ import { aiApi } from "./ai/routes";
 import { jobsApi, runTranslateBookStep } from "./ai/jobs";
 import { booksApi } from "./books/routes";
 import { appStoreApi, appStoreWebhook } from "./billing/appstore";
+import { grantAllDueProCredits } from "./billing/pro-credits";
+import { runLapsedCleanup } from "./billing/lapsed-cleanup";
 import { ApiError, errorBody } from "./lib/http";
 
 export { UserVault } from "./sync/vault";
@@ -102,7 +104,10 @@ async function runDailyMaintenance(env: Env): Promise<void> {
     env.DB.prepare("delete from auth_codes where expires_at < ?").bind(now - 24 * 60 * 60 * 1000),
     env.DB.prepare("delete from device_codes where expires_at < ?").bind(now - 24 * 60 * 60 * 1000),
     env.DB.prepare("delete from refresh_tokens where expires_at < ?").bind(now),
+    env.DB.prepare("delete from agent_usage where day < ?").bind(new Date(now - 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10)),
   ]);
+  await grantAllDueProCredits(env, now);
+  await runLapsedCleanup(env, now);
 }
 
 export default {

@@ -81,7 +81,7 @@
     "continueReading": "Continue reading",
     "lyrics": "Lyrics",
     "lyricsHint": "Learn with songs",
-    "upgradeHint": "Free syncs 200 words, 5 books and 30 songs. Plus unlocks unlimited sync and the CLI."
+    "upgradeHint": "Free syncs 200 words, 5 books and 10 songs. Plus syncs 20,000 words and 500 books, with 2,000 CLI calls a day."
   },
   "review": {
     "remaining": "{{count}} left",
@@ -224,16 +224,18 @@
     "subtitle": "Local features and bring-your-own-key AI are free forever. Membership adds sync, the CLI and AI credits.",
     "tagline": {
       "free": "Local learning + a little cloud sync",
-      "plus": "Unlimited sync + CLI",
+      "plus": "Roomy sync + CLI",
       "pro": "Everything in Plus + monthly AI credits"
     },
     "f": {
       "local": "All local features, AI with your own key",
-      "syncFree": "Sync 200 words, 5 books, 30 songs",
+      "syncFree": "Sync 200 words, 5 books, 10 songs, 10 articles",
       "byok": "Read and review on the web",
-      "syncPlus": "Unlimited words & lyrics, 2 GB for books",
-      "syncPro": "Unlimited sync, 10 GB for books",
-      "cli": "koto CLI, MCP and agent skill",
+      "syncPlus": "20,000 words, 500 books, 2,000 songs & articles, 2 GB",
+      "syncPro": "50,000 words, 2,000 books, 5,000 songs & articles, 10 GB",
+      "cli": "koto CLI, MCP and access tokens: 2,000 calls a day",
+      "cliPro": "koto CLI, MCP and access tokens: 5,000 calls a day",
+      "cliFree": "CLI, MCP and 1 access token: 50 calls a day",
       "guide": "Full guide to AI providers and models",
       "topup": "Top up AI credits any time",
       "credits": "1,500 AI credits every month, top-ups available",
@@ -245,7 +247,7 @@
     "current": "Current plan",
     "appStoreOnly": "Buy on iPhone",
     "creditsTitle": "AI credit pack",
-    "creditsDesc": "¥{{price}} = {{credits}} credits — about 10,000 sentence translations or 2,000 explanations. Valid for 12 months.",
+    "creditsDesc": "¥{{price}} = {{credits}} credits — about 10,000 sentence translations or 2,000 explanations. Purchased credits never expire.",
     "buyCredits": "Buy credits",
     "checkoutFailed": "Couldn't open checkout, please try again",
     "notes": "Web payments are processed securely by Creem; cancel renewal any time.",
@@ -383,7 +385,7 @@
     },
     "pricing": {
       "title": "Free to start",
-      "desc": "The free plan includes sync for a starter library. Plus and Pro add unlimited sync, hosted AI credits and CLI access.",
+      "desc": "The free plan includes sync for a starter library. Plus and Pro add roomy sync, hosted AI credits and more CLI calls.",
       "cta": "See pricing"
     },
     "faq": {
@@ -394,7 +396,7 @@
       },
       "free": {
         "q": "Is it free?",
-        "a": "Yes. All local features are free, and the source code is Apache 2.0 licensed. An optional free account syncs a starter library; paid plans add unlimited sync, hosted AI and CLI access."
+        "a": "Yes. All local features are free, and the source code is Apache 2.0 licensed. An optional free account syncs a starter library; paid plans add roomy sync, hosted AI and more CLI calls."
       },
       "platforms": {
         "q": "Which platforms are supported?",
