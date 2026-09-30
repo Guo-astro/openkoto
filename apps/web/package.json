@@ -11,6 +11,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@fontsource/cutive": "^5.3.0",
+    "@fontsource/newsreader": "^5.3.0",
     "@openkoto/client": "workspace:*",
     "@openkoto/core": "workspace:*",
     "@radix-ui/react-dialog": "^1.1.23",

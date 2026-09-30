@@ -69,7 +69,7 @@ describe("public routes", () => {
     unmount();
     await act(() => i18n.changeLanguage("en"));
     renderAt("/ja");
-    expect(await screen.findByRole("heading", { level: 1 })).toHaveTextContent("言語を学ぼう");
+    expect(await screen.findByRole("heading", { level: 1 })).toHaveTextContent("ことばを学ぼう");
   });
 
   it("renders the changelog", async () => {
