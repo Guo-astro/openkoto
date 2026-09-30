@@ -1,37 +1,30 @@
 /*
- * Landing page look: warm paper, typewriter serif headlines with one italic accent word,
- * pastel colour blocks and hand-drawn line art. Everything is scoped under `.lp` (the landing page and the signed-in shell); the
- * app-wide Tailwind tokens mirror these colours in styles/themes/paper.css.
+ * Landing look: warm paper, one book serif, hand-drawn line art on a few quiet colour blocks.
+ * Scoped under `.lp` (landing, public content pages and the signed-in shell).
  *
- * Fonts are bundled from @fontsource (latin subsets only, no CDN; imported by main.tsx):
- * Cutive for display, Newsreader for body and the italic accent. CJK falls back to system serif (Song/Mincho).
+ * Colours, fonts and control sizes live in styles/themes/paper.css (light + dark); the `--lp-*`
+ * names below are only aliases kept for the drawings and page markup. Buttons are the shared
+ * components/ui/button.tsx, so the landing and the app use the same sizes and variants.
  */
 
 .lp {
-  --lp-cjk: "Songti SC", "STSong", "Noto Serif CJK SC", "Source Han Serif SC", "Noto Serif SC", serif;
-  --lp-display: "Cutive", var(--lp-cjk);
-  --lp-italic: "Newsreader", var(--lp-cjk);
-  --lp-body: "Newsreader", Georgia, var(--lp-cjk);
+  --lp-display: var(--font-display);
+  --lp-italic: var(--font-display);
+  --lp-body: var(--font-sans);
 
-  --lp-bg: #fbf9f1;
-  --lp-ink: #1b1b18;
-  --lp-muted: #5c594f;
-  --lp-line: rgb(27 27 24 / 0.14);
-  --lp-paper: #fffdf6;
-  --lp-sky: #e3f4f6;
-  --lp-sky-strong: #cfe9ee;
-  --lp-mustard: #d9c27a;
-  --lp-mustard-soft: #efe0a8;
-  --lp-lavender: #c9b6e4;
-  --lp-blue: #cfe6ee;
-  --lp-mint: #a9ddc4;
-  --lp-beige: #f1ebdb;
-  --lp-pill: #d4c06a;
-  --lp-pill-hover: #c8b35a;
-  --lp-card-ink: #1b1b18;
-  --lp-dark-card: #1d1c19;
-  --lp-dark-card-ink: #f6f1e3;
-  --lp-banner-ink: #f7ecd8;
+  --lp-bg: var(--background);
+  --lp-ink: var(--foreground);
+  --lp-muted: var(--muted-foreground);
+  --lp-line: var(--line);
+  --lp-paper: var(--paper);
+  --lp-sand: var(--sand);
+  --lp-band: var(--band);
+  --lp-honey: var(--honey);
+  --lp-honey-soft: var(--honey-soft);
+  --lp-clay: var(--clay);
+  --lp-mist: var(--mist);
+  --lp-mist-strong: var(--mist-strong);
+  --lp-sage: var(--sage);
 
   background: var(--lp-bg);
   color: var(--lp-ink);
@@ -41,46 +34,9 @@
   -webkit-font-smoothing: antialiased;
 }
 
-/* Japanese prefers Mincho faces over Chinese Song faces. */
-.lp:lang(ja) {
-  --lp-cjk: "Hiragino Mincho ProN", "Yu Mincho", "YuMincho", "Noto Serif JP", "Noto Serif CJK JP", "Source Han Serif JP", serif;
-}
-
-/*
- * Dark: warm charcoal "ink on night paper". Surfaces step up in small warm increments; the
- * drawing fills are dusty mid-tones (slate teal, antique gold) so they read against the page
- * without glowing, and the cream line work sits on top at a comfortable contrast.
- */
-.dark .lp {
-  --lp-bg: #1a1815;
-  --lp-ink: #ece4d1;
-  --lp-muted: #a9a08b;
-  --lp-line: rgb(236 228 209 / 0.13);
-  --lp-sky: #1f2729;
-  --lp-mustard: #c9b26a;
-  --lp-lavender: #b6a6cf;
-  --lp-blue: #b9d1d8;
-  --lp-mint: #9cc7b2;
-  --lp-beige: #211e19;
-  --lp-pill: #d4bd6f;
-  --lp-pill-hover: #e2cd84;
-  --lp-dark-card: #12110e;
-  /* Page-level drawings use cream strokes here, so paper and blobs go to muted mid-tones. */
-  --lp-paper: #26221c;
-  --lp-sky-strong: #34494e;
-  --lp-mustard-soft: #7a6634;
-}
-
-/* Pastel cards keep dark ink in both themes, so drawings inside them keep light paper. */
-.dark .lp .lp-card {
-  --lp-paper: #f6f0df;
-  --lp-sky-strong: #b9d6db;
-  --lp-mustard-soft: #d9c98f;
-}
-
 .lp ::selection {
-  background: var(--lp-pill);
-  color: var(--lp-card-ink);
+  background: var(--lp-honey-soft);
+  color: var(--lp-ink);
 }
 
 /* ---------- type ---------- */
@@ -93,116 +49,57 @@
   font-family: var(--lp-display);
   font-weight: 400;
   font-size: clamp(2.05rem, 5.6vw, 4.6rem);
-  line-height: 1.14;
-  letter-spacing: -0.02em;
+  line-height: 1.12;
+  letter-spacing: -0.025em;
   text-wrap: balance;
 }
 .lp-h2 {
   font-family: var(--lp-display);
   font-weight: 400;
-  font-size: clamp(1.75rem, 3.8vw, 3.1rem);
-  line-height: 1.2;
-  letter-spacing: -0.015em;
+  font-size: clamp(1.75rem, 3.6vw, 2.9rem);
+  line-height: 1.18;
+  letter-spacing: -0.02em;
   text-wrap: balance;
 }
 :is(.lp:lang(zh), .lp:lang(ja)) :is(.lp-h1, .lp-h2) {
   letter-spacing: 0.02em;
-  line-height: 1.3;
+  line-height: 1.32;
 }
 
-/* The one accent word per headline. Latin: elegant italic serif. CJK: highlighter stroke. */
+/* The one accent word per headline. Latin: the same serif in italic. CJK: a soft highlighter stroke. */
 .lp-em {
   font-family: var(--lp-italic);
   font-style: italic;
   font-weight: 400;
-  font-size: 1.08em;
-  letter-spacing: -0.01em;
 }
 :is(.lp:lang(zh), .lp:lang(ja)) .lp-em {
-  font-family: inherit;
   font-style: normal;
-  font-size: 1em;
   padding: 0 0.06em;
-  background: linear-gradient(transparent 60%, var(--lp-mustard-soft) 60%, var(--lp-mustard-soft) 90%, transparent 90%);
+  background: linear-gradient(transparent 62%, var(--lp-honey-soft) 62%, var(--lp-honey-soft) 92%, transparent 92%);
   -webkit-box-decoration-break: clone;
   box-decoration-break: clone;
-}
-.dark :is(.lp:lang(zh), .lp:lang(ja)) .lp-em {
-  background: linear-gradient(transparent 62%, rgb(205 184 98 / 0.45) 62%, rgb(205 184 98 / 0.45) 90%, transparent 90%);
 }
 .lp-banner .lp-em {
   background: none !important;
 }
-:is(.lp:lang(zh), .lp:lang(ja)) .lp-banner .lp-em {
-  border-bottom: 2px solid rgb(247 236 216 / 0.6);
-}
 
 .lp-eyebrow,
 .lp-tiny {
-  font-family: var(--lp-display);
-  font-size: 11px;
+  font-family: var(--lp-body);
+  font-weight: 500;
+  font-size: 11.5px;
   line-height: 1.4;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
 }
 :is(.lp:lang(zh), .lp:lang(ja)) :is(.lp-eyebrow, .lp-tiny) {
-  font-size: 12.5px;
-  letter-spacing: 0.12em;
-  text-transform: none;
-}
-.lp-muted {
-  color: var(--lp-muted);
-}
-
-/* ---------- pills ---------- */
-.lp-pill {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  min-height: 44px;
-  padding: 0 1.4rem;
-  border-radius: 999px;
-  border: 1px solid var(--lp-pill);
-  background: var(--lp-pill);
-  color: var(--lp-card-ink);
-  font-family: var(--lp-display);
-  font-size: 11px;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  white-space: nowrap;
-  transition: background-color 0.15s, border-color 0.15s, color 0.15s, transform 0.15s;
-}
-.lp-pill:hover {
-  background: var(--lp-pill-hover);
-  border-color: var(--lp-pill-hover);
-}
-.lp-pill:active {
-  transform: translateY(1px);
-}
-.lp-pill-outline {
-  background: transparent;
-  border-color: currentColor;
-  color: inherit;
-}
-.lp-pill-outline:hover {
-  background: var(--lp-ink);
-  border-color: var(--lp-ink);
-  color: var(--lp-bg);
-}
-.lp-pill-sm {
-  min-height: 34px;
-  padding: 0 1rem;
-}
-:is(.lp:lang(zh), .lp:lang(ja)) .lp-pill {
+  font-weight: 400;
   font-size: 13px;
   letter-spacing: 0.1em;
   text-transform: none;
 }
-.lp-banner .lp-pill-outline:hover {
-  background: var(--lp-banner-ink);
-  border-color: var(--lp-banner-ink);
-  color: #3a1f12;
+.lp-muted {
+  color: var(--lp-muted);
 }
 
 /* ---------- links & focus ---------- */
@@ -221,24 +118,26 @@
   outline-offset: 3px;
   border-radius: 6px;
 }
-.lp .lp-pill:focus-visible {
+.lp :is(a, button).rounded-full:focus-visible {
   border-radius: 999px;
 }
 
 /* ---------- surfaces ---------- */
+/* Tinted block: ink follows the theme, drawings inside use the page's paper colour. */
 .lp-card {
-  color: var(--lp-card-ink);
+  color: var(--lp-ink);
 }
-.lp-dark-card {
-  background: var(--lp-dark-card);
-  color: var(--lp-dark-card-ink);
-}
-.dark .lp .lp-dark-card {
+/* Plain paper panel with a hairline, used behind detail drawings. */
+.lp-panel {
+  background: var(--lp-paper);
   box-shadow: inset 0 0 0 1px var(--lp-line);
 }
 .lp-banner {
-  color: var(--lp-banner-ink);
-  background: linear-gradient(125deg, #3a1f12 0%, #5a2f19 45%, #8a4a24 100%);
+  color: var(--banner-foreground);
+  background: var(--banner);
+}
+.dark .lp .lp-banner {
+  box-shadow: inset 0 0 0 1px var(--lp-line);
 }
 
 .lp-faq summary::-webkit-details-marker {
@@ -269,12 +168,13 @@
 }
 
 /* ---------- hero download dots: a small circle that widens to name the build on hover ---------- */
+/* Collapsed it is an exact circle: 1px border + 14px padding + 18px icon + 14px + 1px = 48px. */
 .lp-dl {
   display: inline-flex;
   align-items: center;
-  height: 44px;
-  min-width: 44px;
-  padding: 0 13px;
+  height: var(--ctl-lg);
+  min-width: var(--ctl-lg);
+  padding: 0 14px;
   border-radius: 999px;
   border: 1px solid var(--lp-line);
   color: inherit;
@@ -288,7 +188,7 @@
   overflow: hidden;
   white-space: nowrap;
   opacity: 0;
-  font-size: 14px;
+  font-size: 15px;
   transition: max-width 0.3s ease, opacity 0.2s ease, margin 0.3s ease;
 }
 .lp-dl:hover,

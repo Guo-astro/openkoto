@@ -1,58 +1,91 @@
 /*
- * Paper theme — the landing page look (components/landing/landing.css) carried into the app:
- * warm paper background, ink text, brown accent from the open-source banner, mustard highlights,
- * serif type (Newsreader body, Cutive headings; CJK falls back to Song/Mincho).
+ * Paper theme — the single source of every colour, font and size token in the web app.
+ * The landing look (components/landing/landing.css) and the signed-in app both read these;
+ * index.css exposes them to Tailwind (bg-honey, h-ctl-md, font-display, …).
+ *
+ * Colour: warm neutrals (paper, sand) + ink, a terracotta accent for links, and four block tints
+ * that share one lightness and a low chroma (honey, clay, mist, sage) so they sit together.
+ * Dark mode flips the tints to deep surfaces of the same hues.
+ *
+ * Type: one serif family — Newsreader (bundled, latin subsets) — falling back to Song/Mincho
+ * for CJK. Hierarchy comes from size and weight, not from mixing faces.
  */
 
 :root.theme-paper,
 .theme-paper {
-  --background: #fbf9f1;
-  --foreground: #1b1b18;
-  --card: #fffdf6;
-  --card-foreground: #1b1b18;
-  --popover: #fffdf6;
-  --popover-foreground: #1b1b18;
-  --primary: #7a3f1f;
+  /* ---- core (shadcn names) ---- */
+  --background: #faf7f0;
+  --foreground: #22201c;
+  --card: #fffdf8;
+  --card-foreground: #22201c;
+  --popover: #fffdf8;
+  --popover-foreground: #22201c;
+  --primary: #9a4b2b;
   --primary-foreground: #fbf6ea;
-  --secondary: #f1ebdb;
-  --secondary-foreground: #1b1b18;
-  --muted: #f1ebdb;
-  --muted-foreground: #5c594f;
-  --accent: #efe0a8;
-  --accent-foreground: #1b1b18;
+  --secondary: #f2ede1;
+  --secondary-foreground: #22201c;
+  --muted: #f2ede1;
+  --muted-foreground: #6b665b;
+  --accent: #f4e3c0;
+  --accent-foreground: #22201c;
   --destructive: #a3321f;
   --destructive-foreground: #fffdf6;
   --border: #e3ddcd;
   --input: #d9d2bf;
-  --ring: #1b1b18;
-  --chart-1: #7a3f1f;
-  --chart-2: #6a9fab;
-  --chart-3: #c2a54b;
-  --chart-4: #9a86bd;
-  --chart-5: #6fb08f;
-  --sidebar: #f5f0e2;
-  --sidebar-foreground: #1b1b18;
-  --sidebar-primary: #7a3f1f;
+  --ring: #22201c;
+  --chart-1: #9a4b2b;
+  --chart-2: #6f9593;
+  --chart-3: #c2a45e;
+  --chart-4: #b98c74;
+  --chart-5: #8a9a6e;
+  --sidebar: #f4f0e6;
+  --sidebar-foreground: #22201c;
+  --sidebar-primary: #9a4b2b;
   --sidebar-primary-foreground: #fbf6ea;
-  --sidebar-accent: #efe0a8;
-  --sidebar-accent-foreground: #1b1b18;
+  --sidebar-accent: #f4e3c0;
+  --sidebar-accent-foreground: #22201c;
   --sidebar-border: #e3ddcd;
-  --sidebar-ring: #1b1b18;
+  --sidebar-ring: #22201c;
 
+  /* ---- paper palette ---- */
+  --line: rgb(34 32 28 / 0.12);
+  --paper: #fffdf8;
+  --sand: #f2ede1;
+  --band: #eceee6;
+  --honey: #f0dcb6;
+  --honey-soft: #f4e3c0;
+  --clay: #ecd6c7;
+  --mist: #d9e3e1;
+  --mist-strong: #cddbd9;
+  --sage: #dce2cf;
+  --banner: #2f2a24;
+  --banner-foreground: #f2ebdd;
+  /* Solid button: ink pill in light mode, cream pill in dark mode. */
+  --ink: #22201c;
+  --ink-foreground: #faf7f0;
+  --ink-hover: #3d3932;
+
+  /* ---- type ---- */
   --font-cjk: "Songti SC", "STSong", "Noto Serif CJK SC", "Source Han Serif SC", "Noto Serif SC", serif;
   --font-sans: "Newsreader", Georgia, var(--font-cjk);
   --font-serif: "Newsreader", Georgia, var(--font-cjk);
-  --font-display: "Cutive", var(--font-cjk);
+  --font-display: "Newsreader", Georgia, var(--font-cjk);
   --font-mono: ui-monospace, "SF Mono", Menlo, monospace;
+
+  /* ---- sizes: every button / icon button / input is one of these heights ---- */
+  --ctl-sm: 2.25rem; /* 36px: toolbars, headers, secondary actions */
+  --ctl-md: 2.5rem; /* 40px: default in the app */
+  --ctl-lg: 3rem; /* 48px: marketing CTAs */
+
   --radius: 0.75rem;
-  --shadow-2xs: 0 1px 2px 0 rgb(27 27 24 / 0.04);
-  --shadow-xs: 0 1px 2px 0 rgb(27 27 24 / 0.05);
-  --shadow-sm: 0 1px 3px 0 rgb(27 27 24 / 0.06);
-  --shadow: 0 1px 3px 0 rgb(27 27 24 / 0.07);
-  --shadow-md: 0 4px 10px -2px rgb(27 27 24 / 0.08);
-  --shadow-lg: 0 10px 24px -6px rgb(27 27 24 / 0.1);
-  --shadow-xl: 0 16px 36px -8px rgb(27 27 24 / 0.12);
-  --shadow-2xl: 0 24px 48px -12px rgb(27 27 24 / 0.18);
+  --shadow-2xs: 0 1px 2px 0 rgb(34 32 28 / 0.04);
+  --shadow-xs: 0 1px 2px 0 rgb(34 32 28 / 0.05);
+  --shadow-sm: 0 1px 3px 0 rgb(34 32 28 / 0.06);
+  --shadow: 0 1px 3px 0 rgb(34 32 28 / 0.07);
+  --shadow-md: 0 4px 10px -2px rgb(34 32 28 / 0.08);
+  --shadow-lg: 0 10px 24px -6px rgb(34 32 28 / 0.1);
+  --shadow-xl: 0 16px 36px -8px rgb(34 32 28 / 0.12);
+  --shadow-2xl: 0 24px 48px -12px rgb(34 32 28 / 0.18);
 }
 
 :root.theme-paper:lang(ja) {
@@ -62,44 +95,61 @@
 :root.theme-paper.dark,
 .theme-paper.dark {
   --background: #1a1815;
-  --foreground: #ece4d1;
-  --card: #1f1c17;
-  --card-foreground: #efe8d6;
-  --popover: #1f1c17;
-  --popover-foreground: #efe8d6;
-  --primary: #d4bd6f;
-  --primary-foreground: #1b1b18;
+  --foreground: #ebe3d0;
+  --card: #24211c;
+  --card-foreground: #ebe3d0;
+  --popover: #24211c;
+  --popover-foreground: #ebe3d0;
+  --primary: #e0a582;
+  --primary-foreground: #1a1815;
   --secondary: #2a261e;
-  --secondary-foreground: #efe8d6;
+  --secondary-foreground: #ebe3d0;
   --muted: #221f19;
-  --muted-foreground: #a9a08b;
-  --accent: #4d4326;
+  --muted-foreground: #a39a86;
+  --accent: #57492a;
   --accent-foreground: #f6f1e3;
   --destructive: #d9644c;
   --destructive-foreground: #15130f;
   --border: #332e24;
   --input: #3d372b;
-  --ring: #efe8d6;
-  --chart-1: #cdb862;
+  --ring: #ebe3d0;
+  --chart-1: #e0a582;
   --chart-2: #8fbfca;
   --chart-3: #d9a86a;
   --chart-4: #b3a2cc;
   --chart-5: #95c4ad;
-  --sidebar: #1a1813;
-  --sidebar-foreground: #efe8d6;
-  --sidebar-primary: #cdb862;
-  --sidebar-primary-foreground: #1b1b18;
-  --sidebar-accent: #4d4326;
+  --sidebar: #1d1b17;
+  --sidebar-foreground: #ebe3d0;
+  --sidebar-primary: #e0a582;
+  --sidebar-primary-foreground: #1a1815;
+  --sidebar-accent: #57492a;
   --sidebar-accent-foreground: #f6f1e3;
   --sidebar-border: #332e24;
-  --sidebar-ring: #efe8d6;
+  --sidebar-ring: #ebe3d0;
+
+  --line: rgb(235 227 208 / 0.12);
+  --paper: #24211c;
+  --sand: #201d19;
+  --band: #1e211f;
+  --honey: #37301f;
+  --honey-soft: #57492a;
+  --clay: #3a2a23;
+  --mist: #232d2c;
+  --mist-strong: #30423f;
+  --sage: #2a2f24;
+  --banner: #25211c;
+  --banner-foreground: #ebe3d0;
+  --ink: #ebe3d0;
+  --ink-foreground: #1a1815;
+  --ink-hover: #fff7e4;
+
   --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.3);
   --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.3);
   --shadow-md: 0 4px 10px -2px rgb(0 0 0 / 0.35);
   --shadow-lg: 0 10px 24px -6px rgb(0 0 0 / 0.4);
 }
 
-/* Page titles inside the app use the landing's typewriter display face (it only ships one weight). */
+/* Page titles use the display face at regular weight (it reads heavy when bolded next to Song). */
 .theme-paper .app-main :is(h1, h2) {
   font-family: var(--font-display);
   font-weight: 400;

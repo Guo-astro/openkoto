@@ -23,7 +23,7 @@ export function LegalPage({ kind }: { kind: "privacy" | "terms" }) {
         <p className="lp-eyebrow lp-muted">{t("public.footer.legal")}</p>
         <h1 className="lp-h2 mt-4">{title}</h1>
         <p className="lp-muted mt-3 text-[15px]">{t("legal.updated", { date: UPDATED })}</p>
-        {doc && <Markdown className="mt-10 border-t border-[var(--lp-line)] pt-8">{doc.body}</Markdown>}
+        {doc && <Markdown className="mt-10 border-t border-line pt-8">{doc.body}</Markdown>}
       </div>
     </LandingShell>
   );

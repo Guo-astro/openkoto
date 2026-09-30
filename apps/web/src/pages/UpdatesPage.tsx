@@ -4,7 +4,7 @@ import { LandingShell } from "../components/landing/LandingChrome";
 import { Markdown } from "../components/Markdown";
 import { contentLang, listUpdates } from "../lib/content";
 
-const TAG_BG = ["var(--lp-sky-strong)", "var(--lp-mustard-soft)", "var(--lp-lavender)", "var(--lp-mint)"];
+const TAG_BG = ["var(--lp-mist)", "var(--lp-honey)", "var(--lp-clay)", "var(--lp-sage)"];
 
 export function UpdatesPage() {
   const { t, i18n } = useTranslation();
@@ -23,7 +23,7 @@ export function UpdatesPage() {
         <p className="lp-muted mt-4 text-[17px]">{t("updates.subtitle")}</p>
         <ol className="mt-14 space-y-14">
           {entries.map((e) => (
-            <li key={e.slug} className="relative border-t border-[var(--lp-line)] pt-6 md:grid md:grid-cols-[150px_1fr] md:gap-8">
+            <li key={e.slug} className="relative border-t border-line pt-6 md:grid md:grid-cols-[150px_1fr] md:gap-8">
               <div>
                 {e.date && (
                   <time dateTime={e.date} className="lp-tiny lp-muted">

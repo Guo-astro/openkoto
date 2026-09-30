@@ -6,6 +6,7 @@ import { setLanguage } from "../i18n";
 import { cn } from "../lib/utils";
 import { useSession } from "../lib/session";
 import { ThemeToggle } from "./landing/LandingChrome";
+import { buttonVariants } from "./ui/button";
 import { SyncIndicator } from "./SyncIndicator";
 
 const NAV = [
@@ -62,7 +63,7 @@ function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   return (
     <div className="flex h-full flex-col gap-6 px-4 py-5">
       <NavLink to="/" className="flex items-center gap-2.5 rounded-full px-2" onClick={onNavigate}>
-        <img src="/logo.png" alt="" className="h-8 w-8 rounded-full ring-1 ring-[var(--lp-line)]" />
+        <img src="/logo.png" alt="" className="h-8 w-8 rounded-full ring-1 ring-line" />
         <span className="lp-display text-[19px]">OpenKoto</span>
       </NavLink>
 
@@ -76,7 +77,7 @@ function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
             className={({ isActive }) =>
               cn(
                 "flex items-center gap-3 rounded-full px-3.5 py-2 text-[15px] transition-colors",
-                isActive ? "bg-[var(--lp-mustard-soft)] text-[var(--lp-card-ink)]" : "text-[var(--lp-muted)] hover:bg-[var(--lp-line)] hover:text-[var(--lp-ink)]",
+                isActive ? "bg-honey-soft text-foreground" : "text-muted-foreground hover:bg-line hover:text-foreground",
               )
             }
           >
@@ -86,23 +87,23 @@ function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
         ))}
       </nav>
 
-      <div className="mt-auto space-y-3 border-t border-[var(--lp-line)] pt-4">
+      <div className="mt-auto space-y-3 border-t border-line pt-4">
         <div className="flex items-center justify-between gap-2 px-1">
           <SyncIndicator />
           <div className="flex items-center gap-1.5">
             <LanguageSwitcher />
-            <ThemeToggle className="h-8 w-8" />
+            <ThemeToggle />
           </div>
         </div>
         {account ? (
           <>
-            <NavLink to="/account" onClick={onNavigate} className="block rounded-xl px-2 py-1.5 hover:bg-[var(--lp-line)]">
+            <NavLink to="/account" onClick={onNavigate} className="block rounded-xl px-2 py-1.5 hover:bg-line">
               <p className="truncate text-[14px]">{account.user.email}</p>
               <p className="lp-tiny lp-muted mt-0.5">{t(`plan.${account.plan}`)}</p>
             </NavLink>
             <button
               type="button"
-              className="lp-pill lp-pill-outline lp-pill-sm w-full"
+              className={cn(buttonVariants({ variant: "outline", size: "sm" }), "w-full")}
               onClick={async () => {
                 onNavigate?.();
                 await signOut();
@@ -113,7 +114,7 @@ function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
             </button>
           </>
         ) : (
-          <Link to="/login" onClick={onNavigate} className="lp-pill lp-pill-sm w-full">
+          <Link to="/login" onClick={onNavigate} className={cn(buttonVariants({ size: "sm" }), "w-full")}>
             {t("public.signIn")}
           </Link>
         )}
@@ -133,14 +134,14 @@ export function AppLayout({ children }: { children?: ReactNode }) {
 
   return (
     <div className="lp min-h-screen">
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-60 border-r border-[var(--lp-line)] bg-[var(--sidebar)] md:block">
+      <aside className="fixed inset-y-0 left-0 z-30 hidden w-60 border-r border-line bg-sidebar md:block">
         <Sidebar />
       </aside>
 
-      <header className="sticky top-0 z-20 flex h-14 items-center gap-3 border-b border-[var(--lp-line)] bg-[var(--lp-bg)]/90 px-4 backdrop-blur-md md:hidden">
+      <header className="sticky top-0 z-20 flex h-14 items-center gap-3 border-b border-line bg-background/90 px-4 backdrop-blur-md md:hidden">
         <button
           type="button"
-          className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[var(--lp-line)]"
+          className={buttonVariants({ variant: "outline", size: "icon-sm" })}
           aria-label={t("public.nav.menu")}
           aria-expanded={open}
           aria-controls="app-drawer"
@@ -149,7 +150,7 @@ export function AppLayout({ children }: { children?: ReactNode }) {
           <Menu size={16} aria-hidden />
         </button>
         <NavLink to="/" className="flex items-center gap-2 rounded-full">
-          <img src="/logo.png" alt="" className="h-7 w-7 rounded-full ring-1 ring-[var(--lp-line)]" />
+          <img src="/logo.png" alt="" className="h-7 w-7 rounded-full ring-1 ring-line" />
           <span className="lp-display text-[17px]">OpenKoto</span>
         </NavLink>
         <div className="ml-auto">
@@ -160,10 +161,10 @@ export function AppLayout({ children }: { children?: ReactNode }) {
       {open && (
         <div className="fixed inset-0 z-40 md:hidden" role="dialog" aria-modal="true" id="app-drawer">
           <button type="button" aria-label={t("common.close")} className="absolute inset-0 bg-black/30" onClick={() => setOpen(false)} />
-          <aside className="absolute inset-y-0 left-0 w-72 max-w-[85vw] bg-[var(--sidebar)] shadow-xl">
+          <aside className="absolute inset-y-0 left-0 w-72 max-w-[85vw] bg-sidebar shadow-xl">
             <button
               type="button"
-              className="absolute right-3 top-4 inline-flex h-9 w-9 items-center justify-center rounded-full border border-[var(--lp-line)]"
+              className={cn(buttonVariants({ variant: "outline", size: "icon-sm" }), "absolute right-3 top-4")}
               aria-label={t("common.close")}
               onClick={() => setOpen(false)}
             >
