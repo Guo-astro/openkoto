@@ -317,12 +317,29 @@
   },
   "landing": {
     "hero": {
-      "badge": "在 GitHub 上开源",
-      "subtitle": "背单词、读小说、学歌词 —— 网页、iPhone、Mac、Windows 同步。",
+      "badge": "开源语言学习 App",
+      "subtitle": "导入小说、歌词或文章，遇到生词点一下：AI 给出释义、讲透语法和文化背景，并自动安排复习。网页、iPhone、Mac、Windows 同步。",
       "start": "免费开始",
-      "headline": "用你喜欢的文字，<br/>学一门新的<em>语言</em>",
+      "headline": "读小说、听歌，<br/>顺手把<em>单词</em>背了",
       "dlIos": "下载 iPhone / iPad 版",
       "dlDesktop": "下载桌面版 · Mac / Windows"
+    },
+    "mock": {
+      "lang": "ja",
+      "chapter": "第 3 章 · 古い詩集",
+      "before": "駅前の小さな本屋に入ると、紙の匂いがした。子どものころに通った図書館を思い出して、なんだか",
+      "word": "懐かしい",
+      "after": "気持ちになった。",
+      "reading": "なつかしい",
+      "pos": "形",
+      "meaning": "怀念的；令人想起往事的",
+      "grammarLabel": "语法",
+      "grammar": "なんだか〜気持ちになった：不知怎么就生出……的心情",
+      "cultureLabel": "文化",
+      "culture": "温暖的怀旧感，多用于老街、旧物和昭和风情",
+      "added": "已加入生词本",
+      "review": "明天复习 · 12 个词",
+      "sync": "已同步到 iPhone"
     },
     "download": {
       "eyebrow": "下载",

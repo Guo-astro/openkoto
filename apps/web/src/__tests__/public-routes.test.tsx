@@ -33,7 +33,7 @@ describe("public routes", () => {
 
   it("shows the landing page at / when signed out", () => {
     renderAt("/");
-    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("content you love");
+    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("books and songs you love");
     expect(screen.getAllByRole("link", { name: /get started free/i })[0]).toHaveAttribute("href", "/login");
     expect(screen.getByRole("link", { name: /see pricing/i })).toHaveAttribute("href", "/pricing");
     expect(screen.getAllByRole("link", { name: /download from github/i })[0]).toHaveAttribute(
@@ -70,7 +70,7 @@ describe("public routes", () => {
     unmount();
     await act(() => i18n.changeLanguage("en"));
     renderAt("/ja");
-    expect(await screen.findByRole("heading", { level: 1 })).toHaveTextContent("ことばを学ぼう");
+    expect(await screen.findByRole("heading", { level: 1 })).toHaveTextContent("単語を覚えよう");
   });
 
   it("renders the changelog", async () => {
