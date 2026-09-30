@@ -62,6 +62,26 @@ function SmartLink({ href, className, children }: { href: string; className?: st
   );
 }
 
+function AppleLogo() {
+  return (
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+      <path d="M16.37 12.75c-.02-2.3 1.88-3.4 1.96-3.46-1.07-1.56-2.73-1.78-3.32-1.8-1.41-.14-2.76.83-3.47.83-.72 0-1.82-.81-2.99-.79-1.54.02-2.96.9-3.75 2.27-1.6 2.78-.41 6.89 1.15 9.14.76 1.1 1.67 2.34 2.86 2.3 1.15-.05 1.58-.74 2.97-.74 1.38 0 1.77.74 2.98.72 1.23-.02 2.02-1.12 2.77-2.23.87-1.28 1.23-2.52 1.25-2.58-.03-.01-2.39-.92-2.41-3.66ZM14.1 6c.63-.77 1.06-1.83.94-2.9-.91.04-2.02.61-2.67 1.37-.58.67-1.1 1.76-.96 2.8 1.02.08 2.06-.52 2.69-1.27Z" />
+    </svg>
+  );
+}
+
+/** Round icon-only download button; widens on hover/focus to say which build it downloads. */
+function DownloadDot({ href, label, children }: { href: string; label: string; children: ReactNode }) {
+  return (
+    <a href={href} target="_blank" rel="noreferrer" className="lp-dl" aria-label={label} title={label}>
+      {children}
+      <span className="lp-dl-label" aria-hidden>
+        {label}
+      </span>
+    </a>
+  );
+}
+
 export function LandingPage() {
   const { t, i18n } = useTranslation();
   const lang = contentLang(i18n.language);
@@ -69,6 +89,12 @@ export function LandingPage() {
   useEffect(() => {
     document.title = `OpenKoto — ${t("landing.meta.title")}`;
   }, [t]);
+
+  // Links from other pages land on `/#features` etc. before this page has rendered; scroll once it has.
+  useEffect(() => {
+    const id = window.location.hash.slice(1);
+    if (id) document.getElementById(id)?.scrollIntoView();
+  }, []);
 
   const notes = [
     ...listUpdates(lang)
@@ -112,9 +138,12 @@ export function LandingPage() {
               <Link to="/login" className="lp-pill">
                 {t("landing.hero.start")}
               </Link>
-              <a href="#download" className="lp-pill lp-pill-outline">
-                {t("landing.hero.download")}
-              </a>
+              <DownloadDot href={APP_STORE_URL} label={t("landing.hero.dlIos")}>
+                <AppleLogo />
+              </DownloadDot>
+              <DownloadDot href={RELEASES_URL} label={t("landing.hero.dlDesktop")}>
+                <Monitor size={17} strokeWidth={1.5} aria-hidden />
+              </DownloadDot>
             </div>
             <p className="lp-muted mt-3 text-[14px] md:text-[15px] lg:mt-4">{t("landing.hero.note")}</p>
           </div>

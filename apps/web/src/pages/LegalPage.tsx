@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
+import { LandingShell } from "../components/landing/LandingChrome";
 import { Markdown } from "../components/Markdown";
-import { PublicLayout } from "../components/PublicLayout";
 import { contentLang, getLegal } from "../lib/content";
 
 // Plain-language policies for the OpenKoto apps and cloud service; the iOS/desktop apps link here too.
@@ -18,12 +18,13 @@ export function LegalPage({ kind }: { kind: "privacy" | "terms" }) {
   }, [title]);
 
   return (
-    <PublicLayout>
-      <div className="mx-auto max-w-3xl px-4 py-10 md:py-14">
-        <h1 className="text-3xl font-semibold tracking-tight">{title}</h1>
-        <p className="mt-2 text-sm text-muted-foreground">{t("legal.updated", { date: UPDATED })}</p>
-        {doc && <Markdown className="mt-8">{doc.body}</Markdown>}
+    <LandingShell>
+      <div className="mx-auto max-w-3xl px-5 py-14 md:py-20">
+        <p className="lp-eyebrow lp-muted">{t("public.footer.legal")}</p>
+        <h1 className="lp-h2 mt-4">{title}</h1>
+        <p className="lp-muted mt-3 text-[15px]">{t("legal.updated", { date: UPDATED })}</p>
+        {doc && <Markdown className="mt-10 border-t border-[var(--lp-line)] pt-8">{doc.body}</Markdown>}
       </div>
-    </PublicLayout>
+    </LandingShell>
   );
 }

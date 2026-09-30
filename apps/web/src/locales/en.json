@@ -309,6 +309,10 @@
       "releases": "Desktop releases",
       "feedback": "Feedback",
       "copyright": "© {{year}} OpenKoto · Apache 2.0"
+    },
+    "theme": {
+      "dark": "Switch to dark mode",
+      "light": "Switch to light mode"
     }
   },
   "landing": {
@@ -316,9 +320,10 @@
       "badge": "Open source on GitHub",
       "subtitle": "Review words with FSRS, read novels with AI translation and sing along to lyrics — synced across web, iPhone, Mac and Windows.",
       "start": "Get started free",
-      "download": "Download apps",
       "note": "Free to use, no credit card. Works without an account, too.",
-      "headline": "Learn languages through<br/>content you <em>love</em>"
+      "headline": "Learn languages through<br/>content you <em>love</em>",
+      "dlIos": "Get the iPhone & iPad app",
+      "dlDesktop": "Download for Mac / Windows"
     },
     "features": {
       "review": {

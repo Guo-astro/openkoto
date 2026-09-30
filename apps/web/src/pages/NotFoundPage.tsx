@@ -1,14 +1,14 @@
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
-import { linkButton, PublicLayout } from "../components/PublicLayout";
+import { LandingShell } from "../components/landing/LandingChrome";
 
 export function NotFoundContent() {
   const { t } = useTranslation();
   return (
-    <div className="py-16 text-center space-y-4">
-      <p className="text-5xl font-semibold text-muted-foreground">404</p>
-      <p className="text-muted-foreground">{t("notFound.message")}</p>
-      <Link to="/" className={linkButton("outline")}>
+    <div className="space-y-5 py-16 text-center">
+      <p className="lp-display lp-muted text-6xl">404</p>
+      <p className="lp-muted">{t("notFound.message")}</p>
+      <Link to="/" className="lp-pill lp-pill-outline lp-pill-sm">
         {t("notFound.home")}
       </Link>
     </div>
@@ -17,10 +17,10 @@ export function NotFoundContent() {
 
 export function NotFoundPage() {
   return (
-    <PublicLayout>
-      <div className="mx-auto max-w-3xl px-4">
+    <LandingShell>
+      <div className="mx-auto max-w-3xl px-5">
         <NotFoundContent />
       </div>
-    </PublicLayout>
+    </LandingShell>
   );
 }

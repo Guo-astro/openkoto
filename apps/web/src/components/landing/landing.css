@@ -46,24 +46,29 @@
   --lp-cjk: "Hiragino Mincho ProN", "Yu Mincho", "YuMincho", "Noto Serif JP", "Noto Serif CJK JP", "Source Han Serif JP", serif;
 }
 
+/*
+ * Dark: warm charcoal "ink on night paper". Surfaces step up in small warm increments; the
+ * drawing fills are dusty mid-tones (slate teal, antique gold) so they read against the page
+ * without glowing, and the cream line work sits on top at a comfortable contrast.
+ */
 .dark .lp {
-  --lp-bg: #15130f;
-  --lp-ink: #efe8d6;
-  --lp-muted: #aaa28e;
-  --lp-line: rgb(239 232 214 / 0.14);
-  --lp-sky: #1b2729;
-  --lp-mustard: #c2ad6c;
-  --lp-lavender: #b3a2cc;
-  --lp-blue: #b8d0d8;
-  --lp-mint: #95c4ad;
-  --lp-beige: #1e1b15;
-  --lp-pill: #cdb862;
-  --lp-pill-hover: #dcc874;
-  --lp-dark-card: #0d0c0a;
-  /* Page-level drawings use cream strokes here, so paper and blobs go dark. */
-  --lp-paper: #1f1c17;
-  --lp-sky-strong: #22363a;
-  --lp-mustard-soft: #4d4326;
+  --lp-bg: #1a1815;
+  --lp-ink: #ece4d1;
+  --lp-muted: #a9a08b;
+  --lp-line: rgb(236 228 209 / 0.13);
+  --lp-sky: #1f2729;
+  --lp-mustard: #c9b26a;
+  --lp-lavender: #b6a6cf;
+  --lp-blue: #b9d1d8;
+  --lp-mint: #9cc7b2;
+  --lp-beige: #211e19;
+  --lp-pill: #d4bd6f;
+  --lp-pill-hover: #e2cd84;
+  --lp-dark-card: #12110e;
+  /* Page-level drawings use cream strokes here, so paper and blobs go to muted mid-tones. */
+  --lp-paper: #26221c;
+  --lp-sky-strong: #34494e;
+  --lp-mustard-soft: #7a6634;
 }
 
 /* Pastel cards keep dark ink in both themes, so drawings inside them keep light paper. */
@@ -261,4 +266,46 @@
 /* Hero headline is sized so headline, copy, buttons and drawing all fit in the first screen. */
 .lp-hero-title {
   font-size: clamp(1.85rem, 4.1vw, 3.6rem);
+}
+
+/* ---------- hero download dots: a small circle that widens to name the build on hover ---------- */
+.lp-dl {
+  display: inline-flex;
+  align-items: center;
+  height: 44px;
+  min-width: 44px;
+  padding: 0 13px;
+  border-radius: 999px;
+  border: 1px solid var(--lp-line);
+  color: inherit;
+  transition: border-color 0.2s, background-color 0.2s, color 0.2s;
+}
+.lp-dl > svg {
+  flex-shrink: 0;
+}
+.lp-dl-label {
+  max-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  opacity: 0;
+  font-size: 14px;
+  transition: max-width 0.3s ease, opacity 0.2s ease, margin 0.3s ease;
+}
+.lp-dl:hover,
+.lp-dl:focus-visible {
+  border-color: var(--lp-ink);
+  background: var(--lp-ink);
+  color: var(--lp-bg);
+}
+.lp-dl:hover .lp-dl-label,
+.lp-dl:focus-visible .lp-dl-label {
+  max-width: 16rem;
+  opacity: 1;
+  margin-left: 8px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .lp-dl,
+  .lp-dl-label {
+    transition: none;
+  }
 }

@@ -9,7 +9,7 @@
     <link rel="icon" href="/favicon.png" />
     <link rel="apple-touch-icon" href="/logo.png" />
     <meta name="theme-color" content="#fbf9f1" media="(prefers-color-scheme: light)" />
-    <meta name="theme-color" content="#15130f" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#1a1815" media="(prefers-color-scheme: dark)" />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="OpenKoto" />
     <meta property="og:url" content="https://openkoto.com/" />
@@ -21,8 +21,12 @@
     <meta name="twitter:description" content="Open-source language learning: FSRS vocabulary review, novels with AI translation and lyrics, synced across every device." />
     <meta name="twitter:image" content="https://openkoto.com/logo.png" />
     <script>
-      // Follow the system colour scheme before first paint.
-      if (window.matchMedia("(prefers-color-scheme: dark)").matches) document.documentElement.classList.add("dark");
+      // Apply the saved theme (see src/lib/theme.ts), else follow the system, before first paint.
+      (function () {
+        var t = null;
+        try { t = localStorage.getItem("openkoto.theme"); } catch (e) {}
+        if (t === "dark" || (t !== "light" && window.matchMedia("(prefers-color-scheme: dark)").matches)) document.documentElement.classList.add("dark");
+      })();
     </script>
   </head>
   <body>
