@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Link, NavLink, useParams } from "react-router";
 import { LandingShell } from "../components/landing/LandingChrome";
 import { Markdown } from "../components/Markdown";
+import { buttonVariants } from "../components/ui/button";
 import { contentLang, getDoc, listDocs } from "../lib/content";
 import { cn } from "../lib/utils";
 import { NotFoundContent } from "./NotFoundPage";
@@ -33,7 +34,7 @@ export function DocsPage() {
                 className={({ isActive }) =>
                   cn(
                     "shrink-0 rounded-full px-3.5 py-1.5 text-[15px] transition-colors",
-                    isActive ? "bg-[var(--lp-mustard-soft)] text-[var(--lp-card-ink)]" : "lp-muted hover:bg-[var(--lp-line)] hover:text-[var(--lp-ink)]",
+                    isActive ? "bg-honey-soft text-foreground" : "lp-muted hover:bg-line hover:text-foreground",
                   )
                 }
               >
@@ -47,10 +48,10 @@ export function DocsPage() {
             <>
               <h1 className="lp-h2">{doc.title}</h1>
               {doc.description && <p className="lp-muted mt-4 text-[17px]">{doc.description}</p>}
-              <Markdown className="mt-10 border-t border-[var(--lp-line)] pt-8">{doc.body}</Markdown>
+              <Markdown className="mt-10 border-t border-line pt-8">{doc.body}</Markdown>
               {slug !== "index" && (
-                <p className="mt-12 border-t border-[var(--lp-line)] pt-6">
-                  <Link to="/docs" className="lp-pill lp-pill-outline lp-pill-sm">← {t("docs.back")}</Link>
+                <p className="mt-12 border-t border-line pt-6">
+                  <Link to="/docs" className={buttonVariants({ variant: "outline", size: "sm" })}>← {t("docs.back")}</Link>
                 </p>
               )}
             </>

@@ -1,5 +1,9 @@
 import { type ClassValue, clsx } from "clsx";
-import { twMerge } from "tailwind-merge";
+import { extendTailwindMerge } from "tailwind-merge";
+
+// Teach tailwind-merge the control-height tokens (h-ctl-sm, size-ctl-lg, …) from index.css so
+// `cn("h-ctl-md", "h-ctl-sm")` keeps only the last one.
+const twMerge = extendTailwindMerge({ extend: { theme: { spacing: ["ctl-sm", "ctl-md", "ctl-lg"] } } });
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));

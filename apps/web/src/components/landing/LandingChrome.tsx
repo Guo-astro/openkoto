@@ -7,6 +7,7 @@ import { GITHUB_URL, ISSUES_URL, RELEASES_URL } from "../../lib/links";
 import { useSession } from "../../lib/session";
 import { setTheme, useTheme } from "../../lib/theme";
 import { cn } from "../../lib/utils";
+import { buttonVariants } from "../ui/button";
 
 const LANGS = [
   { code: "zh", label: "中文" },
@@ -24,7 +25,8 @@ export function LangSelect({ className }: { className?: string }) {
   return (
     <label
       className={cn(
-        "lp-tiny relative inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-full border border-[var(--lp-line)] pl-3 pr-3 transition-colors hover:border-current",
+        buttonVariants({ variant: "outline", size: "sm" }),
+        "lp-tiny relative cursor-pointer gap-1.5 px-3",
         className,
       )}
     >
@@ -58,7 +60,7 @@ export function ThemeToggle({ className }: { className?: string }) {
       aria-label={t(next === "dark" ? "public.theme.dark" : "public.theme.light")}
       title={t(next === "dark" ? "public.theme.dark" : "public.theme.light")}
       className={cn(
-        "inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[var(--lp-line)] transition-colors hover:border-current",
+        buttonVariants({ variant: "outline", size: "icon-sm" }),
         className,
       )}
     >
@@ -83,10 +85,10 @@ export function LandingHeader() {
   const linkCls = "lp-tiny rounded-full px-2 py-1 transition-opacity hover:opacity-60";
 
   return (
-    <header className="sticky top-0 z-30 border-b border-[var(--lp-line)] bg-[var(--lp-bg)]/90 backdrop-blur-md">
+    <header className="sticky top-0 z-30 border-b border-line bg-background/90 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-[1240px] items-center gap-4 px-5 md:px-10">
         <Link to="/" className="flex items-center gap-2.5 rounded-full" onClick={close}>
-          <img src="/logo.png" alt="" className="h-8 w-8 rounded-full ring-1 ring-[var(--lp-line)]" />
+          <img src="/logo.png" alt="" className="h-8 w-8 rounded-full ring-1 ring-line" />
           <span className="lp-display text-[19px]">OpenKoto</span>
         </Link>
         <nav className="ml-auto hidden items-center gap-3 lg:flex" aria-label={t("public.nav.label")}>
@@ -105,12 +107,12 @@ export function LandingHeader() {
         <div className="ml-auto flex items-center gap-2 lg:ml-2">
           <LangSelect className="hidden sm:inline-flex" />
           <ThemeToggle />
-          <Link to={account ? "/" : "/login"} className="lp-pill lp-pill-sm">
+          <Link to={account ? "/" : "/login"} className={buttonVariants({ size: "sm" })}>
             {account ? t("public.openApp") : t("public.signIn")}
           </Link>
           <button
             type="button"
-            className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[var(--lp-line)] lg:hidden"
+            className={cn(buttonVariants({ variant: "outline", size: "icon-sm" }), "lg:hidden")}
             aria-label={t("public.nav.menu")}
             aria-expanded={open}
             aria-controls="lp-mobile-nav"
@@ -121,10 +123,10 @@ export function LandingHeader() {
         </div>
       </div>
       {open && (
-        <nav id="lp-mobile-nav" className="border-t border-[var(--lp-line)] px-5 pb-6 pt-2 lg:hidden" aria-label={t("public.nav.label")}>
+        <nav id="lp-mobile-nav" className="border-t border-line px-5 pb-6 pt-2 lg:hidden" aria-label={t("public.nav.label")}>
           <ul className="flex flex-col">
             {items.map((item) => (
-              <li key={item.label} className="border-b border-[var(--lp-line)]">
+              <li key={item.label} className="border-b border-line">
                 {item.to ? (
                   <Link to={item.to} className="lp-tiny block py-4" onClick={close}>
                     {item.label}
@@ -150,7 +152,7 @@ export function LandingFooter() {
   const head = "lp-tiny mb-4 lp-muted";
   const link = "lp-link text-[15px]";
   return (
-    <footer className="border-t border-[var(--lp-line)]">
+    <footer className="border-t border-line">
       <div className="mx-auto grid max-w-[1240px] gap-12 px-5 py-16 md:grid-cols-[1.4fr_1fr_1fr_1fr] md:px-10 md:py-20">
         <div className="space-y-6">
           <Link to="/" className="inline-flex rounded-full" aria-label="OpenKoto">
@@ -158,9 +160,6 @@ export function LandingFooter() {
               <img src="/logo.png" alt="" className="h-11 w-11 rounded-full" />
             </span>
           </Link>
-          <p className="lp-display max-w-xs text-[22px] leading-snug">
-            <Headline i18nKey="landing.hero.headline" />
-          </p>
           <p className="lp-muted max-w-xs text-[15px]">{t("public.footer.tagline")}</p>
         </div>
         <div>
@@ -189,7 +188,7 @@ export function LandingFooter() {
           </ul>
         </div>
       </div>
-      <div className="border-t border-[var(--lp-line)]">
+      <div className="border-t border-line">
         <p className="lp-tiny lp-muted mx-auto max-w-[1240px] px-5 py-6 md:px-10">{t("public.footer.copyright", { year })}</p>
       </div>
     </footer>

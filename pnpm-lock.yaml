@@ -82,9 +82,6 @@ importers:
 
   apps/web:
     dependencies:
-      '@fontsource/cutive':
-        specifier: ^5.3.0
-        version: 5.3.0
       '@fontsource/newsreader':
         specifier: ^5.3.0
         version: 5.3.0
@@ -1325,9 +1322,6 @@ packages:
 
   '@floating-ui/utils@0.2.12':
     resolution: {integrity: sha512-HpCo8tmWzLVad5s2d19EhAz5zqrrQ6s69qd6moPMQvkOuSwDT1YgRfWSVuc4ennqrgv3OHppiOGMQ7oC13yIww==}
-
-  '@fontsource/cutive@5.3.0':
-    resolution: {integrity: sha512-0mughKHXSyJBK29zx7ZzoDh82VotH/nutVwoJzIJY1MQn76t6jk2CpKCJc9StVcFd8bA/dISnKbVogT7aM+YyA==}
 
   '@fontsource/newsreader@5.3.0':
     resolution: {integrity: sha512-AFR6ZKY89GNL+9qBI2P2+66NhD5bhOj/v6fsLnFYLM4E0JnMB1yKb+Ro8cA64i1hwAWoBfTq5CHJGWH1toLDkw==}
@@ -4910,8 +4904,6 @@ snapshots:
       react-dom: 19.3.0(react@19.3.0)
 
   '@floating-ui/utils@0.2.12': {}
-
-  '@fontsource/cutive@5.3.0': {}
 
   '@fontsource/newsreader@5.3.0': {}
 

@@ -318,38 +318,14 @@
   "landing": {
     "hero": {
       "badge": "Open source on GitHub",
-      "subtitle": "Review words with FSRS, read novels with AI translation and sing along to lyrics — synced across web, iPhone, Mac and Windows.",
+      "subtitle": "Review words, read novels and sing along to lyrics — synced across web, iPhone, Mac and Windows.",
       "start": "Get started free",
-      "note": "Free to use, no credit card. Works without an account, too.",
       "headline": "Learn languages through<br/>content you <em>love</em>",
       "dlIos": "Get the iPhone & iPad app",
       "dlDesktop": "Download for Mac / Windows"
     },
-    "features": {
-      "review": {
-        "title": "Vocabulary review with FSRS",
-        "desc": "Save words as you read and review them with the modern FSRS spaced-repetition algorithm, so each word comes back right before you'd forget it."
-      },
-      "novels": {
-        "title": "Read novels with AI",
-        "desc": "Import EPUB and TXT books, read chapter by chapter, and get sentence-by-sentence AI translation and explanations. Progress and bookmarks sync."
-      },
-      "lyrics": {
-        "title": "Learn with lyrics",
-        "desc": "Import LRC lyrics, study them line by line with translations, and sing along with synced timing."
-      },
-      "sync": {
-        "title": "Sync across every device",
-        "desc": "Your words, reviews, books and lyrics stay in sync across the web, iOS, macOS and Windows."
-      },
-      "agents": {
-        "title": "CLI, MCP and agent skill",
-        "desc": "The koto CLI, a remote MCP server and an agent skill let AI assistants like Claude quiz you, read your library and save lyrics translations."
-      }
-    },
     "download": {
       "eyebrow": "Download",
-      "subtitle": "One account, every device. Start on the web and pick up where you left off on your phone or computer.",
       "web": {
         "title": "Web",
         "desc": "Nothing to install. Review, read and study lyrics right in your browser.",
@@ -370,12 +346,9 @@
         "desc": "koto CLI, MCP server and an agent skill for Claude Code and friends.",
         "cta": "Set up the CLI"
       },
-      "cliHint": "Install the CLI (Node.js 20+) and sign in:",
       "headline": "Learn <em>anywhere</em>"
     },
     "pricing": {
-      "title": "Free to start",
-      "desc": "The free plan includes sync for a starter library. Plus and Pro add roomy sync, hosted AI credits and more CLI calls.",
       "cta": "See pricing"
     },
     "faq": {
@@ -413,12 +386,11 @@
     },
     "band": {
       "headline": "Turn novels, lyrics and articles<br/>into your own <em>textbook</em>",
-      "body": "No fixed curriculum. Import the book you're reading or the song on repeat, save words as you go, and let AI translate and explain line by line.",
       "cta": "See what it does"
     },
     "focus": {
-      "eyebrow": "What we focus on",
-      "statement": "The best material for learning a language is whatever you already want to read and listen to. OpenKoto does one thing: helps it actually stick.",
+      "eyebrow": "A closer look",
+      "title": "Every feature, built to help you <em>remember</em>",
       "cards": {
         "review": {
           "title": "Words & FSRS review",
@@ -438,33 +410,6 @@
         }
       }
     },
-    "showcase": {
-      "eyebrow": "A closer look",
-      "title": "Every feature, built to help you <em>remember</em>",
-      "learnMore": "Learn more",
-      "rows": {
-        "review": {
-          "label": "Vocabulary",
-          "name": "Review right before you forget"
-        },
-        "novels": {
-          "label": "Reader",
-          "name": "Read the whole book, one sentence at a time"
-        },
-        "lyrics": {
-          "label": "Lyrics",
-          "name": "Sing along, line by line"
-        },
-        "agents": {
-          "label": "CLI · MCP",
-          "name": "Let your AI assistant use your library"
-        },
-        "sync": {
-          "label": "Sync",
-          "name": "Start anywhere, pick up everywhere"
-        }
-      }
-    },
     "notes": {
       "eyebrow": "Updates & docs",
       "title": "Latest news and <em>guides</em>",
@@ -476,7 +421,7 @@
     "banner": {
       "eyebrow": "Open source · Apache-2.0",
       "headline": "Open source,<br/>and yours to <em>keep</em>",
-      "desc": "Every line of code is on GitHub. Without an account your data never leaves your device; bring your own AI key, or use the hosted credits that come with a membership."
+      "desc": "Every line of code is public. Without an account, your data never leaves your device."
     }
   },
   "docs": {

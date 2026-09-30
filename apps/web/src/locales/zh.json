@@ -318,38 +318,14 @@
   "landing": {
     "hero": {
       "badge": "在 GitHub 上开源",
-      "subtitle": "FSRS 背单词、AI 翻译读小说、跟着歌词一起唱 —— 在网页、iPhone、Mac 和 Windows 之间同步。",
+      "subtitle": "背单词、读小说、学歌词 —— 网页、iPhone、Mac、Windows 同步。",
       "start": "免费开始",
-      "note": "免费使用，无需绑卡；不注册账号也能用。",
       "headline": "用你喜欢的文字，<br/>学一门新的<em>语言</em>",
       "dlIos": "下载 iPhone / iPad 版",
       "dlDesktop": "下载桌面版 · Mac / Windows"
     },
-    "features": {
-      "review": {
-        "title": "FSRS 背单词",
-        "desc": "阅读时随手收藏生词，用新一代 FSRS 间隔重复算法复习，让每个词在快要忘记时回到你面前。"
-      },
-      "novels": {
-        "title": "AI 辅助读小说",
-        "desc": "导入 EPUB、TXT 书籍，按章节阅读，逐句获得 AI 翻译与讲解。阅读进度和书签自动同步。"
-      },
-      "lyrics": {
-        "title": "通过歌词学习",
-        "desc": "导入 LRC 歌词，逐行对照翻译学习，跟着时间轴一起唱。"
-      },
-      "sync": {
-        "title": "多端同步",
-        "desc": "生词、复习记录、书籍和歌词在网页、iOS、macOS、Windows 之间保持同步。"
-      },
-      "agents": {
-        "title": "CLI、MCP 与 Agent 技能",
-        "desc": "koto 命令行、远程 MCP 服务器和 Agent 技能，让 Claude 等 AI 助手考你单词、读你的书库、保存歌词翻译。"
-      }
-    },
     "download": {
       "eyebrow": "下载",
-      "subtitle": "一个账号，所有设备。在网页上开始，在手机或电脑上接着学。",
       "web": {
         "title": "网页版",
         "desc": "无需安装，直接在浏览器里复习、阅读、学歌词。",
@@ -370,12 +346,9 @@
         "desc": "koto 命令行、MCP 服务器，以及适用于 Claude Code 等的 Agent 技能。",
         "cta": "配置命令行"
       },
-      "cliHint": "安装命令行（需要 Node.js 20+）并登录：",
       "headline": "随时随地，<em>接着学</em>"
     },
     "pricing": {
-      "title": "免费开始",
-      "desc": "免费版即可同步一个入门书库。Plus 和 Pro 提供大容量同步、托管 AI 积分和更多命令行次数。",
       "cta": "查看价格"
     },
     "faq": {
@@ -413,12 +386,11 @@
     },
     "band": {
       "headline": "把小说、歌词和文章，<br/>变成属于你的<em>课本</em>",
-      "body": "没有固定课程。导入正在读的书、单曲循环的歌，遇到生词随手收藏，AI 帮你逐句翻译、讲解。",
       "cta": "看看能做什么"
     },
     "focus": {
-      "eyebrow": "我们在意的事",
-      "statement": "学语言最好的材料，是你本来就想读、想听的东西。OpenKoto 只做一件事：让这些内容真正留在你的记忆里。",
+      "eyebrow": "功能一览",
+      "title": "每个功能，都为了让你<em>记住</em>",
       "cards": {
         "review": {
           "title": "生词与 FSRS 复习",
@@ -438,33 +410,6 @@
         }
       }
     },
-    "showcase": {
-      "eyebrow": "功能一览",
-      "title": "每个功能，都为了让你<em>记住</em>",
-      "learnMore": "了解更多",
-      "rows": {
-        "review": {
-          "label": "单词复习",
-          "name": "在快要忘记时，刚好复习"
-        },
-        "novels": {
-          "label": "小说阅读器",
-          "name": "一本书，一句一句读懂"
-        },
-        "lyrics": {
-          "label": "歌词",
-          "name": "跟着时间轴，一行一行唱"
-        },
-        "agents": {
-          "label": "CLI · MCP",
-          "name": "让 AI 助手也能用上你的书库"
-        },
-        "sync": {
-          "label": "多端同步",
-          "name": "在哪开始，就能在哪继续"
-        }
-      }
-    },
     "notes": {
       "eyebrow": "更新与文档",
       "title": "最新动态与<em>指南</em>",
@@ -476,7 +421,7 @@
     "banner": {
       "eyebrow": "开源 · Apache-2.0",
       "headline": "开源，<br/>而且永远<em>属于你</em>",
-      "desc": "代码全部公开在 GitHub。不登录时，数据只留在你自己的设备上；AI 可以用你自己的 Key，也可以用会员附带的托管额度。"
+      "desc": "代码全部公开。不登录时，数据只留在你自己的设备上。"
     }
   },
   "docs": {

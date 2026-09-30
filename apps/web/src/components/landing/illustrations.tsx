@@ -1,7 +1,7 @@
 // Hand-drawn line-art illustrations for the landing page.
 // Every drawing is inline SVG with `stroke="currentColor"`, so it follows the text colour
 // (and therefore dark mode). A tiny turbulence filter gives the lines a slightly wobbly,
-// pen-on-paper feel. Flat fills only use the `--lp-*` pastel tokens from landing.css.
+// pen-on-paper feel. Flat fills only use the `--lp-*` tint tokens from landing.css.
 import { useId, type ReactNode } from "react";
 
 type SketchProps = {
@@ -80,8 +80,8 @@ export function HeroIllustration({ className }: { className?: string }) {
   return (
     <Sketch viewBox="0 0 600 430" className={className}>
       {/* pastel blobs behind */}
-      <path d="M170 250 C 150 150, 260 70, 370 92 C 480 112, 520 210, 470 280 C 420 350, 250 360, 196 318 C 180 305, 173 280, 170 250 Z" fill="var(--lp-sky-strong)" stroke="none" />
-      <circle cx="470" cy="118" r="58" fill="var(--lp-mustard-soft)" stroke="none" />
+      <path d="M170 250 C 150 150, 260 70, 370 92 C 480 112, 520 210, 470 280 C 420 350, 250 360, 196 318 C 180 305, 173 280, 170 250 Z" fill="var(--lp-mist-strong)" stroke="none" />
+      <circle cx="470" cy="118" r="58" fill="var(--lp-honey-soft)" stroke="none" />
 
       {/* shadow + hatching under the book */}
       <path d="M110 398 C 200 410, 400 410, 492 398" />
@@ -104,7 +104,7 @@ export function HeroIllustration({ className }: { className?: string }) {
         <path key={`r${i}`} d={`M316 ${334 + i * 12} C 350 ${322 + i * 12}, 400 ${320 + i * 12}, ${456 + i * 2} ${328 + i * 12}`} strokeWidth={1.1} />
       ))}
       {/* bookmark ribbon */}
-      <path d="M268 300 V 346 L 276 338 L 284 346 V 303" fill="var(--lp-lavender)" />
+      <path d="M268 300 V 346 L 276 338 L 284 346 V 303" fill="var(--lp-clay)" />
 
       {/* dotted flight path from the page to the plane */}
       <path d="M430 300 C 470 250, 360 250, 330 220 C 300 190, 340 160, 372 168" strokeDasharray="2 7" />
@@ -139,7 +139,7 @@ export function HeroIllustration({ className }: { className?: string }) {
 }
 
 /* ------------------------------------------------------------------ */
-/* Sky band: vintage headphones beside a sheet of timed lyrics.       */
+/* Band: vintage headphones beside a sheet of timed lyrics.           */
 /* ------------------------------------------------------------------ */
 export function HeadphonesIllustration({ className }: { className?: string }) {
   return (
@@ -166,7 +166,7 @@ export function HeadphonesIllustration({ className }: { className?: string }) {
       <g transform="rotate(5 450 140)">
         <rect x="370" y="30" width="160" height="210" rx="4" fill="var(--lp-paper)" />
         <path d="M370 44 L 530 44" strokeWidth={1} />
-        <rect x="382" y="120" width="136" height="20" rx="3" fill="var(--lp-mustard-soft)" stroke="none" />
+        <rect x="382" y="120" width="136" height="20" rx="3" fill="var(--lp-honey-soft)" stroke="none" />
         {["[00:08]", "[00:12]", "[00:16]", "[00:21]", "[00:25]", "[00:30]"].map((ts, i) => (
           <g key={ts}>
             <text x="386" y={70 + i * 28} fontSize="10" fill="currentColor" stroke="none" fontFamily="ui-monospace, Menlo, monospace">{ts}</text>
@@ -185,7 +185,7 @@ export function HeadphonesIllustration({ className }: { className?: string }) {
 }
 
 /* ------------------------------------------------------------------ */
-/* Focus cards (dark ink on pastel)                                   */
+/* Feature cards (ink on quiet tints)                                 */
 /* ------------------------------------------------------------------ */
 export function FlashcardsIllustration({ className }: { className?: string }) {
   return (
@@ -228,7 +228,7 @@ export function OpenBookIllustration({ className }: { className?: string }) {
       <rect x="120" y="10" width="72" height="24" rx="12" fill="var(--lp-paper)" />
       <Glyph x={156} y={27} size={13}>あ → A</Glyph>
       <path d="M150 34 L 146 48" strokeDasharray="2 3" />
-      <path d="M86 28 V 64 L 92 58 L 98 64 V 30" fill="var(--lp-mustard-soft)" />
+      <path d="M86 28 V 64 L 92 58 L 98 64 V 30" fill="var(--lp-honey-soft)" />
     </Sketch>
   );
 }
@@ -275,156 +275,6 @@ export function DevicesIllustration({ className }: { className?: string }) {
       <path d="M180 36 L 186 42 L 191 34" />
       <path d="M190 146 C 170 156, 140 154, 128 136" />
       <path d="M134 138 L 127 134 L 124 142" />
-    </Sketch>
-  );
-}
-
-/* ------------------------------------------------------------------ */
-/* Detail illustrations for the dark cards (drawn in currentColor,    */
-/* which is cream/white there).                                       */
-/* ------------------------------------------------------------------ */
-export function ForgettingCurveIllustration({ className }: { className?: string }) {
-  // A sawtooth of retention curves that decay more slowly after each review.
-  const reviews = [
-    { x0: 40, x1: 92, k: 0.03 },
-    { x0: 92, x1: 160, k: 0.016 },
-    { x0: 160, x1: 252, k: 0.009 },
-    { x0: 252, x1: 330, k: 0.005 },
-  ];
-  const top = 36;
-  const bottom = 168;
-  const curve = ({ x0, x1, k }: { x0: number; x1: number; k: number }) => {
-    const pts: string[] = [];
-    for (let x = x0; x <= x1; x += 4) {
-      const r = Math.exp(-k * (x - x0));
-      pts.push(`${x},${(top + (1 - r) * (bottom - top) * 0.9).toFixed(1)}`);
-    }
-    return `M${pts.join(" L")}`;
-  };
-  return (
-    <Sketch viewBox="0 0 350 200" className={className} wobble={1.6}>
-      <path d={`M40 ${top - 16} V ${bottom + 6} H 336`} />
-      <path d="M36 26 L 40 18 L 44 26" />
-      <path d="M328 170 L 336 174 L 328 178" />
-      <Glyph x={26} y={40} size={13} family="var(--lp-italic)">R</Glyph>
-      <Glyph x={338} y={192} size={13} family="var(--lp-italic)">t</Glyph>
-      <path d={`M40 ${top + 12} H 334`} strokeDasharray="3 6" strokeWidth={1} />
-      <Glyph x={316} y={top + 6} size={10} family="ui-monospace, Menlo, monospace">90%</Glyph>
-      {reviews.map((r, i) => (
-        <g key={i}>
-          <path d={curve(r)} strokeWidth={1.8} />
-          {i > 0 && <path d={`M${r.x0} ${top + (1 - Math.exp(-reviews[i - 1]!.k * (r.x0 - reviews[i - 1]!.x0))) * (bottom - top) * 0.9} V ${top}`} strokeDasharray="2 3" strokeWidth={1} />}
-          <circle cx={r.x0} cy={top} r={3.2} fill="currentColor" stroke="none" />
-        </g>
-      ))}
-      {[40, 92, 160, 252].map((x, i) => (
-        <Glyph key={x} x={x + 2} y={bottom + 22} size={10} family="ui-monospace, Menlo, monospace">{["0", "1d", "4d", "12d"][i]!}</Glyph>
-      ))}
-    </Sketch>
-  );
-}
-
-export function ReaderIllustration({ className }: { className?: string }) {
-  return (
-    <Sketch viewBox="0 0 350 200" className={className} wobble={1.6}>
-      <rect x="40" y="18" width="200" height="170" rx="6" />
-      <path d="M52 34 H 120" strokeWidth={2} />
-      {[0, 1, 2, 3].map((i) => (
-        <g key={i}>
-          <path d={`M54 ${60 + i * 32} C 100 ${56 + i * 32}, 170 ${62 + i * 32}, ${226 - (i % 2) * 30} ${58 + i * 32}`} strokeWidth={1.4} />
-          <path d={`M54 ${72 + i * 32} H ${200 - (i % 3) * 26}`} strokeWidth={1} strokeDasharray="2 5" />
-        </g>
-      ))}
-      {/* highlighted word + popover */}
-      <rect x="120" y="84" width="46" height="18" rx="3" strokeWidth={1.2} />
-      <path d="M166 92 C 200 80, 224 76, 244 70" strokeDasharray="2 4" />
-      <rect x="244" y="44" width="92" height="64" rx="8" fill="var(--lp-dark-card)" />
-      <Glyph x={290} y={70} size={15}>懐かしい</Glyph>
-      <Glyph x={290} y={88} size={10} family="var(--lp-italic)">nostalgic</Glyph>
-      <path d="M262 96 H 318" strokeWidth={1} />
-      <path d="M314 120 l6 6 l12 -14" strokeWidth={1.4} />
-    </Sketch>
-  );
-}
-
-export function LrcTimelineIllustration({ className }: { className?: string }) {
-  const lines = [
-    { ts: "[00:12]", w: 150 },
-    { ts: "[00:16]", w: 190 },
-    { ts: "[00:21]", w: 130 },
-    { ts: "[00:25]", w: 170 },
-  ];
-  return (
-    <Sketch viewBox="0 0 350 200" className={className} wobble={1.6}>
-      {lines.map((l, i) => (
-        <g key={l.ts} opacity={i === 1 ? 1 : 0.55}>
-          <text x="30" y={44 + i * 32} fontSize="11" fill="currentColor" stroke="none" fontFamily="ui-monospace, Menlo, monospace">{l.ts}</text>
-          <path d={`M88 ${40 + i * 32} C 130 ${34 + i * 32}, 200 ${44 + i * 32}, ${88 + l.w} ${38 + i * 32}`} strokeWidth={i === 1 ? 2.6 : 1.2} />
-        </g>
-      ))}
-      {/* bouncing ball over the current line */}
-      <path d="M100 66 C 112 50, 126 50, 136 64 C 146 50, 160 50, 170 62" strokeDasharray="2 4" strokeWidth={1} />
-      <circle cx="176" cy="56" r="4" fill="currentColor" stroke="none" />
-      {/* timeline */}
-      <path d="M30 172 H 320" />
-      {Array.from({ length: 15 }, (_, i) => (
-        <path key={i} d={`M${30 + i * 20.7} 172 v ${i % 5 === 0 ? -10 : -5}`} strokeWidth={1} />
-      ))}
-      <path d="M132 162 L 140 176 L 124 176 Z" fill="currentColor" />
-      <path d="M132 176 V 186" />
-      {/* play glyph */}
-      <circle cx="306" cy="136" r="14" />
-      <path d="M301 129 L 313 136 L 301 143 Z" fill="currentColor" />
-    </Sketch>
-  );
-}
-
-export function TerminalIllustration({ className }: { className?: string }) {
-  const mono = "ui-monospace, SFMono-Regular, Menlo, monospace";
-  return (
-    <Sketch viewBox="0 0 350 200" className={className} wobble={1.2}>
-      <rect x="24" y="20" width="302" height="164" rx="10" />
-      <path d="M24 44 H 326" />
-      <circle cx="40" cy="32" r="4" />
-      <circle cx="54" cy="32" r="4" />
-      <circle cx="68" cy="32" r="4" />
-      <text x="40" y="72" fontSize="13" fill="currentColor" stroke="none" fontFamily={mono}>$ koto add 懐かしい</text>
-      <text x="40" y="96" fontSize="11" fill="currentColor" stroke="none" fontFamily={mono} opacity={0.7}>✓ saved · nostalgic · review tomorrow</text>
-      <text x="40" y="124" fontSize="13" fill="currentColor" stroke="none" fontFamily={mono}>$ koto review --due</text>
-      <text x="40" y="148" fontSize="11" fill="currentColor" stroke="none" fontFamily={mono} opacity={0.7}>12 cards due · FSRS</text>
-      <text x="40" y="172" fontSize="13" fill="currentColor" stroke="none" fontFamily={mono}>$</text>
-      <rect x="54" y="161" width="8" height="14" fill="currentColor" stroke="none" />
-      <Sparkle x={306} y={70} r={6} />
-    </Sketch>
-  );
-}
-
-export function SyncIllustration({ className }: { className?: string }) {
-  return (
-    <Sketch viewBox="0 0 350 200" className={className} wobble={1.6}>
-      {/* cloud */}
-      <path d="M140 92 C 128 92, 124 72, 140 68 C 140 48, 166 42, 176 58 C 186 44, 212 50, 208 70 C 224 72, 222 94, 206 92 Z" />
-      <path d="M160 80 H 190" strokeWidth={1} strokeDasharray="2 4" />
-      {/* laptop */}
-      <rect x="28" y="112" width="92" height="56" rx="4" />
-      <path d="M18 176 H 130 L 122 168 H 26 Z" />
-      <path d="M40 128 H 96 M40 140 H 108 M40 152 H 80" strokeWidth={1} />
-      {/* tablet */}
-      <rect x="148" y="120" width="54" height="70" rx="6" />
-      <path d="M160 136 H 190 M160 148 H 184" strokeWidth={1} />
-      {/* phone */}
-      <rect x="246" y="116" width="36" height="66" rx="7" />
-      <path d="M258 122 H 270" />
-      {/* desktop window */}
-      <rect x="296" y="30" width="44" height="34" rx="3" />
-      <path d="M312 64 V 72 M304 74 H 326" />
-      {/* sync paths */}
-      <path d="M92 108 C 100 90, 116 84, 132 84" strokeDasharray="3 5" />
-      <path d="M176 116 V 98" strokeDasharray="3 5" />
-      <path d="M262 112 C 256 96, 236 84, 216 82" strokeDasharray="3 5" />
-      <path d="M294 48 C 260 40, 232 50, 214 62" strokeDasharray="3 5" />
-      <path d="M170 102 L 176 94 L 182 102" />
-      <Sparkle x={70} y={40} r={7} />
     </Sketch>
   );
 }

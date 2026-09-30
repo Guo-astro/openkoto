@@ -63,9 +63,31 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
 
+  /* Paper palette (styles/themes/paper.css): bg-honey, border-line, bg-ink text-ink-foreground, … */
+  --color-line: var(--line);
+  --color-paper: var(--paper);
+  --color-sand: var(--sand);
+  --color-band: var(--band);
+  --color-honey: var(--honey);
+  --color-honey-soft: var(--honey-soft);
+  --color-clay: var(--clay);
+  --color-mist: var(--mist);
+  --color-sage: var(--sage);
+  --color-banner: var(--banner);
+  --color-banner-foreground: var(--banner-foreground);
+  --color-ink: var(--ink);
+  --color-ink-foreground: var(--ink-foreground);
+  --color-ink-hover: var(--ink-hover);
+
+  /* Control heights: h-ctl-sm / h-ctl-md / h-ctl-lg (and size-*, w-*). */
+  --spacing-ctl-sm: var(--ctl-sm);
+  --spacing-ctl-md: var(--ctl-md);
+  --spacing-ctl-lg: var(--ctl-lg);
+
   --font-sans: var(--font-sans);
   --font-mono: var(--font-mono);
   --font-serif: var(--font-serif);
+  --font-display: var(--font-display);
 
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);

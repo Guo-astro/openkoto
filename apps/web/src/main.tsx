@@ -2,8 +2,7 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { App } from "./App";
 import "./i18n";
-// Paper look shared by the landing page and the app: Cutive display + Newsreader body (latin subsets, bundled).
-import "@fontsource/cutive/latin-400.css";
+// Paper look shared by the landing page and the app: Newsreader for everything (latin subsets, bundled).
 import "@fontsource/newsreader/latin-400.css";
 import "@fontsource/newsreader/latin-500.css";
 import "@fontsource/newsreader/latin-400-italic.css";
