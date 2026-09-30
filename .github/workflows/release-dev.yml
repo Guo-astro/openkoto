@@ -129,6 +129,9 @@ jobs:
         uses: actions/setup-node@v5
         with:
           node-version: 20
+          # The desktop app uses npm; the root package.json declares pnpm for the TS monorepo,
+          # which setup-node v5 would otherwise try to cache (and fail: pnpm isn't installed here).
+          package-manager-cache: false
 
       - name: setup python
         uses: actions/setup-python@v6
