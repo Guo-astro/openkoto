@@ -283,7 +283,7 @@
 				CODE_SIGN_ENTITLEMENTS = App/OpenKoto.entitlements;
 				"CODE_SIGN_ENTITLEMENTS[sdk=macosx*]" = "App/OpenKoto-Catalyst.entitlements";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 11;
+				CURRENT_PROJECT_VERSION = 13;
 				DEVELOPMENT_TEAM = MJFP85U8HQ;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = OpenKoto-Info.plist;
@@ -301,7 +301,7 @@
 					"@executable_path/Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 15.0;
-				MARKETING_VERSION = 0.6.2;
+				MARKETING_VERSION = 0.7.2;
 				// CloudKit 环境。**macOS/Catalyst 必须显式声明**——
 				// iOS 会从描述文件推断，macOS 不会，缺了服务端直接回
 				// serverRejectedRequest(15) + CKInternalErrorDomain 2000，
@@ -327,7 +327,7 @@
 				CODE_SIGN_ENTITLEMENTS = App/OpenKoto.entitlements;
 				"CODE_SIGN_ENTITLEMENTS[sdk=macosx*]" = "App/OpenKoto-Catalyst.entitlements";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 11;
+				CURRENT_PROJECT_VERSION = 13;
 				DEVELOPMENT_TEAM = MJFP85U8HQ;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = OpenKoto-Info.plist;
@@ -345,7 +345,7 @@
 					"@executable_path/Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 15.0;
-				MARKETING_VERSION = 0.6.2;
+				MARKETING_VERSION = 0.7.2;
 				// CloudKit 环境。**macOS/Catalyst 必须显式声明**——
 				// iOS 会从描述文件推断，macOS 不会，缺了服务端直接回
 				// serverRejectedRequest(15) + CKInternalErrorDomain 2000，
@@ -370,7 +370,7 @@
 				CODE_SIGN_ENTITLEMENTS = ShareExtension/ShareExtension.entitlements;
 				"CODE_SIGN_ENTITLEMENTS[sdk=macosx*]" = "ShareExtension/ShareExtension-Catalyst.entitlements";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 11;
+				CURRENT_PROJECT_VERSION = 13;
 				DEVELOPMENT_TEAM = MJFP85U8HQ;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = ShareExtension/Info.plist;
@@ -380,7 +380,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 0.6.2;
+				MARKETING_VERSION = 0.7.2;
 				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				OK_APP_GROUP_ID = group.com.openkoto.ios;
 				"OK_APP_GROUP_ID[sdk=macosx*]" = "$(TeamIdentifierPrefix)group.com.openkoto.ios";
@@ -400,7 +400,7 @@
 				CODE_SIGN_ENTITLEMENTS = ShareExtension/ShareExtension.entitlements;
 				"CODE_SIGN_ENTITLEMENTS[sdk=macosx*]" = "ShareExtension/ShareExtension-Catalyst.entitlements";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 11;
+				CURRENT_PROJECT_VERSION = 13;
 				DEVELOPMENT_TEAM = MJFP85U8HQ;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = ShareExtension/Info.plist;
@@ -410,7 +410,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 0.6.2;
+				MARKETING_VERSION = 0.7.2;
 				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				OK_APP_GROUP_ID = group.com.openkoto.ios;
 				"OK_APP_GROUP_ID[sdk=macosx*]" = "$(TeamIdentifierPrefix)group.com.openkoto.ios";

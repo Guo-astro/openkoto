@@ -40,6 +40,9 @@ No account is required. Sample articles are included, so reading, vocabulary, an
 
 OpenKoto is free and open source.
 
+Terms of Use (EULA): https://www.apple.com/legal/internet-services/itunes/dev/stdeula/
+Privacy Policy: https://openkoto.com/privacy
+
 ## What's new in 0.5.5
 
 • Improved compatibility with reasoning models including GPT‑5, the o-series, and Gemini 2.5 by adapting output-limit and temperature parameters automatically

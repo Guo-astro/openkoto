@@ -46,7 +46,16 @@ struct PaywallView: View {
                     statusRow
                     Button(L("paywall.restore")) { Task { await commerce.restore() } }
                 } footer: {
-                    Text(L("paywall.legal"))
+                    // Guideline 3.1.2: auto-renewable subscriptions need working links to the
+                    // Terms of Use (Apple's standard EULA) and the privacy policy in the purchase UI.
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text(L("paywall.legal"))
+                        HStack(spacing: 16) {
+                            Link(L("paywall.terms"), destination: Self.termsURL)
+                            Link(L("paywall.privacy"), destination: Self.privacyURL)
+                        }
+                        .font(.footnote.weight(.medium))
+                    }
                 }
             }
             .navigationTitle(L("paywall.title"))
@@ -102,6 +111,10 @@ struct PaywallView: View {
             .disabled(isBusy)
         }
     }
+
+    /// Apple 标准 EULA（App Store Connect 未配置自定义许可协议，描述里也链接这一份）。
+    private static let termsURL = URL(string: "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/")!
+    private static let privacyURL = URL(string: "https://openkoto.com/privacy")!
 
     /// App Store 内购审核截屏用（Debug 构建 + `-paywallSamples`）：StoreKit 拿不到商品时
     /// （模拟器没挂 StoreKit 配置），按 App Store Connect 里的名称与价格画同一套行。
