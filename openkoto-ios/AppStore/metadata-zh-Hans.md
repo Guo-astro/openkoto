@@ -40,6 +40,9 @@ OpenKoto 是一款开源、隐私优先的语言学习应用。把你真正感�
 
 OpenKoto 免费且开源。
 
+使用条款（EULA）：https://www.apple.com/legal/internet-services/itunes/dev/stdeula/
+隐私政策：https://openkoto.com/privacy
+
 ## 本次更新（0.5.5）
 
 • 提升 GPT‑5、o 系列与 Gemini 2.5 等推理模型的兼容性，自动适配输出长度和 temperature 参数，减少请求失败
